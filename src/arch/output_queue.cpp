@@ -2,26 +2,33 @@
 
 namespace sf {
 
-void OutputQueue::Receive(uint8_t pe_idx, int8_t ts) {
-    Entry e;
-    e.ts = static_cast<uint8_t>(ts); // PE outputs int8_t; store as uint8_t
-    e.neuron_id = pe_idx;           // use PE index as output neuron id
-    q_.push_back(e);
+OutputQueue::OutputQueue(std::size_t capacity)
+  : buf_(capacity), head_(0), tail_(0), size_(0) {}
+
+bool OutputQueue::push(const OutputToken& x) {
+    if (full()) return false;
+    buf_[tail_] = x;
+    tail_ = (tail_ + 1) % buf_.size();
+    ++size_;
+    return true;
 }
 
-void OutputQueue::StoreToDRAM(uint8_t* base, std::size_t length) const {
-    if (!base && !q_.empty()) {
-        throw std::invalid_argument("OutputQueue::StoreToDRAM: null base with non-empty queue");
-    }
-    const std::size_t need = ByteSize();
-    if (length < need) {
-        throw std::length_error("OutputQueue::StoreToDRAM: destination buffer too small");
-    }
-    // Serialize as [ts, id] pairs
-    for (std::size_t i = 0; i < q_.size(); ++i) {
-        base[2*i + 0] = q_[i].ts;
-        base[2*i + 1] = q_[i].neuron_id;
-    }
+bool OutputQueue::pop(OutputToken& out) {
+    if (empty()) return false;
+    out = buf_[head_];
+    head_ = (head_ + 1) % buf_.size();
+    --size_;
+    return true;
+}
+
+bool OutputQueue::front(OutputToken& out) const {
+    if (empty()) return false;
+    out = buf_[head_];
+    return true;
+}
+
+void OutputQueue::clear() {
+    head_ = tail_ = size_ = 0;
 }
 
 } // namespace sf
