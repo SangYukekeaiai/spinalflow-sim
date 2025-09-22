@@ -1,0 +1,6 @@
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/sf_arch.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/sf_arch_driver.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/test_batch_mapping.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/test_weight_lut.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/edit_cache.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/rebuild_cache.dir

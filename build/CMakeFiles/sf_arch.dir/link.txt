@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsf_arch.a CMakeFiles/sf_arch.dir/src/arch/pe.cpp.o CMakeFiles/sf_arch.dir/src/arch/input_spine_buffer.cpp.o CMakeFiles/sf_arch.dir/src/arch/min_finder_batch.cpp.o CMakeFiles/sf_arch.dir/src/arch/filter_buffer.cpp.o CMakeFiles/sf_arch.dir/src/arch/intermediate_fifo.cpp.o CMakeFiles/sf_arch.dir/src/arch/global_merger.cpp.o
+/usr/bin/ranlib libsf_arch.a

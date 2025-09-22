@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsf_arch_driver.a CMakeFiles/sf_arch_driver.dir/src/arch/driver/batch_spine_map.cpp.o CMakeFiles/sf_arch_driver.dir/src/arch/driver/weight_lut.cpp.o
+/usr/bin/ranlib libsf_arch_driver.a
