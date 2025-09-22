@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/test_batch_mapping.dir/tests/driver/test_batch_mapping.cpp.o -o test_batch_mapping  libsf_arch_driver.a 

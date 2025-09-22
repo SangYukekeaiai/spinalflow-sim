@@ -63,10 +63,8 @@ CMAKE_BINARY_DIR = /home/yy/snn/spinalflow-sim/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/sf_arch.dir/all
-all: CMakeFiles/sf_arch_driver.dir/all
-all: CMakeFiles/test_batch_mapping.dir/all
-all: CMakeFiles/test_weight_lut.dir/all
+all: CMakeFiles/sf_core.dir/all
+all: CMakeFiles/test_builder_min.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -74,115 +72,61 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/sf_arch.dir/clean
-clean: CMakeFiles/sf_arch_driver.dir/clean
-clean: CMakeFiles/test_batch_mapping.dir/clean
-clean: CMakeFiles/test_weight_lut.dir/clean
+clean: CMakeFiles/sf_core.dir/clean
+clean: CMakeFiles/test_builder_min.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/sf_arch.dir
+# Target rules for target CMakeFiles/sf_core.dir
 
 # All Build rule for target.
-CMakeFiles/sf_arch.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target sf_arch"
-.PHONY : CMakeFiles/sf_arch.dir/all
+CMakeFiles/sf_core.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10 "Built target sf_core"
+.PHONY : CMakeFiles/sf_core.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/sf_arch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 7
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/sf_arch.dir/all
+CMakeFiles/sf_core.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 10
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/sf_core.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
-.PHONY : CMakeFiles/sf_arch.dir/rule
+.PHONY : CMakeFiles/sf_core.dir/rule
 
 # Convenience name for target.
-sf_arch: CMakeFiles/sf_arch.dir/rule
-.PHONY : sf_arch
+sf_core: CMakeFiles/sf_core.dir/rule
+.PHONY : sf_core
 
 # clean rule for target.
-CMakeFiles/sf_arch.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/clean
-.PHONY : CMakeFiles/sf_arch.dir/clean
+CMakeFiles/sf_core.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/clean
+.PHONY : CMakeFiles/sf_core.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/sf_arch_driver.dir
+# Target rules for target CMakeFiles/test_builder_min.dir
 
 # All Build rule for target.
-CMakeFiles/sf_arch_driver.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=8,9,10 "Built target sf_arch_driver"
-.PHONY : CMakeFiles/sf_arch_driver.dir/all
+CMakeFiles/test_builder_min.dir/all: CMakeFiles/sf_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=11,12 "Built target test_builder_min"
+.PHONY : CMakeFiles/test_builder_min.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/sf_arch_driver.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 3
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/sf_arch_driver.dir/all
+CMakeFiles/test_builder_min.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 12
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_builder_min.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
-.PHONY : CMakeFiles/sf_arch_driver.dir/rule
+.PHONY : CMakeFiles/test_builder_min.dir/rule
 
 # Convenience name for target.
-sf_arch_driver: CMakeFiles/sf_arch_driver.dir/rule
-.PHONY : sf_arch_driver
+test_builder_min: CMakeFiles/test_builder_min.dir/rule
+.PHONY : test_builder_min
 
 # clean rule for target.
-CMakeFiles/sf_arch_driver.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/clean
-.PHONY : CMakeFiles/sf_arch_driver.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/test_batch_mapping.dir
-
-# All Build rule for target.
-CMakeFiles/test_batch_mapping.dir/all: CMakeFiles/sf_arch_driver.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_batch_mapping.dir/build.make CMakeFiles/test_batch_mapping.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_batch_mapping.dir/build.make CMakeFiles/test_batch_mapping.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=11,12 "Built target test_batch_mapping"
-.PHONY : CMakeFiles/test_batch_mapping.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/test_batch_mapping.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 5
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_batch_mapping.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
-.PHONY : CMakeFiles/test_batch_mapping.dir/rule
-
-# Convenience name for target.
-test_batch_mapping: CMakeFiles/test_batch_mapping.dir/rule
-.PHONY : test_batch_mapping
-
-# clean rule for target.
-CMakeFiles/test_batch_mapping.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_batch_mapping.dir/build.make CMakeFiles/test_batch_mapping.dir/clean
-.PHONY : CMakeFiles/test_batch_mapping.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/test_weight_lut.dir
-
-# All Build rule for target.
-CMakeFiles/test_weight_lut.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=13,14,15,16 "Built target test_weight_lut"
-.PHONY : CMakeFiles/test_weight_lut.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/test_weight_lut.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 4
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_weight_lut.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
-.PHONY : CMakeFiles/test_weight_lut.dir/rule
-
-# Convenience name for target.
-test_weight_lut: CMakeFiles/test_weight_lut.dir/rule
-.PHONY : test_weight_lut
-
-# clean rule for target.
-CMakeFiles/test_weight_lut.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/clean
-.PHONY : CMakeFiles/test_weight_lut.dir/clean
+CMakeFiles/test_builder_min.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/clean
+.PHONY : CMakeFiles/test_builder_min.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

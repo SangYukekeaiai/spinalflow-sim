@@ -117,64 +117,61 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named sf_arch
+# Target rules for targets named sf_core
 
 # Build rule for target.
-sf_arch: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sf_arch
-.PHONY : sf_arch
+sf_core: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sf_core
+.PHONY : sf_core
 
 # fast build rule for target.
-sf_arch/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/build
-.PHONY : sf_arch/fast
+sf_core/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/build
+.PHONY : sf_core/fast
 
 #=============================================================================
-# Target rules for targets named sf_arch_driver
+# Target rules for targets named test_builder_min
 
 # Build rule for target.
-sf_arch_driver: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sf_arch_driver
-.PHONY : sf_arch_driver
+test_builder_min: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_builder_min
+.PHONY : test_builder_min
 
 # fast build rule for target.
-sf_arch_driver/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/build
-.PHONY : sf_arch_driver/fast
+test_builder_min/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/build
+.PHONY : test_builder_min/fast
 
-#=============================================================================
-# Target rules for targets named test_batch_mapping
+src/arch/builder.o: src/arch/builder.cpp.o
+.PHONY : src/arch/builder.o
 
-# Build rule for target.
-test_batch_mapping: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_batch_mapping
-.PHONY : test_batch_mapping
+# target to build an object file
+src/arch/builder.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/builder.cpp.o
+.PHONY : src/arch/builder.cpp.o
 
-# fast build rule for target.
-test_batch_mapping/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_batch_mapping.dir/build.make CMakeFiles/test_batch_mapping.dir/build
-.PHONY : test_batch_mapping/fast
+src/arch/builder.i: src/arch/builder.cpp.i
+.PHONY : src/arch/builder.i
 
-#=============================================================================
-# Target rules for targets named test_weight_lut
+# target to preprocess a source file
+src/arch/builder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/builder.cpp.i
+.PHONY : src/arch/builder.cpp.i
 
-# Build rule for target.
-test_weight_lut: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_weight_lut
-.PHONY : test_weight_lut
+src/arch/builder.s: src/arch/builder.cpp.s
+.PHONY : src/arch/builder.s
 
-# fast build rule for target.
-test_weight_lut/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/build
-.PHONY : test_weight_lut/fast
+# target to generate assembly for a file
+src/arch/builder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/builder.cpp.s
+.PHONY : src/arch/builder.cpp.s
 
 src/arch/driver/batch_spine_map.o: src/arch/driver/batch_spine_map.cpp.o
 .PHONY : src/arch/driver/batch_spine_map.o
 
 # target to build an object file
 src/arch/driver/batch_spine_map.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/src/arch/driver/batch_spine_map.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/src/arch/driver/batch_spine_map.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o
 .PHONY : src/arch/driver/batch_spine_map.cpp.o
 
 src/arch/driver/batch_spine_map.i: src/arch/driver/batch_spine_map.cpp.i
@@ -182,8 +179,7 @@ src/arch/driver/batch_spine_map.i: src/arch/driver/batch_spine_map.cpp.i
 
 # target to preprocess a source file
 src/arch/driver/batch_spine_map.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/src/arch/driver/batch_spine_map.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/src/arch/driver/batch_spine_map.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.i
 .PHONY : src/arch/driver/batch_spine_map.cpp.i
 
 src/arch/driver/batch_spine_map.s: src/arch/driver/batch_spine_map.cpp.s
@@ -191,8 +187,7 @@ src/arch/driver/batch_spine_map.s: src/arch/driver/batch_spine_map.cpp.s
 
 # target to generate assembly for a file
 src/arch/driver/batch_spine_map.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/src/arch/driver/batch_spine_map.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/src/arch/driver/batch_spine_map.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.s
 .PHONY : src/arch/driver/batch_spine_map.cpp.s
 
 src/arch/driver/weight_lut.o: src/arch/driver/weight_lut.cpp.o
@@ -200,8 +195,7 @@ src/arch/driver/weight_lut.o: src/arch/driver/weight_lut.cpp.o
 
 # target to build an object file
 src/arch/driver/weight_lut.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/src/arch/driver/weight_lut.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/src/arch/driver/weight_lut.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o
 .PHONY : src/arch/driver/weight_lut.cpp.o
 
 src/arch/driver/weight_lut.i: src/arch/driver/weight_lut.cpp.i
@@ -209,8 +203,7 @@ src/arch/driver/weight_lut.i: src/arch/driver/weight_lut.cpp.i
 
 # target to preprocess a source file
 src/arch/driver/weight_lut.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/src/arch/driver/weight_lut.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/src/arch/driver/weight_lut.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.i
 .PHONY : src/arch/driver/weight_lut.cpp.i
 
 src/arch/driver/weight_lut.s: src/arch/driver/weight_lut.cpp.s
@@ -218,8 +211,7 @@ src/arch/driver/weight_lut.s: src/arch/driver/weight_lut.cpp.s
 
 # target to generate assembly for a file
 src/arch/driver/weight_lut.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch_driver.dir/build.make CMakeFiles/sf_arch_driver.dir/src/arch/driver/weight_lut.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/src/arch/driver/weight_lut.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.s
 .PHONY : src/arch/driver/weight_lut.cpp.s
 
 src/arch/filter_buffer.o: src/arch/filter_buffer.cpp.o
@@ -227,7 +219,7 @@ src/arch/filter_buffer.o: src/arch/filter_buffer.cpp.o
 
 # target to build an object file
 src/arch/filter_buffer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/filter_buffer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o
 .PHONY : src/arch/filter_buffer.cpp.o
 
 src/arch/filter_buffer.i: src/arch/filter_buffer.cpp.i
@@ -235,7 +227,7 @@ src/arch/filter_buffer.i: src/arch/filter_buffer.cpp.i
 
 # target to preprocess a source file
 src/arch/filter_buffer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/filter_buffer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.i
 .PHONY : src/arch/filter_buffer.cpp.i
 
 src/arch/filter_buffer.s: src/arch/filter_buffer.cpp.s
@@ -243,7 +235,7 @@ src/arch/filter_buffer.s: src/arch/filter_buffer.cpp.s
 
 # target to generate assembly for a file
 src/arch/filter_buffer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/filter_buffer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.s
 .PHONY : src/arch/filter_buffer.cpp.s
 
 src/arch/global_merger.o: src/arch/global_merger.cpp.o
@@ -251,7 +243,7 @@ src/arch/global_merger.o: src/arch/global_merger.cpp.o
 
 # target to build an object file
 src/arch/global_merger.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/global_merger.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o
 .PHONY : src/arch/global_merger.cpp.o
 
 src/arch/global_merger.i: src/arch/global_merger.cpp.i
@@ -259,7 +251,7 @@ src/arch/global_merger.i: src/arch/global_merger.cpp.i
 
 # target to preprocess a source file
 src/arch/global_merger.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/global_merger.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.i
 .PHONY : src/arch/global_merger.cpp.i
 
 src/arch/global_merger.s: src/arch/global_merger.cpp.s
@@ -267,7 +259,7 @@ src/arch/global_merger.s: src/arch/global_merger.cpp.s
 
 # target to generate assembly for a file
 src/arch/global_merger.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/global_merger.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.s
 .PHONY : src/arch/global_merger.cpp.s
 
 src/arch/input_spine_buffer.o: src/arch/input_spine_buffer.cpp.o
@@ -275,7 +267,7 @@ src/arch/input_spine_buffer.o: src/arch/input_spine_buffer.cpp.o
 
 # target to build an object file
 src/arch/input_spine_buffer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/input_spine_buffer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o
 .PHONY : src/arch/input_spine_buffer.cpp.o
 
 src/arch/input_spine_buffer.i: src/arch/input_spine_buffer.cpp.i
@@ -283,7 +275,7 @@ src/arch/input_spine_buffer.i: src/arch/input_spine_buffer.cpp.i
 
 # target to preprocess a source file
 src/arch/input_spine_buffer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/input_spine_buffer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.i
 .PHONY : src/arch/input_spine_buffer.cpp.i
 
 src/arch/input_spine_buffer.s: src/arch/input_spine_buffer.cpp.s
@@ -291,7 +283,7 @@ src/arch/input_spine_buffer.s: src/arch/input_spine_buffer.cpp.s
 
 # target to generate assembly for a file
 src/arch/input_spine_buffer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/input_spine_buffer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.s
 .PHONY : src/arch/input_spine_buffer.cpp.s
 
 src/arch/intermediate_fifo.o: src/arch/intermediate_fifo.cpp.o
@@ -299,7 +291,7 @@ src/arch/intermediate_fifo.o: src/arch/intermediate_fifo.cpp.o
 
 # target to build an object file
 src/arch/intermediate_fifo.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/intermediate_fifo.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o
 .PHONY : src/arch/intermediate_fifo.cpp.o
 
 src/arch/intermediate_fifo.i: src/arch/intermediate_fifo.cpp.i
@@ -307,7 +299,7 @@ src/arch/intermediate_fifo.i: src/arch/intermediate_fifo.cpp.i
 
 # target to preprocess a source file
 src/arch/intermediate_fifo.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/intermediate_fifo.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.i
 .PHONY : src/arch/intermediate_fifo.cpp.i
 
 src/arch/intermediate_fifo.s: src/arch/intermediate_fifo.cpp.s
@@ -315,7 +307,7 @@ src/arch/intermediate_fifo.s: src/arch/intermediate_fifo.cpp.s
 
 # target to generate assembly for a file
 src/arch/intermediate_fifo.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/intermediate_fifo.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.s
 .PHONY : src/arch/intermediate_fifo.cpp.s
 
 src/arch/min_finder_batch.o: src/arch/min_finder_batch.cpp.o
@@ -323,7 +315,7 @@ src/arch/min_finder_batch.o: src/arch/min_finder_batch.cpp.o
 
 # target to build an object file
 src/arch/min_finder_batch.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/min_finder_batch.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o
 .PHONY : src/arch/min_finder_batch.cpp.o
 
 src/arch/min_finder_batch.i: src/arch/min_finder_batch.cpp.i
@@ -331,7 +323,7 @@ src/arch/min_finder_batch.i: src/arch/min_finder_batch.cpp.i
 
 # target to preprocess a source file
 src/arch/min_finder_batch.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/min_finder_batch.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.i
 .PHONY : src/arch/min_finder_batch.cpp.i
 
 src/arch/min_finder_batch.s: src/arch/min_finder_batch.cpp.s
@@ -339,7 +331,7 @@ src/arch/min_finder_batch.s: src/arch/min_finder_batch.cpp.s
 
 # target to generate assembly for a file
 src/arch/min_finder_batch.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/min_finder_batch.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.s
 .PHONY : src/arch/min_finder_batch.cpp.s
 
 src/arch/pe.o: src/arch/pe.cpp.o
@@ -347,7 +339,7 @@ src/arch/pe.o: src/arch/pe.cpp.o
 
 # target to build an object file
 src/arch/pe.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/pe.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe.cpp.o
 .PHONY : src/arch/pe.cpp.o
 
 src/arch/pe.i: src/arch/pe.cpp.i
@@ -355,7 +347,7 @@ src/arch/pe.i: src/arch/pe.cpp.i
 
 # target to preprocess a source file
 src/arch/pe.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/pe.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe.cpp.i
 .PHONY : src/arch/pe.cpp.i
 
 src/arch/pe.s: src/arch/pe.cpp.s
@@ -363,56 +355,32 @@ src/arch/pe.s: src/arch/pe.cpp.s
 
 # target to generate assembly for a file
 src/arch/pe.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_arch.dir/build.make CMakeFiles/sf_arch.dir/src/arch/pe.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe.cpp.s
 .PHONY : src/arch/pe.cpp.s
 
-tests/driver/test_batch_mapping.o: tests/driver/test_batch_mapping.cpp.o
-.PHONY : tests/driver/test_batch_mapping.o
+tests/test_builder_min.o: tests/test_builder_min.cpp.o
+.PHONY : tests/test_builder_min.o
 
 # target to build an object file
-tests/driver/test_batch_mapping.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_batch_mapping.dir/build.make CMakeFiles/test_batch_mapping.dir/tests/driver/test_batch_mapping.cpp.o
-.PHONY : tests/driver/test_batch_mapping.cpp.o
+tests/test_builder_min.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.o
+.PHONY : tests/test_builder_min.cpp.o
 
-tests/driver/test_batch_mapping.i: tests/driver/test_batch_mapping.cpp.i
-.PHONY : tests/driver/test_batch_mapping.i
-
-# target to preprocess a source file
-tests/driver/test_batch_mapping.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_batch_mapping.dir/build.make CMakeFiles/test_batch_mapping.dir/tests/driver/test_batch_mapping.cpp.i
-.PHONY : tests/driver/test_batch_mapping.cpp.i
-
-tests/driver/test_batch_mapping.s: tests/driver/test_batch_mapping.cpp.s
-.PHONY : tests/driver/test_batch_mapping.s
-
-# target to generate assembly for a file
-tests/driver/test_batch_mapping.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_batch_mapping.dir/build.make CMakeFiles/test_batch_mapping.dir/tests/driver/test_batch_mapping.cpp.s
-.PHONY : tests/driver/test_batch_mapping.cpp.s
-
-tests/unit/test_weight_lut.o: tests/unit/test_weight_lut.cpp.o
-.PHONY : tests/unit/test_weight_lut.o
-
-# target to build an object file
-tests/unit/test_weight_lut.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/tests/unit/test_weight_lut.cpp.o
-.PHONY : tests/unit/test_weight_lut.cpp.o
-
-tests/unit/test_weight_lut.i: tests/unit/test_weight_lut.cpp.i
-.PHONY : tests/unit/test_weight_lut.i
+tests/test_builder_min.i: tests/test_builder_min.cpp.i
+.PHONY : tests/test_builder_min.i
 
 # target to preprocess a source file
-tests/unit/test_weight_lut.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/tests/unit/test_weight_lut.cpp.i
-.PHONY : tests/unit/test_weight_lut.cpp.i
+tests/test_builder_min.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.i
+.PHONY : tests/test_builder_min.cpp.i
 
-tests/unit/test_weight_lut.s: tests/unit/test_weight_lut.cpp.s
-.PHONY : tests/unit/test_weight_lut.s
+tests/test_builder_min.s: tests/test_builder_min.cpp.s
+.PHONY : tests/test_builder_min.s
 
 # target to generate assembly for a file
-tests/unit/test_weight_lut.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_lut.dir/build.make CMakeFiles/test_weight_lut.dir/tests/unit/test_weight_lut.cpp.s
-.PHONY : tests/unit/test_weight_lut.cpp.s
+tests/test_builder_min.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.s
+.PHONY : tests/test_builder_min.cpp.s
 
 # Help Target
 help:
@@ -422,10 +390,11 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... sf_arch"
-	@echo "... sf_arch_driver"
-	@echo "... test_batch_mapping"
-	@echo "... test_weight_lut"
+	@echo "... sf_core"
+	@echo "... test_builder_min"
+	@echo "... src/arch/builder.o"
+	@echo "... src/arch/builder.i"
+	@echo "... src/arch/builder.s"
 	@echo "... src/arch/driver/batch_spine_map.o"
 	@echo "... src/arch/driver/batch_spine_map.i"
 	@echo "... src/arch/driver/batch_spine_map.s"
@@ -450,12 +419,9 @@ help:
 	@echo "... src/arch/pe.o"
 	@echo "... src/arch/pe.i"
 	@echo "... src/arch/pe.s"
-	@echo "... tests/driver/test_batch_mapping.o"
-	@echo "... tests/driver/test_batch_mapping.i"
-	@echo "... tests/driver/test_batch_mapping.s"
-	@echo "... tests/unit/test_weight_lut.o"
-	@echo "... tests/unit/test_weight_lut.i"
-	@echo "... tests/unit/test_weight_lut.s"
+	@echo "... tests/test_builder_min.o"
+	@echo "... tests/test_builder_min.i"
+	@echo "... tests/test_builder_min.s"
 .PHONY : help
 
 

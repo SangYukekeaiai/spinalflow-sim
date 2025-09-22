@@ -39,8 +39,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/sf_arch.dir/DependInfo.cmake"
-  "CMakeFiles/sf_arch_driver.dir/DependInfo.cmake"
-  "CMakeFiles/test_batch_mapping.dir/DependInfo.cmake"
-  "CMakeFiles/test_weight_lut.dir/DependInfo.cmake"
+  "CMakeFiles/sf_core.dir/DependInfo.cmake"
+  "CMakeFiles/test_builder_min.dir/DependInfo.cmake"
   )
