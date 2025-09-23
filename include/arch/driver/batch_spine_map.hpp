@@ -1,46 +1,32 @@
 #pragma once
-#include <array>
 #include <cstdint>
-#include <stdexcept>
 #include <string>
-#include <vector>
-
-// Use global constants
 #include "common/constants.hpp"
 
-namespace sf {
-namespace driver {
+namespace sf { namespace driver {
 
+/**
+ * BatchSpineMap (minimal)
+ * Only records how many batches are required by the layer/input.
+ * No address tables; the driver/reader is responsible for streaming data.
+ */
 class BatchSpineMap {
 public:
-  using Addr = std::uint64_t;
+  explicit BatchSpineMap(int numBatches = 1) : num_batches_(numBatches) {}
 
-  struct Batch {
-    std::array<std::vector<Addr>, kNumSpines> phys_to_logic;
-  };
+  void SetNumBatches(int n) {
+    if (n <= 0 || n > kMaxBatches) throw std::out_of_range("numBatches");
+    num_batches_ = n;
+  }
 
-  explicit BatchSpineMap(int numBatches = 1);
+  int NumBatches() const noexcept { return num_batches_; }
 
-  void SetNumBatches(int n);
-  int  NumBatches() const noexcept { return num_batches_; }
-
-  void Add(int batchIdx, int physSpineId, Addr dramAddr);
-  void Set(int batchIdx, int physSpineId, const std::vector<Addr>& addrs);
-  const std::vector<Addr>& Get(int batchIdx, int physSpineId) const;
-  std::vector<Addr>&       Mutable(int batchIdx, int physSpineId);
-
-  void ClearBatch(int batchIdx);
-  void ClearAll();
-
-  std::string DebugString() const;
+  std::string DebugString() const {
+    return "BatchSpineMap{num_batches=" + std::to_string(num_batches_) + "}";
+  }
 
 private:
   int num_batches_{1};
-  std::array<Batch, kMaxBatches> batches_{};
-
-  void CheckBatch(int batchIdx) const;
-  void CheckSpine(int physSpineId) const;
 };
 
-} // namespace driver
-} // namespace sf
+}} // namespace sf::driver

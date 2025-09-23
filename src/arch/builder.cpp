@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cstring>
 #include <sstream>
-#include "utils/latency_stats.hpp"  // ensure TU sees util helpers
+#include "utils/latency_stats.hpp"
 
 namespace sf {
 
@@ -23,8 +23,8 @@ Builder::Builder(InputSpineBuffer&      in_buf,
     if (pes_.size() != static_cast<size_t>(FilterBuffer::kNumPEs)) {
         throw std::invalid_argument("Builder requires exactly 128 PEs.");
     }
-    for (auto& v : next_addr_idx_) v.fill(0);
-    shadow_owner_.fill(-1);
+    for (auto& row : fetched_)       row.fill(false);
+    input_drained_.fill(false);
     totally_drained_.fill(false);
 }
 
@@ -52,7 +52,6 @@ void Builder::ConfigureLayer(const LayerConfig& cfg) {
     for (auto& f : fifos_) f.clear();
     out_q_.clear();
     ts_picker_.Clear();
-    for (auto& v : next_addr_idx_) v.fill(0);
 
     row_latched_valid_  = false;
     latched_timestamp_  = 0;
@@ -60,9 +59,9 @@ void Builder::ConfigureLayer(const LayerConfig& cfg) {
     pending_row_valid_  = false;
     cur_out_tile_       = 0;
 
-    active_batch_ = -1;
-    prep_batch_   = 0;
-    shadow_owner_.fill(-1);
+    load_batch_cursor_ = 0;
+    for (auto& row : fetched_) row.fill(false);
+    input_drained_.fill(false);
     totally_drained_.fill(false);
 
     ResetLatencyStats();
@@ -74,35 +73,22 @@ void Builder::PrefillWeightsOnce(const int8_t* base, std::size_t bytes) {
     filter_.LoadFromDRAM(base, bytes);
 }
 
-void Builder::PrefillInputSpinesOnce(bool try_atomic_swap) {
+void Builder::PrefillInputSpinesOnce(bool try_immediate_swap) {
     if (!dram_read_) return;
+    if (load_batch_cursor_ >= batches_needed_) return;
 
-    const int b = prep_batch_;
+    const int b = load_batch_cursor_;
+    // Try to read as many spines as possible for the current batch.
     for (int s = 0; s < kNumSpines; ++s) {
-        const auto& addrs = bmap_.Get(b, s);
-        int& idx          = next_addr_idx_[b][s];
-        if (idx >= static_cast<int>(addrs.size())) continue;
+        if (fetched_[b][s]) continue;
 
         std::array<std::uint8_t, kCapacityPerSpine * sizeof(Entry)> tmp{};
-        if (dram_read_(addrs[idx], tmp.data(), tmp.size())) {
-            in_buf_.LoadSpineShadowFromDRAM(s, tmp.data(), tmp.size());
-            shadow_owner_[s] = b;
-            idx += 1;
-        }
-    }
-
-    if (try_atomic_swap) {
-        bool ready = true;
-        for (int s = 0; s < kNumSpines; ++s) {
-            if (shadow_owner_[s] != b) { ready = false; break; }
-        }
-        if (ready) {
-            for (int s = 0; s < kNumSpines; ++s) {
-                (void)in_buf_.SwapToShadow(s);
-                shadow_owner_[s] = -1;
-            }
-            active_batch_ = b;
-            prep_batch_   = (batches_needed_ == 1) ? 0 : (b + 1) % batches_needed_;
+        const std::size_t got = dram_read_(b, s, tmp.data(), tmp.size());
+        if (got > 0) {
+            if (got % sizeof(Entry)) throw std::runtime_error("DRAM read misaligned");
+            in_buf_.LoadSpineShadowFromDRAM(s, tmp.data(), got);
+            if (try_immediate_swap) (void)in_buf_.SwapToShadow(s);
+            fetched_[b][s] = true;
         }
     }
 }
@@ -113,6 +99,7 @@ bool Builder::Step() {
     ++cycle_;
     ++latency_.stages.steps;
 
+    // Commit a pending row into the PE latch if available.
     if (!row_latched_valid_ && pending_row_valid_) {
         latched_row_        = pending_row_;
         latched_timestamp_  = pending_timestamp_;
@@ -125,9 +112,8 @@ bool Builder::Step() {
     const bool s1 = Stage1_SelectSmallestTimestamp();
     const bool s2 = Stage2_ProcessPEs();
     const bool s3 = Stage3_GlobalMergeAndFilter();
-    const bool s4 = Stage4_MinFinderAcrossBatches();
-    const bool s5 = Stage5_InputSpineBankSwap();
-    const bool s6 = Stage6_CheckAndRefillFromDRAM();
+    const bool s4 = Stage4_DrainCurrentBatchToFIFO();
+    const bool s5 = Stage5_LoadNextBatchSpine();
 
     if (s0) ++latency_.stages.stage_hits[0];
     if (s1) ++latency_.stages.stage_hits[1];
@@ -135,9 +121,8 @@ bool Builder::Step() {
     if (s3) ++latency_.stages.stage_hits[3];
     if (s4) ++latency_.stages.stage_hits[4];
     if (s5) ++latency_.stages.stage_hits[5];
-    if (s6) ++latency_.stages.stage_hits[6];
 
-    const bool did = s0 || s1 || s2 || s3 || s4 || s5 || s6;
+    const bool did = s0 || s1 || s2 || s3 || s4 || s5;
     if (!did) ++latency_.stages.idle_cycles;
 
     UpdateDrainStatus();
@@ -152,9 +137,8 @@ bool Builder::Stage0_DrainOutputQueue() {
 
     Entry e{};
     if (!out_q_.front(e)) return false;
-    if (!out_sink_(e)) return false;
-
-    if (!out_q_.pop(e)) return false;
+    if (!out_sink_(e))    return false;
+    if (!out_q_.pop(e))   return false;
 
     if (!out_enqueue_cycles_.empty()) {
         const std::uint64_t birth = out_enqueue_cycles_.front();
@@ -169,23 +153,13 @@ bool Builder::Stage1_SelectSmallestTimestamp() {
     if (out_q_.full()) return false;
 
     bool moved = false;
-    Entry next{};
-
+    Entry e{};
     while (!out_q_.full()) {
-        if (!ts_picker_.PopSmallest(next)) {
-            break;
-        }
-
-        if (!out_q_.push_entry(next)) {
-            // Failed to enqueue; reinsert and stop to avoid losing the entry.
-            ts_picker_.Push(next);
-            break;
-        }
-
+        if (!ts_picker_.PopSmallest(e)) break;
+        if (!out_q_.push_entry(e)) { ts_picker_.Push(e); break; }
         out_enqueue_cycles_.push_back(cycle_);
         moved = true;
     }
-
     return moved;
 }
 
@@ -202,17 +176,19 @@ bool Builder::Stage2_ProcessPEs() {
             ts_picker_.Push(e);
         }
     }
-
     row_latched_valid_ = false;
     return true;
 }
 
 bool Builder::CanRunGlobalMergerThisStep() const {
+    // Require every NOT-YET-DRAINED batch to have a primed FIFO head.
+    bool any_active_batch = false;
     for (int b = 0; b < batches_needed_; ++b) {
         if (totally_drained_[b]) continue;
+        any_active_batch = true;
         if (fifos_[b].empty()) return false;
     }
-    return true;
+    return any_active_batch;
 }
 
 int Builder::CountPrimedFifos() const {
@@ -224,14 +200,10 @@ int Builder::CountPrimedFifos() const {
 }
 
 bool Builder::Stage3_GlobalMergeAndFilter() {
-    if (!CanRunGlobalMergerThisStep()) {
-        return false;
-    }
-    if (pending_row_valid_) {
-        return false;
-    }
+    if (!CanRunGlobalMergerThisStep()) return false;
+    if (pending_row_valid_)           return false;
 
-    std::array<IntermediateFIFO*, 4> refs{};
+    std::array<IntermediateFIFO*, kMaxBatches> refs{};
     for (int b = 0; b < batches_needed_; ++b) refs[b] = &fifos_[b];
 
     auto picked = GlobalMerger::PickAndPop(refs);
@@ -239,11 +211,10 @@ bool Builder::Stage3_GlobalMergeAndFilter() {
 
     const auto& res = *picked;
     if (res.fifo_index >= 0 && res.fifo_index < kMaxBatches) {
-        auto& tracking = fifo_enqueue_cycles_[res.fifo_index];
-        if (!tracking.empty()) {
-            const std::uint64_t birth = tracking.front();
-            tracking.pop_front();
-            const std::uint64_t wait = (cycle_ >= birth) ? (cycle_ - birth) : 0;
+        auto& track = fifo_enqueue_cycles_[res.fifo_index];
+        if (!track.empty()) {
+            const std::uint64_t birth = track.front(); track.pop_front();
+            const std::uint64_t wait  = (cycle_ >= birth) ? (cycle_ - birth) : 0;
             util::AccumulateQueueLatency(latency_.fifo_wait, wait);
         }
     }
@@ -256,73 +227,59 @@ bool Builder::Stage3_GlobalMergeAndFilter() {
     FilterBuffer::Row row{};
     if (!filter_.ReadRow(static_cast<int>(row_id), row)) return false;
 
-    pending_row_         = row;
-    pending_timestamp_   = static_cast<int8_t>(picked_entry.ts);
-    pending_out_neuron_  = static_cast<int>(neuron_id);
-    pending_row_valid_   = true;
+    pending_row_        = row;
+    pending_timestamp_  = static_cast<int8_t>(picked_entry.ts);
+    pending_out_neuron_ = static_cast<int>(neuron_id);
+    pending_row_valid_  = true;
 
     cur_out_tile_ = static_cast<uint16_t>((cur_out_tile_ + cfg_.tiles_per_step) % lut_.OutTiles());
     return true;
 }
 
-bool Builder::Stage4_MinFinderAcrossBatches() {
-    if (active_batch_ < 0) return false;
-    if (totally_drained_[active_batch_]) return false;
-    if (fifos_[active_batch_].full()) return false;
+bool Builder::Stage4_DrainCurrentBatchToFIFO() {
+    // Drain from the current load batch into its FIFO, one item per step.
+    if (load_batch_cursor_ >= batches_needed_) return false;
+    const int b = load_batch_cursor_;
+    if (fifos_[b].full()) return false;
 
-    const bool moved = min_finder_.DrainOneInto(fifos_[active_batch_]);
-    if (!moved) return false;
-
-    fifo_enqueue_cycles_[active_batch_].push_back(cycle_);
-    return true;
-}
-
-bool Builder::Stage5_InputSpineBankSwap() {
-    if (totally_drained_[prep_batch_]) {
+    const bool moved = min_finder_.DrainOneInto(fifos_[b]);
+    if (!moved) {
+        // If nothing moved and all spines are empty for this batch, mark input drained and advance cursor.
+        bool empty_all = true;
+        for (int s = 0; s < kNumSpines; ++s) {
+            if (!in_buf_.Empty(s)) { empty_all = false; break; }
+        }
+        if (empty_all) {
+            input_drained_[b] = true;
+            load_batch_cursor_++; // proceed to next batch
+        }
         return false;
     }
-
-    bool ready = true;
-    for (int s = 0; s < kNumSpines; ++s) {
-        if (shadow_owner_[s] != prep_batch_) { ready = false; break; }
-    }
-    if (!ready) return false;
-
-    for (int s = 0; s < kNumSpines; ++s) {
-        (void)in_buf_.SwapToShadow(s);
-        shadow_owner_[s] = -1;
-    }
-    active_batch_ = prep_batch_;
-    prep_batch_   = (batches_needed_ == 1) ? 0 : (prep_batch_ + 1) % batches_needed_;
+    fifo_enqueue_cycles_[b].push_back(cycle_);
     return true;
 }
 
-bool Builder::Stage6_CheckAndRefillFromDRAM() {
+bool Builder::Stage5_LoadNextBatchSpine() {
     if (!dram_read_) return false;
+    if (load_batch_cursor_ >= batches_needed_) return false;
 
-    const int b = prep_batch_;
-    if (b < 0 || totally_drained_[b]) return false;
+    const int b = load_batch_cursor_;
 
-    bool did = false;
+    // Load at most one spine per cycle to model limited bandwidth.
     for (int s = 0; s < kNumSpines; ++s) {
-        if (shadow_owner_[s] == b) continue;
-
-        const auto& addrs = bmap_.Get(b, s);
-        int& idx          = next_addr_idx_[b][s];
-        if (idx >= static_cast<int>(addrs.size())) {
-            continue;
-        }
+        if (fetched_[b][s]) continue;
 
         std::array<std::uint8_t, kCapacityPerSpine * sizeof(Entry)> tmp{};
-        if (dram_read_(addrs[idx], tmp.data(), tmp.size())) {
-            in_buf_.LoadSpineShadowFromDRAM(s, tmp.data(), tmp.size());
-            shadow_owner_[s] = b;
-            idx += 1;
-            did = true;
-            break;  // model one-spine-per-cycle refill
-        }
+        const std::size_t got = dram_read_(b, s, tmp.data(), tmp.size());
+        if (got == 0) continue;
+        if (got % sizeof(Entry)) throw std::runtime_error("DRAM read misaligned");
+
+        in_buf_.LoadSpineShadowFromDRAM(s, tmp.data(), got);
+        (void)in_buf_.SwapToShadow(s); // make ACTIVE immediately
+        fetched_[b][s] = true;
+        return true;
     }
-    return did;
+    return false;
 }
 
 // ===== drained-state maintenance & utilities =====
@@ -333,22 +290,14 @@ void Builder::RecomputeBatching() {
 }
 
 bool Builder::BatchTotallyDrained(int b) const {
+    // 1) All spines fetched once
     for (int s = 0; s < kNumSpines; ++s) {
-        const auto& addrs = bmap_.Get(b, s);
-        if (next_addr_idx_[b][s] < static_cast<int>(addrs.size())) {
-            return false;
-        }
+        if (!fetched_[b][s]) return false;
     }
-    for (int s = 0; s < kNumSpines; ++s) {
-        if (shadow_owner_[s] == b) return false;
-    }
-    if (active_batch_ == b) {
-        for (int s = 0; s < kNumSpines; ++s) {
-            if (!in_buf_.Empty(s)) return false;
-        }
-    }
+    // 2) Input of this batch has been completely moved into its FIFO
+    if (!input_drained_[b]) return false;
+    // 3) FIFO is empty
     if (!fifos_[b].empty()) return false;
-
     return true;
 }
 
@@ -357,15 +306,6 @@ void Builder::UpdateDrainStatus() {
         if (totally_drained_[b]) continue;
         if (BatchTotallyDrained(b)) {
             totally_drained_[b] = true;
-
-            if (active_batch_ == b) active_batch_ = -1;
-
-            if (prep_batch_ == b) {
-                for (int step = 0; step < batches_needed_; ++step) {
-                    int cand = (prep_batch_ + 1 + step) % batches_needed_;
-                    if (!totally_drained_[cand]) { prep_batch_ = cand; break; }
-                }
-            }
         }
     }
 }
@@ -381,9 +321,8 @@ std::string Builder::DebugString() const {
         << ", primed=" << CountPrimedFifos()
         << ", row_latched=" << (row_latched_valid_ ? "Y" : "N")
         << ", cur_out_tile=" << cur_out_tile_
-        << ", active_batch=" << active_batch_
-        << ", prep_batch="   << prep_batch_
-        << ", outq_size="    << out_q_.size()
+        << ", load_batch_cursor=" << load_batch_cursor_
+        << ", outq_size=" << out_q_.size()
         << ", drained=[";
     for (int b = 0; b < batches_needed_; ++b) {
         oss << (totally_drained_[b] ? '1' : '0');
