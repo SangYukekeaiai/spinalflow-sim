@@ -15,7 +15,7 @@
 1. 16 fixed sized (128) array, with elements: 
 struct Entry {
     uint8_t ts;         // timestamp when spike arrives
-    uint8_t neuron_id;  // which neuron fired
+    uint32_t neuron_id; // which neuron fired
 };
 from include/common/entry.hpp
 2. The function should contain:
@@ -160,3 +160,5 @@ Make the builder clear and with less code. Less comments, but for code itself, m
 
 
 
+### latency determination
+1. Each time tell the structure of the spinalflow, try to get the appoximate latency.

@@ -12,7 +12,7 @@
 #include <tuple>
 #include <vector>
 
-#include "common/entry.hpp"                 // assumes: struct Entry { uint8_t ts; uint8_t neuron_id; };
+#include "common/entry.hpp"                 // assumes: struct Entry { uint8_t ts; uint32_t neuron_id; };
 #include "arch/input_spine_buffer.hpp"      // revised double-buffer version
 #include "arch/min_finder_batch.hpp"        // DrainBatchInto(...)
 #include "arch/intermediate_fifo.hpp"       // 256B = 128 entries
@@ -41,10 +41,10 @@ struct DRAM {
     std::vector<SpineSpan> spines; // spines[i] is the byte span for logical spine i
 };
 
-// Utility to append one Entry to dram bytes as raw (ts, neuron_id).
+// Utility to append one Entry to dram bytes as raw struct bytes.
 static inline void push_entry_bytes(std::vector<uint8_t>& b, const Entry& e) {
-    b.push_back(e.ts);
-    b.push_back(e.neuron_id);
+    const auto* raw = reinterpret_cast<const uint8_t*>(&e);
+    b.insert(b.end(), raw, raw + sizeof(Entry));
 }
 
 // ----------------------------- Test data generator ---------------------------
@@ -63,7 +63,7 @@ DRAM BuildDramSpineFormat(const LayerConfig& cfg) {
     // Generate entries for position(0,0) across channels, grouped by 128 per spine.
     // For each channel c in this spine, we create one Entry:
     //   ts: crafted to create overlaps across spines while preserving per-spine sorted order.
-    //   neuron_id: channel index (fits in uint8_t for <=255; if >255, wrap for demo).
+    //   neuron_id: channel index (now stored as uint32_t to cover large channel counts).
     //
     // To ensure per-spine sorted(ts), we generate (ts = c % 64), then sort by ts then neuron_id.
     // This creates cross-spine overlaps (0..63) so the global merger is exercised.
@@ -77,8 +77,8 @@ DRAM BuildDramSpineFormat(const LayerConfig& cfg) {
 
         for (int c = c_begin; c < c_end; ++c) {
             Entry e;
-            e.ts        = static_cast<uint8_t>(c % 64);      // intentionally overlapping ts
-            e.neuron_id = static_cast<uint8_t>(c & 0xFF);    // pack channel id in 8-bit
+            e.ts        = static_cast<uint8_t>(c % 64);    // intentionally overlapping ts
+            e.neuron_id = static_cast<uint32_t>(c);        // neuron id = channel index
             tmp.push_back(e);
         }
 
@@ -203,9 +203,9 @@ int main() {
     out_stream.reserve(expected_total);
     std::array<sf::IntermediateFIFO*, 4> fs = { &fifo0, &fifo1, &fifo2, &fifo3 };
     while (true) {
-        auto e = merger.PickAndPop(fs);
-        if (!e) break;
-        out_stream.push_back(*e);
+        auto res = merger.PickAndPop(fs);
+        if (!res) break;
+        out_stream.push_back(res->entry);
     }
 
     // ------------------------------ Validation --------------------------------

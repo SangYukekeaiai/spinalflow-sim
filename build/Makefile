@@ -334,6 +334,30 @@ src/arch/min_finder_batch.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.s
 .PHONY : src/arch/min_finder_batch.cpp.s
 
+src/arch/output_queue.o: src/arch/output_queue.cpp.o
+.PHONY : src/arch/output_queue.o
+
+# target to build an object file
+src/arch/output_queue.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o
+.PHONY : src/arch/output_queue.cpp.o
+
+src/arch/output_queue.i: src/arch/output_queue.cpp.i
+.PHONY : src/arch/output_queue.i
+
+# target to preprocess a source file
+src/arch/output_queue.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.i
+.PHONY : src/arch/output_queue.cpp.i
+
+src/arch/output_queue.s: src/arch/output_queue.cpp.s
+.PHONY : src/arch/output_queue.s
+
+# target to generate assembly for a file
+src/arch/output_queue.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.s
+.PHONY : src/arch/output_queue.cpp.s
+
 src/arch/pe.o: src/arch/pe.cpp.o
 .PHONY : src/arch/pe.o
 
@@ -357,6 +381,30 @@ src/arch/pe.s: src/arch/pe.cpp.s
 src/arch/pe.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe.cpp.s
 .PHONY : src/arch/pe.cpp.s
+
+src/arch/smallest_ts_picker.o: src/arch/smallest_ts_picker.cpp.o
+.PHONY : src/arch/smallest_ts_picker.o
+
+# target to build an object file
+src/arch/smallest_ts_picker.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o
+.PHONY : src/arch/smallest_ts_picker.cpp.o
+
+src/arch/smallest_ts_picker.i: src/arch/smallest_ts_picker.cpp.i
+.PHONY : src/arch/smallest_ts_picker.i
+
+# target to preprocess a source file
+src/arch/smallest_ts_picker.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.i
+.PHONY : src/arch/smallest_ts_picker.cpp.i
+
+src/arch/smallest_ts_picker.s: src/arch/smallest_ts_picker.cpp.s
+.PHONY : src/arch/smallest_ts_picker.s
+
+# target to generate assembly for a file
+src/arch/smallest_ts_picker.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.s
+.PHONY : src/arch/smallest_ts_picker.cpp.s
 
 tests/test_builder_min.o: tests/test_builder_min.cpp.o
 .PHONY : tests/test_builder_min.o
@@ -416,9 +464,15 @@ help:
 	@echo "... src/arch/min_finder_batch.o"
 	@echo "... src/arch/min_finder_batch.i"
 	@echo "... src/arch/min_finder_batch.s"
+	@echo "... src/arch/output_queue.o"
+	@echo "... src/arch/output_queue.i"
+	@echo "... src/arch/output_queue.s"
 	@echo "... src/arch/pe.o"
 	@echo "... src/arch/pe.i"
 	@echo "... src/arch/pe.s"
+	@echo "... src/arch/smallest_ts_picker.o"
+	@echo "... src/arch/smallest_ts_picker.i"
+	@echo "... src/arch/smallest_ts_picker.s"
 	@echo "... tests/test_builder_min.o"
 	@echo "... tests/test_builder_min.i"
 	@echo "... tests/test_builder_min.s"

@@ -186,6 +186,9 @@ CMakeFiles/sf_core.dir/src/arch/builder.cpp.o: ../src/arch/builder.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
   /usr/include/c++/11/bits/charconv.h \
   /usr/include/c++/11/bits/basic_string.tcc \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
   ../include/common/constants.hpp \
   /usr/include/c++/11/cstddef \
   ../include/common/entry.hpp \
@@ -199,8 +202,10 @@ CMakeFiles/sf_core.dir/src/arch/builder.cpp.o: ../src/arch/builder.cpp \
   ../include/arch/global_merger.hpp \
   ../include/arch/filter_buffer.hpp \
   ../include/arch/pe.hpp \
+  ../include/arch/output_queue.hpp \
   ../include/arch/driver/batch_spine_map.hpp \
   ../include/arch/driver/weight_lut.hpp \
+  ../include/utils/latency_stats.hpp \
   /usr/include/c++/11/algorithm \
   /usr/include/c++/11/pstl/glue_algorithm_defs.h \
   /usr/include/c++/11/pstl/execution_defs.h \
@@ -1249,6 +1254,71 @@ CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o: ../src/arch/min_finder_b
   /usr/include/c++/11/bits/enable_special_members.h \
   /usr/include/c++/11/limits
 
+CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o: ../src/arch/output_queue.cpp \
+  /usr/include/stdc-predef.h \
+  ../include/arch/output_queue.hpp \
+  /usr/include/c++/11/vector \
+  /usr/include/c++/11/bits/stl_algobase.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
+  /usr/include/features.h \
+  /usr/include/features-time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/timesize.h \
+  /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+  /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/cpu_defines.h \
+  /usr/include/c++/11/pstl/pstl_config.h \
+  /usr/include/c++/11/bits/functexcept.h \
+  /usr/include/c++/11/bits/exception_defines.h \
+  /usr/include/c++/11/bits/cpp_type_traits.h \
+  /usr/include/c++/11/ext/type_traits.h \
+  /usr/include/c++/11/ext/numeric_traits.h \
+  /usr/include/c++/11/bits/stl_pair.h \
+  /usr/include/c++/11/bits/move.h \
+  /usr/include/c++/11/type_traits \
+  /usr/include/c++/11/bits/stl_iterator_base_types.h \
+  /usr/include/c++/11/bits/stl_iterator_base_funcs.h \
+  /usr/include/c++/11/bits/concept_check.h \
+  /usr/include/c++/11/debug/assertions.h \
+  /usr/include/c++/11/bits/stl_iterator.h \
+  /usr/include/c++/11/bits/ptr_traits.h \
+  /usr/include/c++/11/debug/debug.h \
+  /usr/include/c++/11/bits/predefined_ops.h \
+  /usr/include/c++/11/bits/allocator.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
+  /usr/include/c++/11/ext/new_allocator.h \
+  /usr/include/c++/11/new \
+  /usr/include/c++/11/bits/exception.h \
+  /usr/include/c++/11/bits/memoryfwd.h \
+  /usr/include/c++/11/bits/stl_construct.h \
+  /usr/include/c++/11/bits/stl_uninitialized.h \
+  /usr/include/c++/11/ext/alloc_traits.h \
+  /usr/include/c++/11/bits/alloc_traits.h \
+  /usr/include/c++/11/bits/stl_vector.h \
+  /usr/include/c++/11/initializer_list \
+  /usr/include/c++/11/bits/stl_bvector.h \
+  /usr/include/c++/11/bits/functional_hash.h \
+  /usr/include/c++/11/bits/hash_bytes.h \
+  /usr/include/c++/11/bits/range_access.h \
+  /usr/include/c++/11/bits/vector.tcc \
+  /usr/include/c++/11/cstddef \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
+  ../include/common/constants.hpp \
+  /usr/include/c++/11/cstdint \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h \
+  /usr/include/stdint.h \
+  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/x86_64-linux-gnu/bits/types.h \
+  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+  /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+  ../include/common/entry.hpp
+
 CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: ../src/arch/pe.cpp \
   /usr/include/stdc-predef.h \
   ../include/arch/pe.hpp \
@@ -1313,6 +1383,10 @@ CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: ../src/arch/pe.cpp \
 
 /usr/include/c++/11/sstream:
 
+../include/utils/latency_stats.hpp:
+
+../include/arch/output_queue.hpp:
+
 ../include/arch/global_merger.hpp:
 
 ../src/arch/intermediate_fifo.cpp:
@@ -1330,6 +1404,8 @@ CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: ../src/arch/pe.cpp \
 ../include/arch/input_spine_buffer.hpp:
 
 ../include/common/entry.hpp:
+
+/usr/include/c++/11/bits/stl_deque.h:
 
 /usr/include/c++/11/bits/basic_string.tcc:
 
@@ -1410,6 +1486,8 @@ CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: ../src/arch/pe.cpp \
 /usr/include/c++/11/bits/invoke.h:
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
+
+../src/arch/output_queue.cpp:
 
 /usr/include/c++/11/bits/algorithmfwd.h:
 
@@ -1631,6 +1709,8 @@ CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: ../src/arch/pe.cpp \
 
 /usr/include/c++/11/algorithm:
 
+/usr/include/c++/11/bits/deque.tcc:
+
 /usr/include/c++/11/backward/binders.h:
 
 /usr/include/x86_64-linux-gnu/bits/select.h:
@@ -1692,6 +1772,8 @@ CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: ../src/arch/pe.cpp \
 /usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
 
 /usr/include/c++/11/ios:
+
+/usr/include/c++/11/deque:
 
 /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
 

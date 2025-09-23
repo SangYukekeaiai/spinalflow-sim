@@ -45,4 +45,27 @@ std::size_t MinFinderBatch::DrainBatchInto(IntermediateFIFO& dst) {
   return pushed;
 }
 
+bool MinFinderBatch::DrainOneInto(IntermediateFIFO& dst) {
+  if (dst.full()) return false;
+
+  int best_lane = -1;
+  const Entry* best_head = nullptr;
+  std::uint8_t best_ts = std::numeric_limits<std::uint8_t>::max();
+
+  for (int lane = 0; lane < kNumSpines; ++lane) {
+    const Entry* h = buf_.Head(lane);
+    if (!h) continue;
+    if (best_lane < 0 || h->ts < best_ts || (h->ts == best_ts && lane < best_lane)) {
+      best_lane = lane;
+      best_ts = h->ts;
+      best_head = h;
+    }
+  }
+
+  if (best_lane < 0 || !best_head) return false;
+  if (!buf_.PopHead(best_lane)) return false;
+  if (!dst.push(*best_head)) return false;
+  return true;
+}
+
 } // namespace sf

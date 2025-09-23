@@ -15,10 +15,12 @@ add_library(sf_core STATIC
     src/arch/input_spine_buffer.cpp
     src/arch/intermediate_fifo.cpp
     src/arch/min_finder_batch.cpp
+    src/arch/smallest_ts_picker.cpp
     src/arch/global_merger.cpp
     # Add your other sources if needed:
     src/arch/filter_buffer.cpp
     src/arch/pe.cpp
+    src/arch/output_queue.cpp
     src/arch/driver/batch_spine_map.cpp
     src/arch/driver/weight_lut.cpp
 )

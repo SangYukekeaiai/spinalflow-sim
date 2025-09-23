@@ -3,7 +3,7 @@
 
 namespace sf {
 
-std::optional<Entry>
+std::optional<GlobalMerger::PickResult>
 GlobalMerger::PickAndPop(const std::array<IntermediateFIFO*, 4>& fifos) {
   int best_idx = -1;
   const Entry* best_entry = nullptr;
@@ -28,7 +28,7 @@ GlobalMerger::PickAndPop(const std::array<IntermediateFIFO*, 4>& fifos) {
   // Pop from the chosen FIFO and return the cached entry.
   Entry e = *best_entry;
   fifos[best_idx]->pop();
-  return e;
+  return PickResult{e, best_idx};
 }
 
 } // namespace sf

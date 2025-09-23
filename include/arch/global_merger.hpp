@@ -15,9 +15,14 @@ namespace sf {
  */
 class GlobalMerger {
 public:
+  struct PickResult {
+    Entry entry;
+    int   fifo_index;
+  };
+
   // Pick and pop the globally smallest entry across the provided FIFOs.
   // Return std::nullopt if all FIFOs are empty.
-  static std::optional<Entry> PickAndPop(const std::array<IntermediateFIFO*, 4>& fifos);
+  static std::optional<PickResult> PickAndPop(const std::array<IntermediateFIFO*, 4>& fifos);
 };
 
 } // namespace sf

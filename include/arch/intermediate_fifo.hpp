@@ -10,7 +10,7 @@ namespace sf {
  * IntermediateFIFO
  *
  * A simple circular FIFO buffer with fixed byte capacity.
- * Each Entry is 2 bytes (uint8_t ts + uint8_t neuron_id).
+ * Each Entry stores an 8-bit timestamp and a 32-bit neuron id.
  */
 class IntermediateFIFO {
 public:

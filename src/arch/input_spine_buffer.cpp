@@ -12,11 +12,13 @@ void InputSpineBuffer::Flush() {
 }
 
 void InputSpineBuffer::copy_from_raw(Lane& dst, const std::uint8_t* raw, std::size_t count) {
-  // We expect Entry to be exactly 2 bytes (ts, neuron_id), both uint8_t.
-  static_assert(sizeof(Entry) == 2, "Entry must be 2 bytes");
+  if (!raw && count) {
+    throw std::invalid_argument("copy_from_raw: null raw pointer");
+  }
   for (std::size_t i = 0; i < count; ++i) {
-    dst[i].ts        = raw[2 * i + 0];
-    dst[i].neuron_id = raw[2 * i + 1];
+    Entry tmp{};
+    std::memcpy(&tmp, raw + i * sizeof(Entry), sizeof(Entry));
+    dst[i] = tmp;
   }
 }
 

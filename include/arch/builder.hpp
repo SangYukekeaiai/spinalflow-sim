@@ -5,36 +5,34 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <deque>
 
 #include "common/constants.hpp"
 #include "common/entry.hpp"
 #include "arch/input_spine_buffer.hpp"
 #include "arch/intermediate_fifo.hpp"
 #include "arch/min_finder_batch.hpp"
+#include "arch/smallest_ts_picker.hpp"
 #include "arch/global_merger.hpp"
 #include "arch/filter_buffer.hpp"
 #include "arch/pe.hpp"
+#include "arch/output_queue.hpp"
 #include "driver/batch_spine_map.hpp"
 #include "driver/weight_lut.hpp"
+#include "utils/latency_stats.hpp"   // <-- moved stats types here
 
 namespace sf {
 
 /**
  * Builder
- * A hardware-like 6-stage stepper:
- *   (0) optional per-layer prefill
- *   (1) Process PEs (consume last latched row)
- *   (2) GlobalMerger + WeightLUT row select + latch
- *   (3) Intermediate FIFO bookkeeping (placeholder)
+ * A hardware-like multi-stage stepper:
+ *   (0) Drain OutputQueue to an optional sink (e.g., DRAM writer)
+ *   (1) Select the smallest-ts PE spike and enqueue to the OutputQueue
+ *   (2) Process PEs using last latched filter row; collect spikes for the picker
+ *   (3) GlobalMerger + WeightLUT row select + latch (provides neuron id & timestamp)
  *   (4) MinFinder: drain ONLY the active batch into its FIFO
  *   (5) InputSpineBuffer: atomic shadow->active swap for a whole batch
  *   (6) DRAM refill for the prep batch (next batch to become active)
- *
- * Batch/FIFO discipline:
- *   - One IntermediateFIFO per batch (up to 4).
- *   - Only the ACTIVE batch is drained by MinFinder into its matching FIFO.
- *   - Atomic swap requires all 16 spines' SHADOW banks to hold slices of prep_batch_.
- *   - GlobalMerger is gated only by batches that are NOT totally drained.
  */
 class Builder {
 public:
@@ -47,10 +45,10 @@ public:
         uint16_t tiles_per_step = 1;  // typically 1
     };
 
-    // Optional DRAM reader callback. Should read 'bytes' from 'addr' into 'dst'.
     using DramReadFn = std::function<bool(driver::BatchSpineMap::Addr addr,
                                           std::uint8_t* dst,
                                           std::size_t   bytes)>;
+    using OutputSinkFn = std::function<bool(const Entry&)>;
 
 public:
     Builder(InputSpineBuffer&      in_buf,
@@ -59,18 +57,16 @@ public:
             driver::BatchSpineMap& bmap,
             driver::WeightLUT&     lut);
 
-    // Configure one convolution layer, rebuild LUT, reset runtime states.
     void ConfigureLayer(const LayerConfig& cfg);
 
-    // Optional: set a DRAM reader for automatic prefill/refill.
     void SetDramReader(DramReadFn fn) { dram_read_ = std::move(fn); }
+    void SetOutputSink(OutputSinkFn fn) { out_sink_ = std::move(fn); }
 
-    // Optional once-per-layer helpers
     void PrefillWeightsOnce(const int8_t* base, std::size_t bytes);
     void PrefillInputSpinesOnce(bool try_atomic_swap = true);
 
-    // Run one hardware step; returns number of spikes produced by PEs this step.
-    int Step();
+    // Run one hardware step; returns true iff any stage processed work this step.
+    bool Step();
 
     // Introspection / debug
     int  NumBatchesNeeded()    const { return batches_needed_; }
@@ -78,21 +74,27 @@ public:
     int  ActiveBatch()         const { return active_batch_; }
     int  PrepBatch()           const { return prep_batch_; }
     const IntermediateFIFO& FifoOf(int b) const { return fifos_.at(b); }
+    const OutputQueue&      OutputQ() const { return out_q_; }
     std::string DebugString() const;
 
+    // === Latency stats API (moved types to utils) ===
+    const util::LatencyStats& LatencySnapshot() const;
+    void ResetLatencyStats();
+
 private:
-    // Pipeline stages
-    int  Stage1_ProcessPEs();
-    bool Stage2_GlobalMergeAndFilter();
-    void Stage3_ProcessIFOs();
-    void Stage4_MinFinderAcrossBatches();
-    void Stage5_InputSpineBankSwap();
-    void Stage6_CheckAndRefillFromDRAM();
+    // Pipeline stages (all return whether they processed meaningful work)
+    bool Stage0_DrainOutputQueue();
+    bool Stage1_SelectSmallestTimestamp();
+    bool Stage2_ProcessPEs();
+    bool Stage3_GlobalMergeAndFilter();
+    bool Stage4_MinFinderAcrossBatches();
+    bool Stage5_InputSpineBankSwap();
+    bool Stage6_CheckAndRefillFromDRAM();
 
     // Utilities
     void RecomputeBatching();
-    bool CanRunGlobalMergerThisStep() const;  // gate based on non-drained batches
-    int  CountPrimedFifos() const;            // debug helper (not used for gating)
+    bool CanRunGlobalMergerThisStep() const;
+    int  CountPrimedFifos() const;
 
     // Drained-state maintenance
     bool BatchTotallyDrained(int b) const;
@@ -110,34 +112,44 @@ private:
     LayerConfig cfg_{};
 
     // Runtime state
-    int  batches_needed_        = 1;  // #batches used (cap at 4)
-    int  required_active_fifos_ = 1;  // usually equals batches_needed_
-    std::array<IntermediateFIFO, 4> fifos_{};  // one FIFO per batch
+    int  batches_needed_        = 1;
+    int  required_active_fifos_ = 1;
+    std::array<IntermediateFIFO, 4> fifos_{};
 
-    // Per-(batch, spine) DRAM address cursor
     std::array<std::array<int, kNumSpines>, kMaxBatches> next_addr_idx_{};
+    SmallestTsPicker ts_picker_{};
+    OutputQueue out_q_{kDefaultOutputQueueCapacity};
+    uint16_t    cur_out_tile_ = 0;
 
-    // Output tile pointer (round-robin)
-    uint16_t cur_out_tile_ = 0;
-
-    // Latched filter row for next PE processing
+    // Latched row & meta
     bool              row_latched_valid_ = false;
     FilterBuffer::Row latched_row_{};
     int8_t            latched_timestamp_ = 0;
+    int               latched_out_neuron_ = -1;
 
-    // MinFinder bound to input buffer
+    bool              pending_row_valid_ = false;
+    FilterBuffer::Row pending_row_{};
+    int8_t            pending_timestamp_ = 0;
+    int               pending_out_neuron_ = -1;
+
+    // MinFinder
     MinFinderBatch    min_finder_;
 
-    // Batch scheduling across the 16 spines
-    int active_batch_ = -1;                         // current ACTIVE batch id; -1 = none
-    int prep_batch_   = 0;                          // the batch being prepared in SHADOW
-    std::array<int, kNumSpines> shadow_owner_{};    // per-spine SHADOW owner batch (-1 if empty)
+    // Batch scheduling
+    int active_batch_ = -1;
+    int prep_batch_   = 0;
+    std::array<int, kNumSpines> shadow_owner_{};
+    std::array<bool, 4>         totally_drained_{};
 
-    // Permanently exhausted batches
-    std::array<bool, 4> totally_drained_{};         // monotonic true once drained
+    // Optional I/O callbacks
+    DramReadFn   dram_read_;
+    OutputSinkFn out_sink_;
 
-    // Optional DRAM reader
-    DramReadFn        dram_read_;
+    // === Stats state ===
+    std::uint64_t            cycle_ = 0;
+    util::LatencyStats       latency_{};
+    std::array<std::deque<std::uint64_t>, kMaxBatches> fifo_enqueue_cycles_{};
+    std::deque<std::uint64_t>                           out_enqueue_cycles_;
 };
 
 } // namespace sf

@@ -19,4 +19,10 @@ constexpr int kCapacityPerSpine = 128;
 // Maximum number of batches supported in CPU-side scheduling
 constexpr int kMaxBatches = 4;
 
+// Number of physical PEs (used by output path as well)
+constexpr int kNumPEs = 128;
+
+// Default output queue capacity (can be overridden by constructor args)
+constexpr std::size_t kDefaultOutputQueueCapacity = 1024;
+
 } // namespace sf

@@ -21,6 +21,9 @@ public:
   // Returns the number of entries pushed to 'dst'.
   std::size_t DrainBatchInto(IntermediateFIFO& dst);
 
+  // Drain at most one entry (if available) into dst. Returns true on success.
+  bool DrainOneInto(IntermediateFIFO& dst);
+
 private:
   InputSpineBuffer& buf_;
 };

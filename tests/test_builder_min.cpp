@@ -39,7 +39,7 @@ struct FakeDram {
 };
 
 // Helper to pack a full spine slice of Entries (kCapacityPerSpine entries).
-static std::vector<std::uint8_t> make_spine_slice(uint8_t base_ts, uint8_t neuron_id) {
+static std::vector<std::uint8_t> make_spine_slice(uint8_t base_ts, uint32_t neuron_id) {
     std::vector<std::uint8_t> buf(sf::IntermediateFIFO::kCapacityEntries * sizeof(Entry), 0);
     // Fill first N entries with increasing timestamps; rest zero (older ts will be merged first).
     const int N = 8; // keep small for test runtime
@@ -83,7 +83,7 @@ int main() {
     // For each batch b and spine s, give it a single slice with a unique base_ts,
     // and use neuron_id within [0, inC*kH*kW) = [0, 147).
     const uint32_t rows_per_tile = static_cast<uint32_t>(cfg.inC) * cfg.kH * cfg.kW; // 147
-    const uint8_t  neuron_id_for_test = 42;  // any < 147
+    const uint32_t neuron_id_for_test = 42;  // any < 147
     for (int b = 0; b < 4; ++b) {
         for (int s = 0; s < kNumSpines; ++s) {
             auto payload = make_spine_slice(/*base_ts=*/static_cast<uint8_t>(10*b + s),

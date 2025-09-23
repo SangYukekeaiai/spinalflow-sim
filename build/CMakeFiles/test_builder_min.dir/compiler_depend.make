@@ -219,6 +219,9 @@ CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.o: ../tests/test_buil
   /usr/include/c++/11/bits/stl_tempbuf.h \
   /usr/include/c++/11/bits/uniform_int_dist.h \
   /usr/include/c++/11/optional \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
   ../include/common/constants.hpp \
   /usr/include/c++/11/cstddef \
   ../include/common/entry.hpp \
@@ -228,15 +231,23 @@ CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.o: ../tests/test_buil
   ../include/arch/global_merger.hpp \
   ../include/arch/filter_buffer.hpp \
   ../include/arch/pe.hpp \
+  ../include/arch/output_queue.hpp \
   ../include/arch/driver/batch_spine_map.hpp \
-  ../include/arch/driver/weight_lut.hpp
+  ../include/arch/driver/weight_lut.hpp \
+  ../include/utils/latency_stats.hpp
 
+
+../include/utils/latency_stats.hpp:
+
+../include/arch/output_queue.hpp:
 
 ../include/arch/global_merger.hpp:
 
 ../include/arch/input_spine_buffer.hpp:
 
 ../include/common/entry.hpp:
+
+/usr/include/c++/11/bits/stl_deque.h:
 
 /usr/include/c++/11/bits/stl_heap.h:
 
@@ -540,6 +551,8 @@ CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.o: ../tests/test_buil
 
 ../tests/test_builder_min.cpp:
 
+/usr/include/c++/11/deque:
+
 /usr/include/c++/11/ios:
 
 /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
@@ -677,6 +690,8 @@ CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.o: ../tests/test_buil
 /usr/include/c++/11/ext/alloc_traits.h:
 
 /usr/include/c++/11/bits/cxxabi_forced.h:
+
+/usr/include/c++/11/bits/deque.tcc:
 
 /usr/include/x86_64-linux-gnu/bits/select.h:
 

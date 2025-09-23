@@ -29,7 +29,7 @@ public:
   // shadow content becomes ACTIVE in O(1).
   void LoadSpineShadow(int spine_idx, const Entry* src, std::size_t count);
 
-  // Load from raw bytes (each Entry is expected to be 2 bytes).
+  // Load from raw bytes (each Entry serialized as sizeof(Entry) bytes).
   void LoadSpineShadowFromDRAM(int spine_idx, const std::uint8_t* raw_bytes, std::size_t byte_count);
 
   // Swap active/shadow for a spine (O(1)). Returns false if shadow is empty.

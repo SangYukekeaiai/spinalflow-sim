@@ -22,7 +22,7 @@ int main() {
         Entry tmp[4];
         for (int i = 0; i < 4; ++i) {
             tmp[i].ts = static_cast<uint8_t>(1 + lane + 4 * i);
-            tmp[i].neuron_id = static_cast<uint8_t>(lane); // map lane to row id in FilterBuffer
+            tmp[i].neuron_id = static_cast<uint32_t>(lane); // map lane to row id in FilterBuffer
         }
         isb.LoadSpine(lane, tmp, 4);
     }

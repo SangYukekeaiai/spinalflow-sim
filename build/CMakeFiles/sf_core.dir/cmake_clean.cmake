@@ -15,8 +15,12 @@ file(REMOVE_RECURSE
   "CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o.d"
   "CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o"
   "CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o.d"
+  "CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o"
+  "CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o.d"
   "CMakeFiles/sf_core.dir/src/arch/pe.cpp.o"
   "CMakeFiles/sf_core.dir/src/arch/pe.cpp.o.d"
+  "CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o"
+  "CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o.d"
   "libsf_core.a"
   "libsf_core.pdb"
 )
