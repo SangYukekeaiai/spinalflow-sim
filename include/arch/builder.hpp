@@ -88,6 +88,10 @@ public:
     const util::LatencyStats& LatencySnapshot() const;
     void ResetLatencyStats();
 
+    void SetDRAMToInBufLatency(std::uint32_t cycles) {
+        dram_fill_latency_cycles_ = cycles;
+    }
+
 private:
     // Pipeline stages
     bool Stage0_DrainOutputQueue();
@@ -160,6 +164,9 @@ private:
     util::LatencyStats latency_{};
     std::array<std::deque<std::uint64_t>, kMaxBatches> fifo_enqueue_cycles_{};
     std::deque<std::uint64_t>                           out_enqueue_cycles_;
+    // DRAM->InputSpine extra latency in cycles when Stage5 fires.
+    // Keep it simple and constant per event; model as a bulk "stall".
+    std::uint32_t dram_fill_latency_cycles_ = 200; // default; tune per platform
 };
 
 } // namespace sf

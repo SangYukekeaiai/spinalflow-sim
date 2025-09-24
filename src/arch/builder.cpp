@@ -114,7 +114,21 @@ bool Builder::Step() {
 
     const bool did = s0 || s1 || s2 || s3 || s4 || s5;
     if (!did) ++latency_.stages.idle_cycles;
+    if (s5) {
+        // Guard against underflow if user sets latency to 0.
+        const std::uint64_t extra = (dram_fill_latency_cycles_ > 0)
+                                      ? (static_cast<std::uint64_t>(dram_fill_latency_cycles_) - 1ULL)
+                                      : 0ULL;
 
+        // Advance simulated time by the remaining stall cycles.
+        cycle_ += extra;
+
+        // Attribute all extra time to idle (stall) cycles.
+        latency_.stages.idle_cycles += extra;
+
+        // (Optional) If you track a dedicated counter, you can also do:
+        // latency_.dram_fill_penalty += extra;  // <-- add such a field if desired
+    }
     UpdateDrainStatus();
     return did;
 }
