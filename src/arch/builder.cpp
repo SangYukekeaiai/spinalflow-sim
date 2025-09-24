@@ -1,6 +1,5 @@
 #include "arch/builder.hpp"
 #include <algorithm>
-#include <cstring>
 #include <sstream>
 #include "utils/latency_stats.hpp"
 
@@ -80,16 +79,7 @@ void Builder::PrefillInputSpinesOnce(bool try_immediate_swap) {
     const int b = load_batch_cursor_;
     // Try to read as many spines as possible for the current batch.
     for (int s = 0; s < kNumSpines; ++s) {
-        if (fetched_[b][s]) continue;
-
-        std::array<std::uint8_t, kCapacityPerSpine * sizeof(Entry)> tmp{};
-        const std::size_t got = dram_read_(b, s, tmp.data(), tmp.size());
-        if (got > 0) {
-            if (got % sizeof(Entry)) throw std::runtime_error("DRAM read misaligned");
-            in_buf_.LoadSpineShadowFromDRAM(s, tmp.data(), got);
-            if (try_immediate_swap) (void)in_buf_.SwapToShadow(s);
-            fetched_[b][s] = true;
-        }
+        (void)LoadSpineFromDRAM(b, s, try_immediate_swap);
     }
 }
 
@@ -267,17 +257,9 @@ bool Builder::Stage5_LoadNextBatchSpine() {
 
     // Load at most one spine per cycle to model limited bandwidth.
     for (int s = 0; s < kNumSpines; ++s) {
-        if (fetched_[b][s]) continue;
-
-        std::array<std::uint8_t, kCapacityPerSpine * sizeof(Entry)> tmp{};
-        const std::size_t got = dram_read_(b, s, tmp.data(), tmp.size());
-        if (got == 0) continue;
-        if (got % sizeof(Entry)) throw std::runtime_error("DRAM read misaligned");
-
-        in_buf_.LoadSpineShadowFromDRAM(s, tmp.data(), got);
-        (void)in_buf_.SwapToShadow(s); // make ACTIVE immediately
-        fetched_[b][s] = true;
-        return true;
+        if (LoadSpineFromDRAM(b, s, true)) {
+            return true;
+        }
     }
     return false;
 }
@@ -287,6 +269,23 @@ bool Builder::Stage5_LoadNextBatchSpine() {
 void Builder::RecomputeBatching() {
     batches_needed_        = std::max(1, std::min(bmap_.NumBatches(), kMaxBatches));
     required_active_fifos_ = batches_needed_;
+}
+
+bool Builder::LoadSpineFromDRAM(int batch_idx, int spine_idx, bool swap_to_active) {
+    if (!dram_read_) return false;
+    if (batch_idx < 0 || batch_idx >= batches_needed_) return false;
+    if (spine_idx < 0 || spine_idx >= kNumSpines) return false;
+    if (fetched_[batch_idx][spine_idx]) return false;
+
+    std::array<std::uint8_t, kCapacityPerSpine * sizeof(Entry)> tmp{};
+    const std::size_t got = dram_read_(batch_idx, spine_idx, tmp.data(), tmp.size());
+    if (got == 0) return false;
+    if (got % sizeof(Entry)) throw std::runtime_error("DRAM read misaligned");
+
+    in_buf_.LoadSpineShadowFromDRAM(spine_idx, tmp.data(), got);
+    if (swap_to_active) (void)in_buf_.SwapToShadow(spine_idx);
+    fetched_[batch_idx][spine_idx] = true;
+    return true;
 }
 
 bool Builder::BatchTotallyDrained(int b) const {

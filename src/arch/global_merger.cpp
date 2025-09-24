@@ -4,13 +4,13 @@
 namespace sf {
 
 std::optional<GlobalMerger::PickResult>
-GlobalMerger::PickAndPop(const std::array<IntermediateFIFO*, 4>& fifos) {
+GlobalMerger::PickAndPop(const std::array<IntermediateFIFO*, kMaxBatches>& fifos) {
   int best_idx = -1;
   const Entry* best_entry = nullptr;
   std::uint8_t best_ts = std::numeric_limits<std::uint8_t>::max();
 
-  // Scan all 4 FIFOs
-  for (int i = 0; i < 4; ++i) {
+  // Scan all candidate FIFOs
+  for (int i = 0; i < kMaxBatches; ++i) {
     if (!fifos[i]) continue;  // null pointer check
     auto h = fifos[i]->front();
     if (!h) continue;         // empty fifo
@@ -23,11 +23,12 @@ GlobalMerger::PickAndPop(const std::array<IntermediateFIFO*, 4>& fifos) {
     }
   }
 
-  if (best_idx < 0) return std::nullopt;
+  if (best_idx < 0 || !best_entry) return std::nullopt;
 
   // Pop from the chosen FIFO and return the cached entry.
+  auto* fifo = fifos[best_idx];
   Entry e = *best_entry;
-  fifos[best_idx]->pop();
+  if (!fifo || !fifo->pop()) return std::nullopt;
   return PickResult{e, best_idx};
 }
 

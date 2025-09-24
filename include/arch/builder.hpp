@@ -101,6 +101,7 @@ private:
     void RecomputeBatching();
     bool CanRunGlobalMergerThisStep() const;
     int  CountPrimedFifos() const;
+    bool LoadSpineFromDRAM(int batch_idx, int spine_idx, bool swap_to_active);
 
     // Drained-state maintenance
     bool BatchTotallyDrained(int b) const;

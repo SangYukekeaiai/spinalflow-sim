@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include "common/constants.hpp"
 #include "arch/input_spine_buffer.hpp"
 #include "arch/intermediate_fifo.hpp"
@@ -26,6 +27,7 @@ public:
 
 private:
   InputSpineBuffer& buf_;
+  std::optional<Entry> PopMinHead();
 };
 
 } // namespace sf
