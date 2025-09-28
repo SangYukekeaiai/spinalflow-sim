@@ -162,3 +162,43 @@ Make the builder clear and with less code. Less comments, but for code itself, m
 
 ### latency determination
 1. Each time tell the structure of the spinalflow, try to get the appoximate latency.
+
+
+### DRAM design (Later)
+1. DRAM is a high level abstraction in this modeling. It does not need to copy the real dram structure.
+2. DRAM will have to main stored data
+   1. Input/Output Spine.
+   2. Weight.
+3. The layout of the weight is like this: [tile_idx = output channel/pe_number][input channel][h][w][pe_number]. Each time the weight access is weight read, one tile upon one time.
+4. The layout of the input should be like this: 
+   1. Layer l:
+      1. spine s: array of Entries <neuron_id, ts>
+   The access should be separated into read and write:
+      1. Read is for input. Each time it will read one spine of one layer. The spine length is unknown (not fixed).
+      2. Write for output. It will write one Entry back to the address based on the layer, spine and tile. Entry is poped from the output queue.
+5. For the dram read and write, only once upon a time, cannot be read and written at the same time.
+6. It is needed to count the latency of read and write.
+7. The dram should keep an empty function for loading real data. (TO DO)
+
+
+
+### Conversion:
+**Question:** If the input buffer row is 128, then how does the dram layout format look like? And how to figure out the next line?
+**Situation:** Consider we have a 512 input channel, 3 by 3 input data, and let's assume each channel will spike 2-3 times throughout the 16 ticks.
+               So each Spine will have 1024-1536 spikes. It would be impossible to store all the spine in one run.
+**Solution:**  Let's make each row 128 entries. all the spikes can fit in 128 entries, then the next spine will directly follow this entry. If not, after 128 entries, it will also be cut, and switch to the next spines. till all the 9 (3 x 3) spine has been filled once, if there are other spines left, then it will read the spine to input_spine_buffer again.
+**Details:** 
+1. The data in the dram should have one header, with meta data as below:
+   1. matched batch
+   2. matched logical spine
+   3. matched physical input spine buffer index
+   4. size (maximum 128)
+   5. if it reaches the end of the logical spine
+2. The input spine buffer has 16 physical spine, it also contains the meta data here:
+   1. matched batch
+   2. matched logical spine
+   3. If the whole logical spine is loaded
+   4. If the whole logical spine is drained
+3. **Notes:** 
+   1. Logical spine is the spine which is one position (h, w) in one layer across all the input channels etc. 512. sorted by the time. It supposed to be an array of Entry, which is a pair of time steps and neuron id. Neuron id is encoded by the position, channel index. However, the logical spine in dram can be cut off if it exceeds 128 entries.
+   2. Physical spine is the physical input spine buffer, it is a hardware-based concept. It has 128 entries for one buffer, and it has 16 buffers.
