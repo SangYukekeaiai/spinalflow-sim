@@ -4,61 +4,103 @@
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
+#include <type_traits>
 
 #include "common/constants.hpp"
 #include "common/entry.hpp"
+#include "arch/dram/dram_common.hpp"
+#include "arch/dram/dram_format.hpp"
 
 namespace sf {
 
+
+class ClockCore;
 /**
- * InputSpineBuffer
- *
- * Double-buffered per-physical-spine storage. Each physical spine owns two
- * banks: ACTIVE (consumed by downstream) and SHADOW (filled by CPU/driver).
- * SwapToShadow() atomically flips banks when SHADOW has valid data.
+ * InputSpineBuffer (PSB)
+ * Double-buffered per-physical-spine storage with per-spine metadata.
+ * Now the PSB can load a segment from DRAM via a pluggable DramFormat.
  */
 class InputSpineBuffer {
 public:
+  // DRAM header mirrored locally
+  using SegmentHeader = sf::dram::SegmentHeader;
+  using DramFormat    = sf::dram::DramFormat;
+
+  struct SpineMeta {
+    // All comments in English
+    uint16_t batch_id         = 0;
+    uint16_t logical_spine_id = 0;
+    uint8_t  seg_expected_total = 0;
+    uint8_t  seg_loaded_count   = 0;
+    uint8_t  fully_loaded  = 0;
+    uint8_t  fully_drained = 0;
+  };
+
   InputSpineBuffer();
 
-  // Remove all entries from all spines and reset indices on both banks.
   void Flush();
 
-  // --- Double-buffer API ---
-  // Load entries into the shadow bank of one spine. After SwapToShadow, the
-  // shadow content becomes ACTIVE in O(1).
-  void LoadSpineShadow(int spine_idx, const Entry* src, std::size_t count);
+  // Provide core access (for batch cursor, batches_needed, and DRAM fetcher).
+  void RegisterCore(ClockCore* core) { core_ = core; }
 
-  // Load from raw bytes (each Entry serialized as sizeof(Entry) bytes).
-  void LoadSpineShadowFromDRAM(int spine_idx, const std::uint8_t* raw_bytes, std::size_t byte_count);
+  // Load at most one segment for the current batch; if active of that spine
+  // is empty, swap the newly loaded shadow to active. Returns true if loaded.
+  bool run();
 
-  // Swap active/shadow for a spine (O(1)). Returns false if shadow is empty.
+  void BindLaneIfFirst(int spine_idx, const SegmentHeader& hdr);
+
+  // Load one segment into SHADOW from typed entries
+  void LoadShadowSegment(int spine_idx, const SegmentHeader& hdr,
+                         const Entry* src, std::size_t count);
+
+  // Load one segment into SHADOW from a DRAM line buffer using a DramFormat.
+  // line_base points at the beginning of the line (header at offset 0).
+  void LoadShadowSegmentFromDRAM(int spine_idx,
+                                 const DramFormat&     fmt,
+                                 const std::uint8_t*   line_base);
+
   bool SwapToShadow(int spine_idx);
 
-  // Head/pop on ACTIVE bank only (consumed by MinFinder).
   const Entry* Head(int spine_idx) const;
   bool         PopHead(int spine_idx);
 
   bool     Empty(int spine_idx) const;
   uint16_t Size(int spine_idx)  const;
 
+  const SpineMeta& LaneMeta(int spine_idx) const;
+  void             MarkFullyDrainedIfApplicable(int spine_idx);
+
 private:
-  using Lane = std::array<Entry, kCapacityPerSpine>;
+  using LaneCapacity = std::integral_constant<std::size_t, kCapacityPerSpine>;
 
   struct Bank {
-    Lane     data{};
+    // All comments in English
+    std::array<Entry, LaneCapacity::value> data{};
     uint16_t head = 0;
-    uint16_t tail = 0; // size = tail - head
+    uint16_t tail = 0;
+    uint16_t size = 0;
+
+    inline bool empty() const { return head >= size; }
+    inline void clear() { head = tail = size = 0; }
   };
 
   struct LaneDB {
-    Bank active;
-    Bank shadow;
+    Bank      active;
+    Bank      shadow;
+    SpineMeta meta;
   };
 
   std::array<LaneDB, kNumSpines> lanes_;
 
-  static void copy_from_raw(Lane& dst, const std::uint8_t* raw, std::size_t count);
+  static void copy_entries(Bank& dst, const Entry* src, std::size_t count);
+  static void copy_entries_from_raw(Bank& dst, const std::uint8_t* raw, std::size_t count);
+
+  void update_meta_on_segment(int spine_idx, const SegmentHeader& hdr);
+  void maybe_mark_fully_drained(LaneDB& l);
+private:
+  // ---- New: stage-5 helpers ----
+  ClockCore* core_ = nullptr;     // not owned
+  int        batch_seen_ = -1;    // detect batch cursor change to reset lanes
 };
 
 } // namespace sf

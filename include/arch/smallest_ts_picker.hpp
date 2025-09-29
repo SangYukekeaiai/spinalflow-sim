@@ -1,38 +1,66 @@
 #pragma once
+// All comments are in English.
 
 #include <vector>
-
+#include <cstddef>                 // for std::size_t
+#include "common/constants.hpp"
 #include "common/entry.hpp"
 
 namespace sf {
 
+// Forward declarations to avoid heavy includes in the header.
+class ClockCore;
+class OutputQueue;
+
 /**
- * SmallestTsPicker
+ * SmallestTsPicker (Stage-1)
  *
- * Collects PE spike outputs for a cycle and lets the caller dequeue the
- * smallest timestamp first. The picker keeps ties stable by neuron id so the
- * behaviour is deterministic across runs.
+ * Simplified modeling:
+ *  - Stage-2 writes directly into a single pool 'entries_' when st1_st2_valid()==true.
+ *  - On run():
+ *      * If entries_ is non-empty and inter-stage valid is still true,
+ *        switch valid to false (enter consuming phase).
+ *      * Forward up to 'per_cycle_budget_' entries in ascending (ts, neuron_id)
+ *        order to the downstream OutputQueue.
+ *      * If entries_ becomes empty, set inter-stage valid to true.
+ *
+ * Notes:
+ *  - No per-PE inbox; we do not enforce "one per PE per cycle".
  */
 class SmallestTsPicker {
 public:
     SmallestTsPicker() = default;
 
-    // Clear all buffered entries.
-    void Clear();
+    // Reset local pool.
+    void Clear() { entries_.clear(); }
 
-    // Append an entry to the pool; always succeeds.
-    void Push(const Entry& e);
+    // Stage-2 writes one entry when Core's st1_st2_valid()==true.
+    // Returns true on success; false otherwise.
+    bool Stage2Write(const Entry& e);
 
-    // True when no entries are buffered.
+    // For tests/legacy paths: append directly.
+    void Push(const Entry& e) { entries_.push_back(e); }
+
+    // True when no entries are pending in the local pool.
     bool Empty() const { return entries_.empty(); }
 
-    // Pop the entry with the smallest timestamp (tie-breaking on neuron id).
-    // Returns false if the pool is empty.
+    // Register Core to access output_queue() and control inter-stage valid.
+    void RegisterCore(ClockCore* core) { core_ = core; }
+
+    // Optional throughput limiter per run() call.
+    void SetPerCycleBudget(std::size_t n) { per_cycle_budget_ = n; }
+
+    // Stage-1 behavior; returns true if any progress (sent > 0 or state change).
+    bool run();
+
+private:
+    // Pop the smallest entry by (ts, neuron_id) from the local pool.
     bool PopSmallest(Entry& out);
 
 private:
-    std::vector<Entry> entries_;
+    std::vector<Entry> entries_;        // unified pool from Stage-2
+    ClockCore*         core_ = nullptr; // not owned
+    std::size_t        per_cycle_budget_ = static_cast<std::size_t>(-1); // unlimited by default
 };
 
 } // namespace sf
-

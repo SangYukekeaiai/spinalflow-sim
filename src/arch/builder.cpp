@@ -195,13 +195,6 @@ bool Builder::CanRunGlobalMergerThisStep() const {
     return any_active_batch;
 }
 
-int Builder::CountPrimedFifos() const {
-    int n = 0;
-    for (int b = 0; b < batches_needed_; ++b) {
-        if (!fifos_[b].empty()) ++n;
-    }
-    return n;
-}
 
 bool Builder::Stage3_GlobalMergeAndFilter() {
     if (!CanRunGlobalMergerThisStep()) return false;
@@ -331,7 +324,6 @@ std::string Builder::DebugString() const {
         << ", tiles=" << lut_.OutTiles()
         << ", batches_needed=" << batches_needed_
         << ", required_active_fifos=" << required_active_fifos_
-        << ", primed=" << CountPrimedFifos()
         << ", row_latched=" << (row_latched_valid_ ? "Y" : "N")
         << ", cur_out_tile=" << cur_out_tile_
         << ", load_batch_cursor=" << load_batch_cursor_

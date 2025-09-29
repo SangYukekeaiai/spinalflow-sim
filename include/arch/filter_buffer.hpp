@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "common/entry.hpp"
-#include "arch/pe.hpp"
+#include "arch/pe_array.hpp"
 
 namespace sf {
 

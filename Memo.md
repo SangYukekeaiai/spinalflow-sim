@@ -202,3 +202,18 @@ Make the builder clear and with less code. Less comments, but for code itself, m
 3. **Notes:** 
    1. Logical spine is the spine which is one position (h, w) in one layer across all the input channels etc. 512. sorted by the time. It supposed to be an array of Entry, which is a pair of time steps and neuron id. Neuron id is encoded by the position, channel index. However, the logical spine in dram can be cut off if it exceeds 128 entries.
    2. Physical spine is the physical input spine buffer, it is a hardware-based concept. It has 128 entries for one buffer, and it has 16 buffers.
+
+
+### Do the modification here to make it more clear and neat
+The main goal of the builder.cpp --> core/clock.cpp is like this: Try to hide the details of the call of each components' function in the stage part, integrate the stage part as "Run()" function in each component, and specify which arguments are needed, and from which component. We can get it from its member: core via the registration of the core to each components. Then in core/clock.cpp, we only need to have one Run() function, which contains all the Run() function from its components.
+We do not need to make a brand new core/clock.cpp. We only need to fill in a little bit to which we need to change. The first task is:
+1. Integrate the function Stage0_DrainOutputQueue() into output_queue.cpp/hpp, the name of the function is run(). 
+2. Add a RegisterCore() function to add the builder/core to the output_queue (as a member). 
+3. Leave the latency statistics later. 
+4. Leave the builder.cpp/hpp later, change the components first.
+
+
+### Stage 1 to stage 2 control logic
+1. For smallest_ts_picker, each buffer related with one pe's output, it will receive one pe's output. So each time if the control signal is true, it can load all the outputs from stage 2.
+2. The control signal is owned by the core, it will only be changed by smallest_ts_picker. If the any outputs from last cycle's stage 2 still not be consumed yet, the the st1_st2_valid will be false, which means stage 2 has to stall. once all the outputs from last step are drained, the st1_st2_valid would set to true, then it is allowed to load the results from the stage 2.
+
