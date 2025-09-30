@@ -71,7 +71,8 @@ void InputSpineBuffer::BindLaneIfFirst(int spine_idx, const SegmentHeader& hdr) 
   if (spine_idx < 0 || spine_idx >= kNumSpines) throw std::out_of_range("BindLaneIfFirst: spine_idx");
   auto& m = lanes_[spine_idx].meta;
   if (m.seg_loaded_count == 0) {
-    m.batch_id           = hdr.batch_id;
+    const int runtime_batch = core_ ? core_->load_batch_cursor() : 0;
+    m.batch_id           = static_cast<uint16_t>(runtime_batch);
     m.logical_spine_id   = hdr.logical_spine_id;
     m.seg_expected_total = hdr.seg_count;
   }
@@ -100,7 +101,8 @@ void InputSpineBuffer::copy_entries_from_raw(Bank& dst, const std::uint8_t* raw,
 void InputSpineBuffer::update_meta_on_segment(int spine_idx, const SegmentHeader& hdr) {
   auto& meta = lanes_[spine_idx].meta;
   if (meta.seg_loaded_count == 0) {
-    meta.batch_id           = hdr.batch_id;
+    const int runtime_batch = core_ ? core_->load_batch_cursor() : 0;
+    meta.batch_id           = static_cast<uint16_t>(runtime_batch);
     meta.logical_spine_id   = hdr.logical_spine_id;
     meta.seg_expected_total = hdr.seg_count;
   }

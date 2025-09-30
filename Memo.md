@@ -217,3 +217,27 @@ We do not need to make a brand new core/clock.cpp. We only need to fill in a lit
 1. For smallest_ts_picker, each buffer related with one pe's output, it will receive one pe's output. So each time if the control signal is true, it can load all the outputs from stage 2.
 2. The control signal is owned by the core, it will only be changed by smallest_ts_picker. If the any outputs from last cycle's stage 2 still not be consumed yet, the the st1_st2_valid will be false, which means stage 2 has to stall. once all the outputs from last step are drained, the st1_st2_valid would set to true, then it is allowed to load the results from the stage 2.
 
+
+### DRAM checker
+#### common:
+1. batch_id is not needed, since it is not determined by the dram data, it will change based on the output neuron id.
+2. psb_hint also cannot be determined. The same reason. The same data may need multiple load to different physical spine buffer.
+3. for kind: output has the same type as input in logic, since the generated output for this layer is the input for the next layer.
+
+#### stream_reader
+1. Do we need batch_id here?
+2. Also inC_ is unnecessary here right? I was wrong for the weight layout before. The weight layout should be [ocg][input channels][h][w][0-127]. And for each ocg(load), ([input channels][h][w][0-127]) is fully loaded in the filter buffer. I don't know if this part is still needed. May be we can still keep it.
+3. What is the cursor here? Like the pointer of our current read/write?
+4. What is the opened_ meaning here?
+
+#### INPUT_SPINE_fetcher
+InputSpineBuffer::run()
+  └─(when a spine’s active bank is empty)→ core.FetchNextSpineSegment(batch, spine, line, fmt)
+       └─ ClockCore (forwards) → InputSpineFetcher::operator()(batch, spine, line, fmt)
+            └─ ensure_reader(spine) → StreamReader::open_spine(layer, spine) [once]
+            └─ StreamReader::read_next(...) → fills 'line' with [Header|Entries|Padding]
+       └─ returns to PSB
+  └─ PSB: LoadShadowSegmentFromDRAM(fmt, line.data())
+  └─ swap shadow→active when safe
+
+
