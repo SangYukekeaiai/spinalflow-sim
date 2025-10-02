@@ -67,7 +67,7 @@ StreamReader* InputSpineFetcher::ensure_reader(std::uint16_t spine) {
 
   // Lazily construct a new reader bound to the shared fmt/img/dir.
   auto r = std::make_unique<StreamReader>(*fmt_, *img_, *dir_);
-  if (!r->open_spine(layer_id_, spine)) {
+  if (!r->open_input(layer_id_, spine)) {
     // Inputs range may be empty or malformed for this layer; fail.
     return nullptr;
   }
