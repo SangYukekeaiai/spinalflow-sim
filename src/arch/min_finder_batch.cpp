@@ -48,6 +48,15 @@ bool MinFinderBatch::DrainOneInto(IntermediateFIFO& dst) {
 bool MinFinderBatch::run() {
   if (!core_) return false;
 
+  // 1) Upstream (S3->S4) invalid => propagate invalid to S5 and stall.
+  if (!core_->st3_st4_valid()) {
+    if (core_->st4_st5_valid()) core_->SetSt4St5Valid(false);
+    return false;
+  }
+  else {
+    if (!core_->st4_st5_valid()) core_->SetSt4St5Valid(true);
+  }
+
   const int batches = core_->batches_needed();
   int cursor = core_->load_batch_cursor();
   if (cursor < 0 || cursor >= batches) return false;

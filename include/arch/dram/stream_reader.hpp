@@ -49,10 +49,12 @@ public:
   : fmt_(fmt), img_(img), dir_(dir) {}
 
   // Open a spine stream: select the layer's inputs range and match by logical_spine_id.
-  bool open_spine(std::uint16_t layer, std::uint16_t spine_id);
+  bool open_input(std::uint16_t layer, std::uint16_t spine_id);
 
   // Open a weight stream: select the layer's weights range and match by policy (oc_group required).
   bool open_weight(std::uint16_t layer, const WeightMatchPolicy& pol);
+
+  bool open_output(std::uint16_t layer, std::uint16_t spine_id);
 
   // Read next matching segment; copies the entire line into out_line.
   // If out_hdr!=nullptr, also returns the parsed header.
@@ -77,7 +79,7 @@ private:
   const LayerDirectory& dir_;
 
   // Key state
-  std::uint8_t  kind_      = SEG_SPINE;    // SEG_SPINE or SEG_WEIGHT
+  std::uint8_t  kind_      = SEG_INPUT;    // SEG_INPUT, SEG_OUTPUT or SEG_WEIGHT
   std::uint16_t layer_id_  = 0;
   std::uint16_t spine_id_  = 0;            // for spines; or hw if policy.check_hw
   std::optional<WeightMatchPolicy> wpol_;  // weight match options

@@ -1,109 +1,101 @@
 #pragma once
 #include <cstdint>
 #include <stdexcept>
-#include <vector>
-#include <tuple>
 #include <string>
+#include "arch/dram/conv_shape.hpp"
 
-namespace sf {
-namespace driver {
+namespace sf { namespace driver {
 
 /**
- * WeightLUT
- *  - CPU-side lookup for mapping (ky, kx, in_c, out_tile) -> FilterBuffer global_row_id.
- *  - Also defines a stable neuron_id for (ky, kx, in_c), independent of out_tile.
+ * WeightLUT (MVP-friendly)
  *
- * DRAM Layout (row-major over tiles):
- *   [out_ch / 128][input channel][kh * kw][0..127]
- * where each FilterBuffer "row" holds 128 weights for the 128 PEs (one per PE lane).
+ * Purpose:
+ *  - Map (ky, kx, in_c [, out_tile]) to FilterBuffer row id.
+ *  - Provide a stable neuron_id for (ky, kx, in_c) independent of out_tile.
  *
- * Row indexing:
- *   rows_per_tile = inC * kH * kW
- *   base          = in_c * (kH * kW) + (ky * kW + kx)
- *   global_row_id = out_tile * rows_per_tile + base
- *
- * Neuron indexing (tile-agnostic):
- *   neuron_id = base
+ * Design:
+ *  - Geometry comes from layer metadata: ConvShape {KH, KW, IC}.
+ *  - Optional OutC informs how many out tiles exist (OutC/peLanes); if not set,
+ *    we assume a single tile (outTiles_=1), which matches the MVP "one oc_group in FB".
+ *  - Lazy build: any getter ensures internal derived fields are computed.
+ *  - Backward-compatible methods are kept (RowId/RowIdFromNeuron).
  */
 class WeightLUT {
 public:
-    struct Params {
-        // Convolution geometry
-        uint16_t inC     = 0;   // number of input channels
-        uint16_t outC    = 0;   // number of output channels
-        uint8_t  kH      = 0;   // kernel height
-        uint8_t  kW      = 0;   // kernel width
+  WeightLUT() = default;
 
-        // Optional: sanity constraints for lanes/tiles
-        uint16_t peLanes = 128; // width of a row (must be 128 to match FilterBuffer)
-    };
+  // Reset to defaults (KH=KW=IC=1, peLanes=128, outTiles=1).
+  void Reset();
 
-    WeightLUT() = default;
+  // Set geometry from layer metadata.
+  void SetFromConvShape(const sf::dram::ConvShape& s);
 
-    // Initialize the LUT for one convolution layer.
-    // Throws on invalid params (zeros, non-128 lane width, etc.).
-    void Build(const Params& p);
+  // Optional: declare total output channels to compute outTiles=ceil(OutC/peLanes).
+  // You can ignore this for MVP (FB holds a single oc_group at a time).
+  void SetOutChannels(std::uint16_t outC, std::uint16_t peLanes = 128);
 
-    // Return FilterBuffer global row id for (ky, kx, in_c, out_tile).
-    // Precondition: Build() has been called.
-    uint32_t RowId(uint8_t ky, uint8_t kx, uint16_t in_c, uint16_t out_tile) const;
+  // Explicit build is optional (lazy build happens on first query).
+  void Build();
 
-    // Return a stable neuron_id for (ky, kx, in_c), independent of out_tile.
-    // This lets the driver/min_finder carry a single int key per (ky,kx,in_c).
-    uint32_t NeuronId(uint8_t ky, uint8_t kx, uint16_t in_c) const;
+  // Query build flag.
+  bool IsBuilt() const { return built_; }
 
-    // Reverse: given neuron_id and out_tile, recover row id.
-    uint32_t RowIdFromNeuron(uint32_t neuron_id, uint16_t out_tile) const;
+  // --- Core queries ---
 
-    // Helpers to convert an absolute output channel to (tile, lane).
-    // lane  = out_c % 128 (which column in the 128B row)
-    // tile  = out_c / 128 (which row block)
-    static inline uint16_t LaneOf(uint32_t out_c) { return static_cast<uint16_t>(out_c % 128u); }
-    static inline uint16_t TileOf(uint32_t out_c) { return static_cast<uint16_t>(out_c / 128u); }
+  // Returns the "local" row id within the currently loaded oc_group.
+  // local_row = (inC * KH + ky) * KW + kx
+  int LocalRow(std::uint8_t ky, std::uint8_t kx, std::uint16_t in_c) const;
 
-    // Queryors
-    inline uint16_t InC() const { return inC_; }
-    inline uint16_t OutC() const { return outC_; }
-    inline uint8_t  KH()  const { return kH_; }
-    inline uint8_t  KW()  const { return kW_; }
-    inline uint16_t OutTiles() const { return outTiles_; }
-    inline uint32_t RowsPerTile() const { return rowsPerTile_; }
-    inline bool     Built() const { return built_; }
+  // Backward-compatible: global row id for (ky,kx,in_c,out_tile).
+  // In MVP (outTiles_=1) this equals LocalRow(...).
+  std::uint32_t RowId(std::uint8_t ky, std::uint8_t kx, std::uint16_t in_c,
+                      std::uint16_t out_tile = 0) const;
 
-    // Pretty string for debugging/logging.
-    std::string ToString() const;
+  // Stable neuron_id independent of out_tile == LocalRow.
+  std::uint32_t NeuronId(std::uint8_t ky, std::uint8_t kx, std::uint16_t in_c) const;
+
+  // Reverse mapping: given neuron_id (local row) and out_tile -> global row id.
+  std::uint32_t RowIdFromNeuron(std::uint32_t neuron_id, std::uint16_t out_tile = 0) const;
+
+  // Helpers to split absolute out channel (only meaningful if you use multi-tiles).
+  static inline std::uint16_t LaneOf(std::uint32_t out_c) { return static_cast<std::uint16_t>(out_c % 128u); }
+  static inline std::uint16_t TileOf(std::uint32_t out_c) { return static_cast<std::uint16_t>(out_c / 128u); }
+
+  // Inspectors
+  const sf::dram::ConvShape& shape() const { return shape_; }
+  std::uint16_t OutTiles()  const { ensure_built_(); return outTiles_; }
+  std::uint32_t RowsPerTile() const { ensure_built_(); return rowsPerTile_; }
+  std::uint16_t OutC()      const { return outC_; }
+  std::uint16_t PELanes()   const { return peLanes_; }
+
+  std::string ToString() const;
 
 private:
-    // Geometry
-    uint16_t inC_ = 0;
-    uint16_t outC_ = 0;
-    uint8_t  kH_ = 0;
-    uint8_t  kW_ = 0;
-    uint16_t peLanes_ = 128;
+  // Geometry (from layer metadata)
+  sf::dram::ConvShape shape_{1,1,1}; // KH, KW, IC
 
-    // Derived
-    uint16_t outTiles_ = 0;
-    uint32_t rowsPerTile_ = 0;
+  // Output-channel info (optional)
+  std::uint16_t outC_    = 128;      // default 128 so outTiles_=1 by default
+  std::uint16_t peLanes_ = 128;      // row width; must be 128 to match FB
 
-    bool built_ = false;
+  // Derived
+  mutable bool        built_       = false;
+  mutable std::uint16_t outTiles_  = 1;  // ceil(outC/peLanes)
+  mutable std::uint32_t rowsPerTile_= 1; // IC*KH*KW
 
-    // Fast path: neuron_id = base = in_c * (kH*kW) + (ky*kW + kx)
-    inline uint32_t BaseIndex(uint8_t ky, uint8_t kx, uint16_t in_c) const {
-        return static_cast<uint32_t>(in_c) * static_cast<uint32_t>(kH_ * kW_)
-             + static_cast<uint32_t>(ky) * static_cast<uint32_t>(kW_)
-             + static_cast<uint32_t>(kx);
-    }
+private:
+  // Recompute derived fields if not built.
+  void ensure_built_() const;
+  void recompute_() const;
 
-    inline void CheckBuilt() const {
-        if (!built_) throw std::logic_error("WeightLUT not built. Call Build() first.");
-    }
-
-    inline void CheckRanges(uint8_t ky, uint8_t kx, uint16_t in_c, uint16_t out_tile) const {
-        if (ky >= kH_ || kx >= kW_) throw std::out_of_range("ky/kx out of range");
-        if (in_c >= inC_)           throw std::out_of_range("in_c out of range");
-        if (out_tile >= outTiles_)  throw std::out_of_range("out_tile out of range");
-    }
+  // Bounds check helpers
+  inline void check_kkic_(std::uint8_t ky, std::uint8_t kx, std::uint16_t in_c) const {
+    if (ky >= shape_.KH || kx >= shape_.KW) throw std::out_of_range("ky/kx out of range");
+    if (in_c >= shape_.IC)                  throw std::out_of_range("in_c out of range");
+  }
+  inline void check_tile_(std::uint16_t out_tile) const {
+    if (out_tile >= outTiles_) throw std::out_of_range("out_tile out of range");
+  }
 };
 
-} // namespace driver
-} // namespace sf
+}} // namespace sf::driver

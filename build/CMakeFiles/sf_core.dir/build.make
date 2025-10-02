@@ -69,24 +69,38 @@ include CMakeFiles/sf_core.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/sf_core.dir/flags.make
 
-CMakeFiles/sf_core.dir/src/arch/builder.cpp.o: CMakeFiles/sf_core.dir/flags.make
-CMakeFiles/sf_core.dir/src/arch/builder.cpp.o: ../src/arch/builder.cpp
-CMakeFiles/sf_core.dir/src/arch/builder.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/sf_core.dir/src/arch/builder.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/builder.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/builder.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/builder.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/builder.cpp
+CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o: ../src/arch/filter_buffer.cpp
+CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/filter_buffer.cpp
 
-CMakeFiles/sf_core.dir/src/arch/builder.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/builder.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/builder.cpp > CMakeFiles/sf_core.dir/src/arch/builder.cpp.i
+CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/filter_buffer.cpp > CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.i
 
-CMakeFiles/sf_core.dir/src/arch/builder.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/builder.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/builder.cpp -o CMakeFiles/sf_core.dir/src/arch/builder.cpp.s
+CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/filter_buffer.cpp -o CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.s
+
+CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o: ../src/arch/global_merger.cpp
+CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/global_merger.cpp
+
+CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/global_merger.cpp > CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/global_merger.cpp -o CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.s
 
 CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o: CMakeFiles/sf_core.dir/flags.make
 CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o: ../src/arch/input_spine_buffer.cpp
 CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/input_spine_buffer.cpp
 
 CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.i: cmake_force
@@ -97,10 +111,24 @@ CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/input_spine_buffer.cpp -o CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.s
 
+CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o: ../src/arch/input_weight_provider.cpp
+CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/input_weight_provider.cpp
+
+CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/input_weight_provider.cpp > CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/input_weight_provider.cpp -o CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.s
+
 CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o: CMakeFiles/sf_core.dir/flags.make
 CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o: ../src/arch/intermediate_fifo.cpp
 CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/intermediate_fifo.cpp
 
 CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.i: cmake_force
@@ -114,7 +142,7 @@ CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.s: cmake_force
 CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o: CMakeFiles/sf_core.dir/flags.make
 CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o: ../src/arch/min_finder_batch.cpp
 CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/min_finder_batch.cpp
 
 CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.i: cmake_force
@@ -125,66 +153,10 @@ CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/min_finder_batch.cpp -o CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.s
 
-CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o: CMakeFiles/sf_core.dir/flags.make
-CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o: ../src/arch/smallest_ts_picker.cpp
-CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/smallest_ts_picker.cpp
-
-CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/smallest_ts_picker.cpp > CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.i
-
-CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/smallest_ts_picker.cpp -o CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.s
-
-CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o: CMakeFiles/sf_core.dir/flags.make
-CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o: ../src/arch/global_merger.cpp
-CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/global_merger.cpp
-
-CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/global_merger.cpp > CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.i
-
-CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/global_merger.cpp -o CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.s
-
-CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o: CMakeFiles/sf_core.dir/flags.make
-CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o: ../src/arch/filter_buffer.cpp
-CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/filter_buffer.cpp
-
-CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/filter_buffer.cpp > CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.i
-
-CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/filter_buffer.cpp -o CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.s
-
-CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: CMakeFiles/sf_core.dir/flags.make
-CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: ../src/arch/pe.cpp
-CMakeFiles/sf_core.dir/src/arch/pe.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/sf_core.dir/src/arch/pe.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/pe.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/pe.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/pe.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/pe.cpp
-
-CMakeFiles/sf_core.dir/src/arch/pe.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/pe.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/pe.cpp > CMakeFiles/sf_core.dir/src/arch/pe.cpp.i
-
-CMakeFiles/sf_core.dir/src/arch/pe.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/pe.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/pe.cpp -o CMakeFiles/sf_core.dir/src/arch/pe.cpp.s
-
 CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o: CMakeFiles/sf_core.dir/flags.make
 CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o: ../src/arch/output_queue.cpp
 CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/output_queue.cpp
 
 CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.i: cmake_force
@@ -195,24 +167,38 @@ CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/output_queue.cpp -o CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.s
 
-CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o: CMakeFiles/sf_core.dir/flags.make
-CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o: ../src/arch/driver/batch_spine_map.cpp
-CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/driver/batch_spine_map.cpp
+CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o: ../src/arch/pe_array.cpp
+CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/pe_array.cpp
 
-CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/driver/batch_spine_map.cpp > CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.i
+CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/pe_array.cpp > CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.i
 
-CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/driver/batch_spine_map.cpp -o CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.s
+CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/pe_array.cpp -o CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.s
+
+CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o: ../src/arch/smallest_ts_picker.cpp
+CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/smallest_ts_picker.cpp
+
+CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/smallest_ts_picker.cpp > CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/smallest_ts_picker.cpp -o CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.s
 
 CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o: CMakeFiles/sf_core.dir/flags.make
 CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o: ../src/arch/driver/weight_lut.cpp
 CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/driver/weight_lut.cpp
 
 CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.i: cmake_force
@@ -223,37 +209,211 @@ CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/driver/weight_lut.cpp -o CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.s
 
+CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o: ../src/arch/dram/fixed_stride_format.cpp
+CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/dram/fixed_stride_format.cpp
+
+CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/dram/fixed_stride_format.cpp > CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/dram/fixed_stride_format.cpp -o CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.s
+
+CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o: ../src/arch/dram/input_spine_fetcher.cpp
+CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/dram/input_spine_fetcher.cpp
+
+CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/dram/input_spine_fetcher.cpp > CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/dram/input_spine_fetcher.cpp -o CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.s
+
+CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o: ../src/arch/dram/output_spine_writer.cpp
+CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/dram/output_spine_writer.cpp
+
+CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/dram/output_spine_writer.cpp > CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/dram/output_spine_writer.cpp -o CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.s
+
+CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o: ../src/arch/dram/packed_format.cpp
+CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/dram/packed_format.cpp
+
+CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/dram/packed_format.cpp > CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/dram/packed_format.cpp -o CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.s
+
+CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o: ../src/arch/dram/stream_reader.cpp
+CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/dram/stream_reader.cpp
+
+CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/dram/stream_reader.cpp > CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/dram/stream_reader.cpp -o CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.s
+
+CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o: ../src/arch/dram/weight_loader.cpp
+CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o -MF CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o.d -o CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o -c /home/yy/snn/spinalflow-sim/src/arch/dram/weight_loader.cpp
+
+CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/arch/dram/weight_loader.cpp > CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.i
+
+CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/arch/dram/weight_loader.cpp -o CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.s
+
+CMakeFiles/sf_core.dir/src/core/clock.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/core/clock.cpp.o: ../src/core/clock.cpp
+CMakeFiles/sf_core.dir/src/core/clock.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/sf_core.dir/src/core/clock.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/core/clock.cpp.o -MF CMakeFiles/sf_core.dir/src/core/clock.cpp.o.d -o CMakeFiles/sf_core.dir/src/core/clock.cpp.o -c /home/yy/snn/spinalflow-sim/src/core/clock.cpp
+
+CMakeFiles/sf_core.dir/src/core/clock.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/core/clock.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/core/clock.cpp > CMakeFiles/sf_core.dir/src/core/clock.cpp.i
+
+CMakeFiles/sf_core.dir/src/core/clock.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/core/clock.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/core/clock.cpp -o CMakeFiles/sf_core.dir/src/core/clock.cpp.s
+
+CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o: ../src/core/event_queue.cpp
+CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o -MF CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o.d -o CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o -c /home/yy/snn/spinalflow-sim/src/core/event_queue.cpp
+
+CMakeFiles/sf_core.dir/src/core/event_queue.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/core/event_queue.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/core/event_queue.cpp > CMakeFiles/sf_core.dir/src/core/event_queue.cpp.i
+
+CMakeFiles/sf_core.dir/src/core/event_queue.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/core/event_queue.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/core/event_queue.cpp -o CMakeFiles/sf_core.dir/src/core/event_queue.cpp.s
+
+CMakeFiles/sf_core.dir/src/core/logger.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/core/logger.cpp.o: ../src/core/logger.cpp
+CMakeFiles/sf_core.dir/src/core/logger.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/sf_core.dir/src/core/logger.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/core/logger.cpp.o -MF CMakeFiles/sf_core.dir/src/core/logger.cpp.o.d -o CMakeFiles/sf_core.dir/src/core/logger.cpp.o -c /home/yy/snn/spinalflow-sim/src/core/logger.cpp
+
+CMakeFiles/sf_core.dir/src/core/logger.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/core/logger.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/core/logger.cpp > CMakeFiles/sf_core.dir/src/core/logger.cpp.i
+
+CMakeFiles/sf_core.dir/src/core/logger.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/core/logger.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/core/logger.cpp -o CMakeFiles/sf_core.dir/src/core/logger.cpp.s
+
+CMakeFiles/sf_core.dir/src/core/stats.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/core/stats.cpp.o: ../src/core/stats.cpp
+CMakeFiles/sf_core.dir/src/core/stats.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/sf_core.dir/src/core/stats.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/core/stats.cpp.o -MF CMakeFiles/sf_core.dir/src/core/stats.cpp.o.d -o CMakeFiles/sf_core.dir/src/core/stats.cpp.o -c /home/yy/snn/spinalflow-sim/src/core/stats.cpp
+
+CMakeFiles/sf_core.dir/src/core/stats.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/core/stats.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/core/stats.cpp > CMakeFiles/sf_core.dir/src/core/stats.cpp.i
+
+CMakeFiles/sf_core.dir/src/core/stats.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/core/stats.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/core/stats.cpp -o CMakeFiles/sf_core.dir/src/core/stats.cpp.s
+
+CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o: CMakeFiles/sf_core.dir/flags.make
+CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o: ../src/runner/conv_runner.cpp
+CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o: CMakeFiles/sf_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o -MF CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o.d -o CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o -c /home/yy/snn/spinalflow-sim/src/runner/conv_runner.cpp
+
+CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/runner/conv_runner.cpp > CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.i
+
+CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/runner/conv_runner.cpp -o CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.s
+
 # Object files for target sf_core
 sf_core_OBJECTS = \
-"CMakeFiles/sf_core.dir/src/arch/builder.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o" \
 "CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o" \
 "CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o" \
 "CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o" \
-"CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o" \
-"CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o" \
-"CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o" \
-"CMakeFiles/sf_core.dir/src/arch/pe.cpp.o" \
 "CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o" \
-"CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o" \
-"CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o"
+"CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o" \
+"CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o" \
+"CMakeFiles/sf_core.dir/src/core/clock.cpp.o" \
+"CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o" \
+"CMakeFiles/sf_core.dir/src/core/logger.cpp.o" \
+"CMakeFiles/sf_core.dir/src/core/stats.cpp.o" \
+"CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o"
 
 # External object files for target sf_core
 sf_core_EXTERNAL_OBJECTS =
 
-libsf_core.a: CMakeFiles/sf_core.dir/src/arch/builder.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o
 libsf_core.a: CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o
 libsf_core.a: CMakeFiles/sf_core.dir/src/arch/intermediate_fifo.cpp.o
 libsf_core.a: CMakeFiles/sf_core.dir/src/arch/min_finder_batch.cpp.o
-libsf_core.a: CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o
-libsf_core.a: CMakeFiles/sf_core.dir/src/arch/global_merger.cpp.o
-libsf_core.a: CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o
-libsf_core.a: CMakeFiles/sf_core.dir/src/arch/pe.cpp.o
 libsf_core.a: CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o
-libsf_core.a: CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.o
 libsf_core.a: CMakeFiles/sf_core.dir/src/arch/driver/weight_lut.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/core/clock.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/core/logger.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/core/stats.cpp.o
+libsf_core.a: CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o
 libsf_core.a: CMakeFiles/sf_core.dir/build.make
 libsf_core.a: CMakeFiles/sf_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX static library libsf_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Linking CXX static library libsf_core.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/sf_core.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/sf_core.dir/link.txt --verbose=$(VERBOSE)
 

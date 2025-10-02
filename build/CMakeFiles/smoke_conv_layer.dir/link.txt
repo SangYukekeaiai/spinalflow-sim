@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/smoke_conv_layer.dir/tests/smoke/smoke_conv_layer.cpp.o -o smoke_conv_layer  libsf_core.a 

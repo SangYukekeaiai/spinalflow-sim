@@ -139,5 +139,7 @@ CMakeFiles/sf_core.dir/src/arch/filter_buffer.cpp.o: \
  /usr/include/c++/11/bits/stl_bvector.h \
  /usr/include/c++/11/bits/vector.tcc \
  /home/yy/snn/spinalflow-sim/include/common/entry.hpp \
- /home/yy/snn/spinalflow-sim/include/arch/pe.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/pe_array.hpp \
+ /home/yy/snn/spinalflow-sim/include/common/constants.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/dram/conv_shape.hpp \
  /usr/include/c++/11/cstring /usr/include/string.h /usr/include/strings.h

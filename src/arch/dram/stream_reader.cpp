@@ -13,11 +13,18 @@ static inline std::uint64_t hop_next(const DramFormat& fmt,
   return (next > end) ? end : next;
 }
 
-bool StreamReader::open_spine(std::uint16_t layer, std::uint16_t spine_id) {
+bool StreamReader::open_input(std::uint16_t layer, std::uint16_t spine_id) {
   const auto& r = dir_.input_range(static_cast<int>(layer));
   if (r.empty() || img_.empty()) return false;
-  return open_common(SEG_SPINE, layer, r.begin, r.end, /*spine_or_hw*/spine_id, std::nullopt);
+  return open_common(SEG_INPUT, layer, r.begin, r.end, /*spine_or_hw*/spine_id, std::nullopt);
 }
+
+bool StreamReader::open_output(std::uint16_t layer, std::uint16_t spine_id) {
+  const auto& r = dir_.output_range(static_cast<int>(layer));  // requires LayerDirectory change
+  if (r.empty() || img_.empty()) return false;
+  return open_common(SEG_OUTPUT, layer, r.begin, r.end, /*spine_or_hw*/spine_id, std::nullopt);
+}
+
 
 bool StreamReader::open_weight(std::uint16_t layer, const WeightMatchPolicy& pol) {
   const auto& r = dir_.weights_range(static_cast<int>(layer));
@@ -48,7 +55,7 @@ bool StreamReader::match(const SegmentHeader& h) const {
   if (h.kind != kind_) return false;
   if (h.layer_id != layer_id_) return false;
 
-  if (kind_ == SEG_SPINE) {
+  if (kind_ == SEG_INPUT || kind_ == SEG_OUTPUT) {
     // Spine: matching only by logical_spine_id inside the layer's input range.
     return (h.logical_spine_id == spine_id_);
   }

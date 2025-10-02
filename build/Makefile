@@ -130,65 +130,161 @@ sf_core/fast:
 .PHONY : sf_core/fast
 
 #=============================================================================
-# Target rules for targets named test_builder_min
+# Target rules for targets named smoke_conv_layer
 
 # Build rule for target.
-test_builder_min: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_builder_min
-.PHONY : test_builder_min
+smoke_conv_layer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 smoke_conv_layer
+.PHONY : smoke_conv_layer
 
 # fast build rule for target.
-test_builder_min/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/build
-.PHONY : test_builder_min/fast
+smoke_conv_layer/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smoke_conv_layer.dir/build.make CMakeFiles/smoke_conv_layer.dir/build
+.PHONY : smoke_conv_layer/fast
 
-src/arch/builder.o: src/arch/builder.cpp.o
-.PHONY : src/arch/builder.o
-
-# target to build an object file
-src/arch/builder.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/builder.cpp.o
-.PHONY : src/arch/builder.cpp.o
-
-src/arch/builder.i: src/arch/builder.cpp.i
-.PHONY : src/arch/builder.i
-
-# target to preprocess a source file
-src/arch/builder.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/builder.cpp.i
-.PHONY : src/arch/builder.cpp.i
-
-src/arch/builder.s: src/arch/builder.cpp.s
-.PHONY : src/arch/builder.s
-
-# target to generate assembly for a file
-src/arch/builder.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/builder.cpp.s
-.PHONY : src/arch/builder.cpp.s
-
-src/arch/driver/batch_spine_map.o: src/arch/driver/batch_spine_map.cpp.o
-.PHONY : src/arch/driver/batch_spine_map.o
+src/arch/dram/fixed_stride_format.o: src/arch/dram/fixed_stride_format.cpp.o
+.PHONY : src/arch/dram/fixed_stride_format.o
 
 # target to build an object file
-src/arch/driver/batch_spine_map.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.o
-.PHONY : src/arch/driver/batch_spine_map.cpp.o
+src/arch/dram/fixed_stride_format.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.o
+.PHONY : src/arch/dram/fixed_stride_format.cpp.o
 
-src/arch/driver/batch_spine_map.i: src/arch/driver/batch_spine_map.cpp.i
-.PHONY : src/arch/driver/batch_spine_map.i
+src/arch/dram/fixed_stride_format.i: src/arch/dram/fixed_stride_format.cpp.i
+.PHONY : src/arch/dram/fixed_stride_format.i
 
 # target to preprocess a source file
-src/arch/driver/batch_spine_map.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.i
-.PHONY : src/arch/driver/batch_spine_map.cpp.i
+src/arch/dram/fixed_stride_format.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.i
+.PHONY : src/arch/dram/fixed_stride_format.cpp.i
 
-src/arch/driver/batch_spine_map.s: src/arch/driver/batch_spine_map.cpp.s
-.PHONY : src/arch/driver/batch_spine_map.s
+src/arch/dram/fixed_stride_format.s: src/arch/dram/fixed_stride_format.cpp.s
+.PHONY : src/arch/dram/fixed_stride_format.s
 
 # target to generate assembly for a file
-src/arch/driver/batch_spine_map.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/driver/batch_spine_map.cpp.s
-.PHONY : src/arch/driver/batch_spine_map.cpp.s
+src/arch/dram/fixed_stride_format.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/fixed_stride_format.cpp.s
+.PHONY : src/arch/dram/fixed_stride_format.cpp.s
+
+src/arch/dram/input_spine_fetcher.o: src/arch/dram/input_spine_fetcher.cpp.o
+.PHONY : src/arch/dram/input_spine_fetcher.o
+
+# target to build an object file
+src/arch/dram/input_spine_fetcher.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.o
+.PHONY : src/arch/dram/input_spine_fetcher.cpp.o
+
+src/arch/dram/input_spine_fetcher.i: src/arch/dram/input_spine_fetcher.cpp.i
+.PHONY : src/arch/dram/input_spine_fetcher.i
+
+# target to preprocess a source file
+src/arch/dram/input_spine_fetcher.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.i
+.PHONY : src/arch/dram/input_spine_fetcher.cpp.i
+
+src/arch/dram/input_spine_fetcher.s: src/arch/dram/input_spine_fetcher.cpp.s
+.PHONY : src/arch/dram/input_spine_fetcher.s
+
+# target to generate assembly for a file
+src/arch/dram/input_spine_fetcher.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/input_spine_fetcher.cpp.s
+.PHONY : src/arch/dram/input_spine_fetcher.cpp.s
+
+src/arch/dram/output_spine_writer.o: src/arch/dram/output_spine_writer.cpp.o
+.PHONY : src/arch/dram/output_spine_writer.o
+
+# target to build an object file
+src/arch/dram/output_spine_writer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.o
+.PHONY : src/arch/dram/output_spine_writer.cpp.o
+
+src/arch/dram/output_spine_writer.i: src/arch/dram/output_spine_writer.cpp.i
+.PHONY : src/arch/dram/output_spine_writer.i
+
+# target to preprocess a source file
+src/arch/dram/output_spine_writer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.i
+.PHONY : src/arch/dram/output_spine_writer.cpp.i
+
+src/arch/dram/output_spine_writer.s: src/arch/dram/output_spine_writer.cpp.s
+.PHONY : src/arch/dram/output_spine_writer.s
+
+# target to generate assembly for a file
+src/arch/dram/output_spine_writer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/output_spine_writer.cpp.s
+.PHONY : src/arch/dram/output_spine_writer.cpp.s
+
+src/arch/dram/packed_format.o: src/arch/dram/packed_format.cpp.o
+.PHONY : src/arch/dram/packed_format.o
+
+# target to build an object file
+src/arch/dram/packed_format.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.o
+.PHONY : src/arch/dram/packed_format.cpp.o
+
+src/arch/dram/packed_format.i: src/arch/dram/packed_format.cpp.i
+.PHONY : src/arch/dram/packed_format.i
+
+# target to preprocess a source file
+src/arch/dram/packed_format.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.i
+.PHONY : src/arch/dram/packed_format.cpp.i
+
+src/arch/dram/packed_format.s: src/arch/dram/packed_format.cpp.s
+.PHONY : src/arch/dram/packed_format.s
+
+# target to generate assembly for a file
+src/arch/dram/packed_format.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/packed_format.cpp.s
+.PHONY : src/arch/dram/packed_format.cpp.s
+
+src/arch/dram/stream_reader.o: src/arch/dram/stream_reader.cpp.o
+.PHONY : src/arch/dram/stream_reader.o
+
+# target to build an object file
+src/arch/dram/stream_reader.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.o
+.PHONY : src/arch/dram/stream_reader.cpp.o
+
+src/arch/dram/stream_reader.i: src/arch/dram/stream_reader.cpp.i
+.PHONY : src/arch/dram/stream_reader.i
+
+# target to preprocess a source file
+src/arch/dram/stream_reader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.i
+.PHONY : src/arch/dram/stream_reader.cpp.i
+
+src/arch/dram/stream_reader.s: src/arch/dram/stream_reader.cpp.s
+.PHONY : src/arch/dram/stream_reader.s
+
+# target to generate assembly for a file
+src/arch/dram/stream_reader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/stream_reader.cpp.s
+.PHONY : src/arch/dram/stream_reader.cpp.s
+
+src/arch/dram/weight_loader.o: src/arch/dram/weight_loader.cpp.o
+.PHONY : src/arch/dram/weight_loader.o
+
+# target to build an object file
+src/arch/dram/weight_loader.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.o
+.PHONY : src/arch/dram/weight_loader.cpp.o
+
+src/arch/dram/weight_loader.i: src/arch/dram/weight_loader.cpp.i
+.PHONY : src/arch/dram/weight_loader.i
+
+# target to preprocess a source file
+src/arch/dram/weight_loader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.i
+.PHONY : src/arch/dram/weight_loader.cpp.i
+
+src/arch/dram/weight_loader.s: src/arch/dram/weight_loader.cpp.s
+.PHONY : src/arch/dram/weight_loader.s
+
+# target to generate assembly for a file
+src/arch/dram/weight_loader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/dram/weight_loader.cpp.s
+.PHONY : src/arch/dram/weight_loader.cpp.s
 
 src/arch/driver/weight_lut.o: src/arch/driver/weight_lut.cpp.o
 .PHONY : src/arch/driver/weight_lut.o
@@ -286,6 +382,30 @@ src/arch/input_spine_buffer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.s
 .PHONY : src/arch/input_spine_buffer.cpp.s
 
+src/arch/input_weight_provider.o: src/arch/input_weight_provider.cpp.o
+.PHONY : src/arch/input_weight_provider.o
+
+# target to build an object file
+src/arch/input_weight_provider.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.o
+.PHONY : src/arch/input_weight_provider.cpp.o
+
+src/arch/input_weight_provider.i: src/arch/input_weight_provider.cpp.i
+.PHONY : src/arch/input_weight_provider.i
+
+# target to preprocess a source file
+src/arch/input_weight_provider.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.i
+.PHONY : src/arch/input_weight_provider.cpp.i
+
+src/arch/input_weight_provider.s: src/arch/input_weight_provider.cpp.s
+.PHONY : src/arch/input_weight_provider.s
+
+# target to generate assembly for a file
+src/arch/input_weight_provider.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/input_weight_provider.cpp.s
+.PHONY : src/arch/input_weight_provider.cpp.s
+
 src/arch/intermediate_fifo.o: src/arch/intermediate_fifo.cpp.o
 .PHONY : src/arch/intermediate_fifo.o
 
@@ -358,29 +478,29 @@ src/arch/output_queue.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.s
 .PHONY : src/arch/output_queue.cpp.s
 
-src/arch/pe.o: src/arch/pe.cpp.o
-.PHONY : src/arch/pe.o
+src/arch/pe_array.o: src/arch/pe_array.cpp.o
+.PHONY : src/arch/pe_array.o
 
 # target to build an object file
-src/arch/pe.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe.cpp.o
-.PHONY : src/arch/pe.cpp.o
+src/arch/pe_array.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.o
+.PHONY : src/arch/pe_array.cpp.o
 
-src/arch/pe.i: src/arch/pe.cpp.i
-.PHONY : src/arch/pe.i
+src/arch/pe_array.i: src/arch/pe_array.cpp.i
+.PHONY : src/arch/pe_array.i
 
 # target to preprocess a source file
-src/arch/pe.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe.cpp.i
-.PHONY : src/arch/pe.cpp.i
+src/arch/pe_array.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.i
+.PHONY : src/arch/pe_array.cpp.i
 
-src/arch/pe.s: src/arch/pe.cpp.s
-.PHONY : src/arch/pe.s
+src/arch/pe_array.s: src/arch/pe_array.cpp.s
+.PHONY : src/arch/pe_array.s
 
 # target to generate assembly for a file
-src/arch/pe.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe.cpp.s
-.PHONY : src/arch/pe.cpp.s
+src/arch/pe_array.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/pe_array.cpp.s
+.PHONY : src/arch/pe_array.cpp.s
 
 src/arch/smallest_ts_picker.o: src/arch/smallest_ts_picker.cpp.o
 .PHONY : src/arch/smallest_ts_picker.o
@@ -406,29 +526,149 @@ src/arch/smallest_ts_picker.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/arch/smallest_ts_picker.cpp.s
 .PHONY : src/arch/smallest_ts_picker.cpp.s
 
-tests/test_builder_min.o: tests/test_builder_min.cpp.o
-.PHONY : tests/test_builder_min.o
+src/core/clock.o: src/core/clock.cpp.o
+.PHONY : src/core/clock.o
 
 # target to build an object file
-tests/test_builder_min.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.o
-.PHONY : tests/test_builder_min.cpp.o
+src/core/clock.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/clock.cpp.o
+.PHONY : src/core/clock.cpp.o
 
-tests/test_builder_min.i: tests/test_builder_min.cpp.i
-.PHONY : tests/test_builder_min.i
+src/core/clock.i: src/core/clock.cpp.i
+.PHONY : src/core/clock.i
 
 # target to preprocess a source file
-tests/test_builder_min.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.i
-.PHONY : tests/test_builder_min.cpp.i
+src/core/clock.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/clock.cpp.i
+.PHONY : src/core/clock.cpp.i
 
-tests/test_builder_min.s: tests/test_builder_min.cpp.s
-.PHONY : tests/test_builder_min.s
+src/core/clock.s: src/core/clock.cpp.s
+.PHONY : src/core/clock.s
 
 # target to generate assembly for a file
-tests/test_builder_min.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_builder_min.dir/build.make CMakeFiles/test_builder_min.dir/tests/test_builder_min.cpp.s
-.PHONY : tests/test_builder_min.cpp.s
+src/core/clock.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/clock.cpp.s
+.PHONY : src/core/clock.cpp.s
+
+src/core/event_queue.o: src/core/event_queue.cpp.o
+.PHONY : src/core/event_queue.o
+
+# target to build an object file
+src/core/event_queue.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/event_queue.cpp.o
+.PHONY : src/core/event_queue.cpp.o
+
+src/core/event_queue.i: src/core/event_queue.cpp.i
+.PHONY : src/core/event_queue.i
+
+# target to preprocess a source file
+src/core/event_queue.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/event_queue.cpp.i
+.PHONY : src/core/event_queue.cpp.i
+
+src/core/event_queue.s: src/core/event_queue.cpp.s
+.PHONY : src/core/event_queue.s
+
+# target to generate assembly for a file
+src/core/event_queue.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/event_queue.cpp.s
+.PHONY : src/core/event_queue.cpp.s
+
+src/core/logger.o: src/core/logger.cpp.o
+.PHONY : src/core/logger.o
+
+# target to build an object file
+src/core/logger.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/logger.cpp.o
+.PHONY : src/core/logger.cpp.o
+
+src/core/logger.i: src/core/logger.cpp.i
+.PHONY : src/core/logger.i
+
+# target to preprocess a source file
+src/core/logger.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/logger.cpp.i
+.PHONY : src/core/logger.cpp.i
+
+src/core/logger.s: src/core/logger.cpp.s
+.PHONY : src/core/logger.s
+
+# target to generate assembly for a file
+src/core/logger.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/logger.cpp.s
+.PHONY : src/core/logger.cpp.s
+
+src/core/stats.o: src/core/stats.cpp.o
+.PHONY : src/core/stats.o
+
+# target to build an object file
+src/core/stats.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/stats.cpp.o
+.PHONY : src/core/stats.cpp.o
+
+src/core/stats.i: src/core/stats.cpp.i
+.PHONY : src/core/stats.i
+
+# target to preprocess a source file
+src/core/stats.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/stats.cpp.i
+.PHONY : src/core/stats.cpp.i
+
+src/core/stats.s: src/core/stats.cpp.s
+.PHONY : src/core/stats.s
+
+# target to generate assembly for a file
+src/core/stats.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/core/stats.cpp.s
+.PHONY : src/core/stats.cpp.s
+
+src/runner/conv_runner.o: src/runner/conv_runner.cpp.o
+.PHONY : src/runner/conv_runner.o
+
+# target to build an object file
+src/runner/conv_runner.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.o
+.PHONY : src/runner/conv_runner.cpp.o
+
+src/runner/conv_runner.i: src/runner/conv_runner.cpp.i
+.PHONY : src/runner/conv_runner.i
+
+# target to preprocess a source file
+src/runner/conv_runner.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.i
+.PHONY : src/runner/conv_runner.cpp.i
+
+src/runner/conv_runner.s: src/runner/conv_runner.cpp.s
+.PHONY : src/runner/conv_runner.s
+
+# target to generate assembly for a file
+src/runner/conv_runner.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sf_core.dir/build.make CMakeFiles/sf_core.dir/src/runner/conv_runner.cpp.s
+.PHONY : src/runner/conv_runner.cpp.s
+
+tests/smoke/smoke_conv_layer.o: tests/smoke/smoke_conv_layer.cpp.o
+.PHONY : tests/smoke/smoke_conv_layer.o
+
+# target to build an object file
+tests/smoke/smoke_conv_layer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smoke_conv_layer.dir/build.make CMakeFiles/smoke_conv_layer.dir/tests/smoke/smoke_conv_layer.cpp.o
+.PHONY : tests/smoke/smoke_conv_layer.cpp.o
+
+tests/smoke/smoke_conv_layer.i: tests/smoke/smoke_conv_layer.cpp.i
+.PHONY : tests/smoke/smoke_conv_layer.i
+
+# target to preprocess a source file
+tests/smoke/smoke_conv_layer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smoke_conv_layer.dir/build.make CMakeFiles/smoke_conv_layer.dir/tests/smoke/smoke_conv_layer.cpp.i
+.PHONY : tests/smoke/smoke_conv_layer.cpp.i
+
+tests/smoke/smoke_conv_layer.s: tests/smoke/smoke_conv_layer.cpp.s
+.PHONY : tests/smoke/smoke_conv_layer.s
+
+# target to generate assembly for a file
+tests/smoke/smoke_conv_layer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/smoke_conv_layer.dir/build.make CMakeFiles/smoke_conv_layer.dir/tests/smoke/smoke_conv_layer.cpp.s
+.PHONY : tests/smoke/smoke_conv_layer.cpp.s
 
 # Help Target
 help:
@@ -439,13 +679,25 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... sf_core"
-	@echo "... test_builder_min"
-	@echo "... src/arch/builder.o"
-	@echo "... src/arch/builder.i"
-	@echo "... src/arch/builder.s"
-	@echo "... src/arch/driver/batch_spine_map.o"
-	@echo "... src/arch/driver/batch_spine_map.i"
-	@echo "... src/arch/driver/batch_spine_map.s"
+	@echo "... smoke_conv_layer"
+	@echo "... src/arch/dram/fixed_stride_format.o"
+	@echo "... src/arch/dram/fixed_stride_format.i"
+	@echo "... src/arch/dram/fixed_stride_format.s"
+	@echo "... src/arch/dram/input_spine_fetcher.o"
+	@echo "... src/arch/dram/input_spine_fetcher.i"
+	@echo "... src/arch/dram/input_spine_fetcher.s"
+	@echo "... src/arch/dram/output_spine_writer.o"
+	@echo "... src/arch/dram/output_spine_writer.i"
+	@echo "... src/arch/dram/output_spine_writer.s"
+	@echo "... src/arch/dram/packed_format.o"
+	@echo "... src/arch/dram/packed_format.i"
+	@echo "... src/arch/dram/packed_format.s"
+	@echo "... src/arch/dram/stream_reader.o"
+	@echo "... src/arch/dram/stream_reader.i"
+	@echo "... src/arch/dram/stream_reader.s"
+	@echo "... src/arch/dram/weight_loader.o"
+	@echo "... src/arch/dram/weight_loader.i"
+	@echo "... src/arch/dram/weight_loader.s"
 	@echo "... src/arch/driver/weight_lut.o"
 	@echo "... src/arch/driver/weight_lut.i"
 	@echo "... src/arch/driver/weight_lut.s"
@@ -458,6 +710,9 @@ help:
 	@echo "... src/arch/input_spine_buffer.o"
 	@echo "... src/arch/input_spine_buffer.i"
 	@echo "... src/arch/input_spine_buffer.s"
+	@echo "... src/arch/input_weight_provider.o"
+	@echo "... src/arch/input_weight_provider.i"
+	@echo "... src/arch/input_weight_provider.s"
 	@echo "... src/arch/intermediate_fifo.o"
 	@echo "... src/arch/intermediate_fifo.i"
 	@echo "... src/arch/intermediate_fifo.s"
@@ -467,15 +722,30 @@ help:
 	@echo "... src/arch/output_queue.o"
 	@echo "... src/arch/output_queue.i"
 	@echo "... src/arch/output_queue.s"
-	@echo "... src/arch/pe.o"
-	@echo "... src/arch/pe.i"
-	@echo "... src/arch/pe.s"
+	@echo "... src/arch/pe_array.o"
+	@echo "... src/arch/pe_array.i"
+	@echo "... src/arch/pe_array.s"
 	@echo "... src/arch/smallest_ts_picker.o"
 	@echo "... src/arch/smallest_ts_picker.i"
 	@echo "... src/arch/smallest_ts_picker.s"
-	@echo "... tests/test_builder_min.o"
-	@echo "... tests/test_builder_min.i"
-	@echo "... tests/test_builder_min.s"
+	@echo "... src/core/clock.o"
+	@echo "... src/core/clock.i"
+	@echo "... src/core/clock.s"
+	@echo "... src/core/event_queue.o"
+	@echo "... src/core/event_queue.i"
+	@echo "... src/core/event_queue.s"
+	@echo "... src/core/logger.o"
+	@echo "... src/core/logger.i"
+	@echo "... src/core/logger.s"
+	@echo "... src/core/stats.o"
+	@echo "... src/core/stats.i"
+	@echo "... src/core/stats.s"
+	@echo "... src/runner/conv_runner.o"
+	@echo "... src/runner/conv_runner.i"
+	@echo "... src/runner/conv_runner.s"
+	@echo "... tests/smoke/smoke_conv_layer.o"
+	@echo "... tests/smoke/smoke_conv_layer.i"
+	@echo "... tests/smoke/smoke_conv_layer.s"
 .PHONY : help
 
 

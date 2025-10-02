@@ -135,4 +135,38 @@ CMakeFiles/sf_core.dir/src/arch/input_spine_buffer.cpp.o: \
  /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/basic_string.tcc \
  /home/yy/snn/spinalflow-sim/include/common/constants.hpp \
- /home/yy/snn/spinalflow-sim/include/common/entry.hpp
+ /home/yy/snn/spinalflow-sim/include/common/entry.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/dram/dram_common.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/dram/dram_format.hpp \
+ /usr/include/c++/11/vector /usr/include/c++/11/bits/stl_uninitialized.h \
+ /usr/include/c++/11/bits/stl_vector.h \
+ /usr/include/c++/11/bits/stl_bvector.h \
+ /usr/include/c++/11/bits/vector.tcc \
+ /home/yy/snn/spinalflow-sim/include/core/clock.hpp \
+ /usr/include/c++/11/functional /usr/include/c++/11/tuple \
+ /usr/include/c++/11/bits/uses_allocator.h \
+ /usr/include/c++/11/bits/invoke.h /usr/include/c++/11/bits/refwrap.h \
+ /usr/include/c++/11/bits/std_function.h \
+ /usr/include/c++/11/unordered_map \
+ /usr/include/c++/11/ext/aligned_buffer.h \
+ /usr/include/c++/11/bits/hashtable.h \
+ /usr/include/c++/11/bits/hashtable_policy.h \
+ /usr/include/c++/11/bits/enable_special_members.h \
+ /usr/include/c++/11/bits/node_handle.h \
+ /usr/include/c++/11/bits/unordered_map.h \
+ /usr/include/c++/11/bits/erase_if.h /usr/include/c++/11/bits/stl_algo.h \
+ /usr/include/c++/11/bits/algorithmfwd.h \
+ /usr/include/c++/11/bits/stl_heap.h \
+ /usr/include/c++/11/bits/stl_tempbuf.h \
+ /usr/include/c++/11/bits/uniform_int_dist.h \
+ /home/yy/snn/spinalflow-sim/include/core/core_iface.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/output_queue.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/smallest_ts_picker.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/pe_array.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/input_weight_provider.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/intermediate_fifo.hpp \
+ /usr/include/c++/11/optional \
+ /home/yy/snn/spinalflow-sim/include/arch/min_finder_batch.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/filter_buffer.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/dram/conv_shape.hpp \
+ /home/yy/snn/spinalflow-sim/include/arch/driver/weight_lut.hpp

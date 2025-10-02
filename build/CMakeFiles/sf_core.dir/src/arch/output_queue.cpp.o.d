@@ -55,4 +55,5 @@ CMakeFiles/sf_core.dir/src/arch/output_queue.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
- /home/yy/snn/spinalflow-sim/include/common/entry.hpp
+ /home/yy/snn/spinalflow-sim/include/common/entry.hpp \
+ /home/yy/snn/spinalflow-sim/include/core/core_iface.hpp

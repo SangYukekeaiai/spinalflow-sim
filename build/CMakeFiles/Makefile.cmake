@@ -40,5 +40,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/sf_core.dir/DependInfo.cmake"
-  "CMakeFiles/test_builder_min.dir/DependInfo.cmake"
+  "CMakeFiles/smoke_conv_layer.dir/DependInfo.cmake"
   )

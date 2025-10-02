@@ -31,22 +31,29 @@ bool SmallestTsPicker::PopSmallest(Entry& out) {
     return true;
 }
 
+// All comments are in English.
 bool SmallestTsPicker::run() {
     if (!core_) return false;
 
-    bool progressed = false;
-
-    // If we have pending entries but the inter-stage valid is still true,
-    // flip it to false to stall Stage-2 while we are consuming.
-    if (!entries_.empty() && core_->st1_st2_valid()) {
-        core_->SetSt1St2Valid(false);
-        progressed = true; // state changed
+    // If upstream (S0) is invalid, stall and pull S1->S2 valid low.
+    if (!core_->st0_st1_valid()) {
+        if (core_->st1_st2_valid()) core_->SetSt1St2Valid(false);
+        return false;
     }
 
-    // Deliver from local pool to OutputQueue in ascending order.
+    bool progressed = false;
     OutputQueue& outq = core_->output_queue();
-    std::size_t sent = 0;
 
+    // If we have pending entries to drain to S0, block S2 to avoid overflow.
+    if (!entries_.empty()) {
+        if (core_->st1_st2_valid()) {
+            core_->SetSt1St2Valid(false); // block Stage-2 during draining
+            progressed = true;            // state changed
+        }
+    }
+
+    // Drain up to per_cycle_budget_ entries in ascending timestamp order.
+    std::size_t sent = 0;
     while (sent < per_cycle_budget_) {
         if (entries_.empty()) break;
         if (outq.full())      break;
@@ -55,7 +62,7 @@ bool SmallestTsPicker::run() {
         if (!PopSmallest(e)) break;
 
         if (!outq.push_entry(e)) {
-            // Queue got full just now; put the entry back and stop.
+            // Downstream capacity changed mid-cycle; put it back and stop.
             entries_.push_back(e);
             break;
         }
@@ -63,17 +70,18 @@ bool SmallestTsPicker::run() {
         progressed = true;
     }
 
-    // If pool is empty after sending, re-open the gate for Stage-2.
-    if (entries_.empty()) {
+    // Open the upstream gate (allow S2) only when:
+    // (1) local pool is empty, and (2) S0 still has space.
+    const bool can_open_upstream = entries_.empty() && !outq.full();
+    if (can_open_upstream) {
         if (!core_->st1_st2_valid()) {
-            core_->SetSt1St2Valid(true);
-            progressed = true; // state changed
+            core_->SetSt1St2Valid(true);  // allow Stage-2 to produce again
+            progressed = true;            // state changed
         }
     } else {
-        // Still have pending entries; keep Stage-2 stalled.
         if (core_->st1_st2_valid()) {
-            core_->SetSt1St2Valid(false);
-            progressed = true; // state changed
+            core_->SetSt1St2Valid(false); // keep Stage-2 blocked
+            progressed = true;            // state changed
         }
     }
 

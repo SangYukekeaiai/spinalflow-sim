@@ -15,8 +15,9 @@ struct Range {
 };
 
 struct LayerEntry {
-  Range inputs;   // all spine segments for this layer (batch-agnostic)
+  Range inputs;   // all input spine segments for this layer (batch-agnostic)
   Range weights;  // all weight segments for this layer
+  Range outputs;  // all output spine segments for this layer
 };
 
 class LayerDirectory {
@@ -46,9 +47,20 @@ public:
     return layers_[static_cast<std::size_t>(L)].weights;
   }
 
+  void set_output_range(int L, Range r) {
+    check_layer(L);
+    layers_[static_cast<std::size_t>(L)].outputs = r;
+  }
+  const Range& output_range(int L) const {
+    check_layer(L);
+    return layers_[static_cast<std::size_t>(L)].outputs;
+  }
+
 private:
   void check_layer(int L) const {
-    if (L < 0 || L >= num_layers()) throw std::out_of_range("LayerDirectory: layer index");
+    if (L < 0 || L >= num_layers()) {
+      throw std::out_of_range("LayerDirectory: layer index");
+    }
   }
 
 private:

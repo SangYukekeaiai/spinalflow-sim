@@ -8,7 +8,7 @@
 #include "arch/global_merger.hpp"         // GlobalMerger::PickAndPop
 #include "arch/filter_buffer.hpp"         // FilterBuffer::Row
 #include "arch/pe_array.hpp"              // PEArray::LatchRow
-#include "driver/weight_lut.hpp"          // WeightLUT
+#include "arch/driver/weight_lut.hpp"          // WeightLUT
 
 namespace sf {
 
@@ -47,7 +47,16 @@ bool InputWeightProvider::TryLatchPendingToPEArray() {
 
 bool InputWeightProvider::run() {
     if (!core_) return false;
+    
+    // 1) Upstream (S2->S3) invalid => propagate invalid downstream (S3->S4) and stall.
+    if (!core_->st2_st3_valid()) {
+        if (core_->st3_st4_valid()) core_->SetSt3St4Valid(false);
+        return false;
+    }
 
+    // 2) At this point, upstream is valid. We intend to proceed, so allow S4 by default.
+    //    If later we detect we cannot progress (e.g., lack of resources), we can pull it low again.
+    if (!core_->st3_st4_valid()) core_->SetSt3St4Valid(true);
     bool progressed = false;
 
     // 0) If we already have a pending row, try to hand it to PEArray first.
@@ -108,7 +117,7 @@ bool InputWeightProvider::run() {
     }
 
     // 9) Advance the tile pointer.
-    const std::uint16_t tiles_per_step = core_->tiles_per_step();
+    const std::uint16_t tiles_per_step = 1;
     const std::uint16_t out_tiles      = core_->lut().OutTiles();
     if (out_tiles != 0) {
         cur_out_tile_ = static_cast<std::uint16_t>(

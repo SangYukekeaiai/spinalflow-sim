@@ -10,6 +10,10 @@ bool InputSpineBuffer::run() {
   // Require a registered core (for batch cursor and DRAM fetcher).
   if (!core_) return false;
 
+  if (!core_->st4_st5_valid()) {
+    return false;
+  }
+
   const int batches = core_->batches_needed();
   const int cursor  = core_->load_batch_cursor();
   if (cursor < 0 || cursor >= batches) return false;

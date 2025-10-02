@@ -56,14 +56,24 @@ void PEArray::LatchRow(int8_t timestamp,
 }
 
 bool PEArray::run() {
-    if (!core_)                 return false;
-    if (!row_latched_valid_)    return false;
+    if (!core_)              return false;
 
-    // Inter-stage handshake: Stage-2 may run only when valid is true.
+    // 1) Upstream (S1->S2) invalid => propagate backpressure downstream and stall immediately.
+    //    Do NOT consume the latched row; keep S2 state unchanged.
     if (!core_->st1_st2_valid()) {
-        return false; // stall; keep the latched row
+        // Only write when state changes to avoid redundant writes.
+        if (core_->st2_st3_valid()) core_->SetSt2St3Valid(false);
+        return false;
     }
 
+    // 2) If there is no latched row, this stage has nothing to do.
+    //    Since upstream is valid, we may accept a new row => publish S2->S3 valid=true.
+    if (!row_latched_valid_) {
+        if (!core_->st2_st3_valid()) core_->SetSt2St3Valid(true);
+        return false;
+    }
+
+    // 3) Normal processing path (upstream valid and we hold a latched row).
     bool any_progress = false;
 
     // Process all PEs for the current row.
@@ -84,7 +94,7 @@ bool PEArray::run() {
             Entry e{};
             e.ts        = static_cast<std::uint8_t>(out_ts);
             e.neuron_id = static_cast<std::uint32_t>(nid);
-            // For modeling simplicity, ignore failure (e.g., if Stage1 gate flips unexpectedly).
+            // For modeling simplicity, ignore failure (e.g., if Stage-1 gate flips unexpectedly).
             (void)core_->ts_picker().Stage2Write(e);
         }
     }
@@ -92,6 +102,10 @@ bool PEArray::run() {
     // Consume the row latch after processing all PEs.
     row_latched_valid_ = false;
     any_progress = true;
+
+    // 4) After finishing this row, we are ready for the next row => allow Stage-3.
+    if (!core_->st2_st3_valid()) core_->SetSt2St3Valid(true);
+
     return any_progress;
 }
 
