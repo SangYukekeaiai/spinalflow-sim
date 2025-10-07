@@ -1,106 +1,97 @@
 #pragma once
-#include <array>
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <stdexcept>
-#include <type_traits>
+// All comments are in English.
 
-#include "common/constants.hpp"
-#include "common/entry.hpp"
-#include "arch/dram/dram_common.hpp"
-#include "arch/dram/dram_format.hpp"
+#include <cstdint>
+#include <vector>
+#include <stdexcept>
+#include <limits>
+#include <algorithm>
+
+#include "common/constants.hpp"  // expects kNumPhysISB, kIsbEntries
+#include "common/entry.hpp"      // sf::Entry
+
+namespace sf { namespace dram {
+  // Forward-declare SimpleDRAM to avoid forcing include path here.
+  class SimpleDRAM;
+}} // namespace sf::dram
 
 namespace sf {
 
-
-class ClockCore;
 /**
- * InputSpineBuffer (PSB)
- * Double-buffered per-physical-spine storage with per-spine metadata.
- * Now the PSB can load a segment from DRAM via a pluggable DramFormat.
+ * InputSpineBuffer
+ *
+ * A fixed number of physical input-spine buffers (no shadow/active).
+ * Each physical buffer holds an array of `Entry` (timestamp + neuron_id).
+ * Data are block-loaded from DRAM by logical spine id, one batch at a time.
+ *
+ * Public API matches the specification you gave:
+ *  1) PreloadFirstBatch(logical_spine_ids_first_batch, layer_id)
+ *  2) run(logical_spine_ids_current_batch, layer_id, current_batch_cursor, total_batches_needed)
+ *  3) PopSmallestTsEntry(out)
  */
 class InputSpineBuffer {
 public:
-  // DRAM header mirrored locally
-  using SegmentHeader = sf::dram::SegmentHeader;
-  using DramFormat    = sf::dram::DramFormat;
+  // Construct with a DRAM handle; sizes come from common/constants.hpp.
+  explicit InputSpineBuffer(sf::dram::SimpleDRAM* dram);
 
-  struct SpineMeta {
-    // All comments in English
-    uint16_t batch_id         = 0;
-    uint16_t logical_spine_id = 0;
-    uint8_t  seg_expected_total = 0;
-    uint8_t  seg_loaded_count   = 0;
-    uint8_t  fully_loaded  = 0;
-    uint8_t  fully_drained = 0;
-  };
+  // Reset all buffers to empty (helper; not required by your spec but useful).
+  void Reset();
 
-  InputSpineBuffer();
+  // (A) Pre-load the first batch into the physical buffers.
+  // Returns true if load happened, false if the input list is empty.
+  bool PreloadFirstBatch(const std::vector<int>& logical_spine_ids_first_batch,
+                         int layer_id);
 
-  void Flush();
+  // (B) Run-time loader: if all buffers are empty and batches remain,
+  // load the current batch into physical buffers.
+  // Returns true if a load happened this call; false otherwise.
+  bool run(const std::vector<int>& logical_spine_ids_current_batch,
+           int layer_id,
+           int current_batch_cursor,
+           int total_batches_needed);
 
-  // Provide core access (for batch cursor, batches_needed, and DRAM fetcher).
-  void RegisterCore(ClockCore* core) { core_ = core; }
+  // (C) Pop the Entry with the globally-smallest timestamp among all buffers.
+  // Returns true if an entry was popped; false if all buffers are empty.
+  bool PopSmallestTsEntry(Entry& out);
 
-  // Load at most one segment for the current batch; if active of that spine
-  // is empty, swap the newly loaded shadow to active. Returns true if loaded.
-  bool run();
+  // Utility: whether all physical buffers are empty.
+  bool AllEmpty() const;
 
-  void BindLaneIfFirst(int spine_idx, const SegmentHeader& hdr);
-
-  // Load one segment into SHADOW from typed entries
-  void LoadShadowSegment(int spine_idx, const SegmentHeader& hdr,
-                         const Entry* src, std::size_t count);
-
-  // Load one segment into SHADOW from a DRAM line buffer using a DramFormat.
-  // line_base points at the beginning of the line (header at offset 0).
-  void LoadShadowSegmentFromDRAM(int spine_idx,
-                                 const DramFormat&     fmt,
-                                 const std::uint8_t*   line_base);
-
-  bool SwapToShadow(int spine_idx);
-
-  const Entry* Head(int spine_idx) const;
-  bool         PopHead(int spine_idx);
-
-  bool     Empty(int spine_idx) const;
-  uint16_t Size(int spine_idx)  const;
-
-  const SpineMeta& LaneMeta(int spine_idx) const;
-  void             MarkFullyDrainedIfApplicable(int spine_idx);
+  // Expose configured sizes (from constants).
+  int NumPhysBuffers() const { return num_phys_; }
+  int EntriesPerBuffer() const { return entries_per_buf_; }
 
 private:
-  using LaneCapacity = std::integral_constant<std::size_t, kCapacityPerSpine>;
+  // Load a batch of logical spine ids into the physical buffers.
+  // The list size must be <= number of physical buffers.
+  void LoadBatchIntoBuffers_(const std::vector<int>& logical_spine_ids,
+                             int layer_id);
 
-  struct Bank {
-    // All comments in English
-    std::array<Entry, LaneCapacity::value> data{};
-    uint16_t head = 0;
-    uint16_t tail = 0;
-    uint16_t size = 0;
+  // Compute available entries in buffer i.
+  int Available_(int i) const {
+    return valid_count_[static_cast<size_t>(i)] - read_idx_[static_cast<size_t>(i)];
+  }
 
-    inline bool empty() const { return head >= size; }
-    inline void clear() { head = tail = size = 0; }
-  };
-
-  struct LaneDB {
-    Bank      active;
-    Bank      shadow;
-    SpineMeta meta;
-  };
-
-  std::array<LaneDB, kNumSpines> lanes_;
-
-  static void copy_entries(Bank& dst, const Entry* src, std::size_t count);
-  static void copy_entries_from_raw(Bank& dst, const std::uint8_t* raw, std::size_t count);
-
-  void update_meta_on_segment(int spine_idx, const SegmentHeader& hdr);
-  void maybe_mark_fully_drained(LaneDB& l);
 private:
-  // ---- New: stage-5 helpers ----
-  ClockCore* core_ = nullptr;     // not owned
-  int        batch_seen_ = -1;    // detect batch cursor change to reset lanes
+  // Hardware-configured sizes (taken from common/constants.hpp).
+  const int num_phys_;
+  const int entries_per_buf_;
+  const std::size_t bytes_per_buf_;
+
+  // Flat storage for physical buffers: buffers_[i][j] is the j-th entry in i-th buffer.
+  std::vector<std::vector<Entry>> buffers_;
+
+  // Per-buffer read pointer (in entries).
+  std::vector<int> read_idx_;
+
+  // Per-buffer valid entries count (0..entries_per_buf_).
+  std::vector<int> valid_count_;
+
+  // Track which logical spine id currently resides in each physical buffer (-1 if empty).
+  std::vector<int> logical_id_loaded_;
+
+  // DRAM interface for table-driven memcpy loads.
+  sf::dram::SimpleDRAM* dram_ = nullptr;
 };
 
 } // namespace sf

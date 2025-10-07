@@ -1,10 +1,12 @@
+// All comments are in English.
 #include "arch/intermediate_fifo.hpp"
 
 namespace sf {
 
 bool IntermediateFIFO::push(const Entry& e) {
   if (full()) return false;
-  buf_[(head_ + size_) % kCapacityEntries] = e;
+  const std::size_t tail = (head_ + size_) % kInterFifoCapacityEntries;
+  buf_[tail] = e;
   ++size_;
   return true;
 }
@@ -16,7 +18,7 @@ std::optional<Entry> IntermediateFIFO::front() const {
 
 bool IntermediateFIFO::pop() {
   if (empty()) return false;
-  head_ = (head_ + 1) % kCapacityEntries;
+  head_ = (head_ + 1) % kInterFifoCapacityEntries;
   --size_;
   return true;
 }

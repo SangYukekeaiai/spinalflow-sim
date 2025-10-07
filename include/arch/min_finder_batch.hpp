@@ -1,50 +1,57 @@
 #pragma once
 // All comments are in English.
 
-#include <optional>
+#include <cstddef>
+#include <cstdint>
+#include <stdexcept>
+
 #include "common/constants.hpp"
-#include "arch/input_spine_buffer.hpp"
+#include "common/entry.hpp"
 #include "arch/intermediate_fifo.hpp"
 
 namespace sf {
-
-// Forward declare to avoid heavy includes here.
-class ClockCore;
+  class InputSpineBuffer; // forward declaration; must provide PopSmallestTsEntry(Entry&)
+}
 
 /**
- * MinFinderBatch (Stage 4 integration)
+ * MinFinderBatch
  *
- * Selects the minimum timestamp head across all physical spines (ACTIVE bank)
- * and pushes entries into an IntermediateFIFO for the CURRENT batch.
+ * Responsibility:
+ *   - Select ONE globally-smallest timestamp Entry via InputSpineBuffer.
+ *   - Push it into the IntermediateFIFO chosen by the current batch cursor.
+ *   - Track whether the first entry of the last batch was pushed (flag).
  *
- * New behavior:
- *  - RegisterCore(core) to access batch cursor, FIFOs, and control flags.
- *  - run():
- *      * If cursor >= batches_needed -> stall.
- *      * Let b = cursor; if FIFO[b] is full -> stall.
- *      * Try DrainOneInto(FIFO[b]); if moved -> return true.
- *      * If not moved, check if all spines are empty; if so:
- *          input_drained[b] = true; advance cursor to next batch.
- *        Return false.
+ * Wiring:
+ *   - Non-owning pointers to InputSpineBuffer and an ARRAY of IntermediateFIFO.
+ *   - The array length is defined by kNumIntermediateFifos in common/constants.hpp.
  */
+namespace sf {
+
 class MinFinderBatch {
 public:
-  explicit MinFinderBatch(InputSpineBuffer& buf) : buf_(buf) {}
+  MinFinderBatch(InputSpineBuffer* isb_ptr,
+                 IntermediateFIFO* fifos_array_ptr)
+  : isb(isb_ptr),
+    fifos(fifos_array_ptr) {}
 
-  // Stage-4 integration
-  void RegisterCore(ClockCore* core) { core_ = core; }
-  bool run();
+  // Step once:
+  // - Returns true if one entry was successfully pushed into the target FIFO.
+  // - Returns false if ISB had no entry or the target FIFO is full (no progress).
+  // - Throws std::runtime_error on invalid wiring or out-of-range cursor.
+  bool run(int current_batch_cursor, int batches_needed);
 
-  // Existing APIs (kept for reuse/tests)
-  std::size_t DrainBatchInto(IntermediateFIFO& dst);
-  bool        DrainOneInto(IntermediateFIFO& dst);
+  // Query if global merger is allowed to work.
+  // Returns true iff the first entry of the LAST batch has been pushed.
+  bool CanGlobalMegerWork() const { return last_batch_first_entry_pushed; }
 
-private:
-  std::optional<Entry> PopMinHead();
+public:
+  // Non-owning pointers (required by spec).
+  InputSpineBuffer*   isb   = nullptr;                 // (1) pointer to input_spine_buffer
+  IntermediateFIFO*   fifos = nullptr;                 // (2) pointer to ARRAY of IntermediateFIFO
 
-private:
-  InputSpineBuffer& buf_;
-  ClockCore*        core_ = nullptr; // not owned
+  // Internal state.
+  Entry picked_entry{};                                 // (3) entry to receive picked/pop result
+  bool  last_batch_first_entry_pushed = false;          // (4) tracking flag
 };
 
 } // namespace sf

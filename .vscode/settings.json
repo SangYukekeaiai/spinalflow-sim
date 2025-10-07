@@ -46,7 +46,17 @@
         "typeinfo": "cpp",
         "cstring": "cpp",
         "sstream": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "any": "cpp",
+        "chrono": "cpp",
+        "codecvt": "cpp",
+        "ctime": "cpp",
+        "forward_list": "cpp",
+        "ratio": "cpp",
+        "fstream": "cpp",
+        "iomanip": "cpp",
+        "ranges": "cpp",
+        "valarray": "cpp"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/g++"
 }

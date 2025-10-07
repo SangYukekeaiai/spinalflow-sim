@@ -1,29 +1,45 @@
 #pragma once
-#include <array>
+// All comments are in English.
+
+#include <cstddef>
+#include <stdexcept>
 #include <optional>
+
 #include "common/constants.hpp"
 #include "common/entry.hpp"
 #include "arch/intermediate_fifo.hpp"
+#include "arch/min_finder_batch.hpp"
 
 namespace sf {
 
 /**
  * GlobalMerger
  *
- * Performs an up-to-kMaxBatches-way merge across IntermediateFIFO instances.
- * On each call, it selects the globally smallest ts (tie-breaking by lower
- * FIFO index), pops it from that FIFO, and returns the entry.
+ * Responsibility:
+ *   - Check readiness via MinFinderBatch::CanGlobalMegerWork().
+ *   - Iterate through the IntermediateFIFOs that belong to MinFinderBatch,
+ *     pick the smallest-timestamp head entry (tie-break by neuron_id), then pop it.
+ *
+ * Wiring:
+ *   - Non-owning pointer to the contiguous ARRAY of IntermediateFIFO (size = kNumIntermediateFifos).
+ *   - Non-owning reference to MinFinderBatch (to call CanGlobalMegerWork()).
  */
 class GlobalMerger {
 public:
-  struct PickResult {
-    Entry entry;
-    int   fifo_index;
-  };
+  // 'fifos_ptr' must point to the same array used by MinFinderBatch.
+  GlobalMerger(IntermediateFIFO* fifos_ptr,
+               MinFinderBatch& mfb)
+  : fifos_(fifos_ptr), mfb_(mfb) {}
 
-  // Pick and pop the globally smallest entry across the provided FIFOs.
-  // Return std::nullopt if all FIFOs are empty.
-  static std::optional<PickResult> PickAndPop(const std::array<IntermediateFIFO*, kMaxBatches>& fifos);
+  // Run one step:
+  //   - Returns true and writes 'out' if an entry was popped from some FIFO.
+  //   - Returns false if GlobalMerger is not allowed to work yet, or all FIFOs are empty.
+  //   - Throws std::runtime_error if invariants are violated.
+  bool run(Entry& out);
+
+private:
+  IntermediateFIFO* fifos_ = nullptr; // pointer to the FIFO array (non-owning)
+  MinFinderBatch&   mfb_;             // reference to MinFinderBatch (non-owning)
 };
 
 } // namespace sf

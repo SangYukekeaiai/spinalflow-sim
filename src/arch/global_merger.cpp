@@ -1,35 +1,65 @@
+// All comments are in English.
+
 #include "arch/global_merger.hpp"
-#include <limits>
 
 namespace sf {
 
-std::optional<GlobalMerger::PickResult>
-GlobalMerger::PickAndPop(const std::array<IntermediateFIFO*, kMaxBatches>& fifos) {
-  int best_idx = -1;
-  const Entry* best_entry = nullptr;
-  std::uint8_t best_ts = std::numeric_limits<std::uint8_t>::max();
+bool GlobalMerger::run(Entry& out) {
+  // Wiring checks
+  if (!fifos_) {
+    throw std::runtime_error("GlobalMerger::run: null FIFO array pointer.");
+  }
 
-  // Scan all candidate FIFOs
-  for (int i = 0; i < kMaxBatches; ++i) {
-    if (!fifos[i]) continue;  // null pointer check
-    auto h = fifos[i]->front();
-    if (!h) continue;         // empty fifo
-    const std::uint8_t ts = h->ts;
+  // Step 1: Check if the Global Merger is allowed to work.
+  if (!mfb_.CanGlobalMegerWork()) {
+    return false;
+  }
 
-    if (best_idx < 0 || ts < best_ts || (ts == best_ts && i < best_idx)) {
+  // Step 2: Iterate all IntermediateFIFOs and select the smallest head entry.
+  bool found = false;
+  std::size_t best_idx = 0;
+  Entry best_entry{};
+
+  for (std::size_t i = 0; i < kNumIntermediateFifos; ++i) {
+    IntermediateFIFO& fifo = fifos_[i];
+    if (fifo.empty()) continue;
+
+    // Peek at the head entry.
+    std::optional<Entry> cand = fifo.front();
+    if (!cand.has_value()) {
+      // Invariant: empty()==false implies front() must have a value.
+      throw std::runtime_error("GlobalMerger::run: FIFO not empty but front() returned nullopt.");
+    }
+
+    const Entry& e = *cand;
+    if (!found) {
+      best_entry = e;
       best_idx   = i;
-      best_ts    = ts;
-      best_entry = &(*h); // cache pointer to avoid second .front() later
+      found      = true;
+    } else {
+      // Compare by timestamp; tie-break by neuron_id (ascending).
+      if (e.ts < best_entry.ts ||
+          (e.ts == best_entry.ts && e.neuron_id < best_entry.neuron_id)) {
+        best_entry = e;
+        best_idx   = i;
+      }
     }
   }
 
-  if (best_idx < 0 || !best_entry) return std::nullopt;
+  // No available entries in all FIFOs.
+  if (!found) {
+    return false;
+  }
 
-  // Pop from the chosen FIFO and return the cached entry.
-  auto* fifo = fifos[best_idx];
-  Entry e = *best_entry;
-  if (!fifo || !fifo->pop()) return std::nullopt;
-  return PickResult{e, best_idx};
+  // Step 3: Pop from the winning FIFO and return the entry.
+  IntermediateFIFO& winner = fifos_[best_idx];
+  if (!winner.pop()) {
+    // Invariant: front() succeeded; pop() must succeed.
+    throw std::runtime_error("GlobalMerger::run: FIFO pop() failed unexpectedly.");
+  }
+
+  out = best_entry;
+  return true;
 }
 
 } // namespace sf

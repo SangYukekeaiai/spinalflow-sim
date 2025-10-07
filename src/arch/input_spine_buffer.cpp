@@ -1,243 +1,136 @@
+// All comments are in English.
+
 #include "arch/input_spine_buffer.hpp"
-#include <cstring>
-#include <stdexcept>
-#include <vector>           // for DRAM fetch buffer
-#include "core/clock.hpp"   // to call core fetcher & read batch cursor
+
+// Include your DRAM header (adjust path if needed in your repo).
+#include "simple_dram.hpp"  // provides sf::dram::SimpleDRAM
 
 namespace sf {
 
-bool InputSpineBuffer::run() {
-  // Require a registered core (for batch cursor and DRAM fetcher).
-  if (!core_) return false;
-
-  if (!core_->st4_st5_valid()) {
-    return false;
+InputSpineBuffer::InputSpineBuffer(sf::dram::SimpleDRAM* dram)
+  : num_phys_(kNumPhysISB),
+    entries_per_buf_(kIsbEntries),
+    bytes_per_buf_(static_cast<std::size_t>(kIsbEntries) * sizeof(Entry)),
+    buffers_(static_cast<size_t>(kNumPhysISB)),
+    read_idx_(static_cast<size_t>(kNumPhysISB), 0),
+    valid_count_(static_cast<size_t>(kNumPhysISB), 0),
+    logical_id_loaded_(static_cast<size_t>(kNumPhysISB), -1),
+    dram_(dram)
+{
+  if (!dram_) {
+    throw std::invalid_argument("InputSpineBuffer: null DRAM handle");
   }
-
-  const int batches = core_->batches_needed();
-  const int cursor  = core_->load_batch_cursor();
-  if (cursor < 0 || cursor >= batches) return false;
-
-  // If we just moved to a new batch, reset all lanes to a clean state.
-  if (batch_seen_ != cursor) {
-    Flush();
-    batch_seen_ = cursor;
-  }
-
-  // Policy: load at most ONE segment this call (bandwidth model).
-  // Only swap to active if that spine's active bank is empty
-  // to avoid overwriting data being drained by Stage-4.
-  for (int s = 0; s < kNumSpines; ++s) {
-    // If active already has data, let Stage-4 drain it first.
-    if (!lanes_[s].active.empty()) continue;
-
-    // Ask core for the next DRAM line (segment) for (batch,cursor,spine=s).
-    // The core provides both the bytes and the DramFormat to parse them.
-    const sf::dram::DramFormat* fmt = nullptr;
-    std::vector<std::uint8_t>   line;
-    if (!core_->FetchNextSpineSegment(cursor, s, line, fmt)) {
-      // No segment available for this spine right now; try next spine.
-      continue;
-    }
-
-    if (!fmt || line.empty()) {
-      // Malformed provider; ignore and try next spine.
-      continue;
-    }
-
-    // Load into SHADOW and immediately swap to ACTIVE (since ACTIVE is empty).
-    LoadShadowSegmentFromDRAM(s, *fmt, line.data());
-    (void)SwapToShadow(s);
-
-    // Loaded one segment this cycle.
-    return true;
-  }
-
-  // Nothing loaded this call.
-  return false;
-}
-
-// -------- ctor / reset --------
-
-InputSpineBuffer::InputSpineBuffer() { Flush(); }
-
-void InputSpineBuffer::Flush() {
-  for (auto& l : lanes_) {
-    l.active.clear();
-    l.shadow.clear();
-    l.meta = SpineMeta{};
+  // Allocate per-physical-buffer storage.
+  for (int i = 0; i < num_phys_; ++i) {
+    buffers_[static_cast<size_t>(i)].resize(static_cast<size_t>(entries_per_buf_));
   }
 }
 
-// -------- lane binding --------
-
-void InputSpineBuffer::BindLaneIfFirst(int spine_idx, const SegmentHeader& hdr) {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) throw std::out_of_range("BindLaneIfFirst: spine_idx");
-  auto& m = lanes_[spine_idx].meta;
-  if (m.seg_loaded_count == 0) {
-    const int runtime_batch = core_ ? core_->load_batch_cursor() : 0;
-    m.batch_id           = static_cast<uint16_t>(runtime_batch);
-    m.logical_spine_id   = hdr.logical_spine_id;
-    m.seg_expected_total = hdr.seg_count;
-  }
+void InputSpineBuffer::Reset() {
+  std::fill(read_idx_.begin(), read_idx_.end(), 0);
+  std::fill(valid_count_.begin(), valid_count_.end(), 0);
+  std::fill(logical_id_loaded_.begin(), logical_id_loaded_.end(), -1);
 }
 
-// -------- copy helpers --------
-
-void InputSpineBuffer::copy_entries(Bank& dst, const Entry* src, std::size_t count) {
-  if (!src && count) throw std::invalid_argument("copy_entries: null src");
-  if (count > LaneCapacity::value) throw std::length_error("copy_entries: exceeds bank capacity");
-  if (count) std::memcpy(dst.data.data(), src, count * sizeof(Entry));
-}
-
-void InputSpineBuffer::copy_entries_from_raw(Bank& dst, const std::uint8_t* raw, std::size_t count) {
-  if (!raw && count) throw std::invalid_argument("copy_entries_from_raw: null raw");
-  if (count > LaneCapacity::value) throw std::length_error("copy_entries_from_raw: exceeds bank capacity");
-  for (std::size_t i = 0; i < count; ++i) {
-    Entry tmp{};
-    std::memcpy(&tmp, raw + i * sizeof(Entry), sizeof(Entry));
-    dst.data[i] = tmp;
+bool InputSpineBuffer::PreloadFirstBatch(const std::vector<int>& logical_spine_ids_first_batch,
+                                         int layer_id)
+{
+  if (logical_spine_ids_first_batch.empty()) {
+    return false; // nothing to do
   }
-}
-
-// -------- meta update --------
-
-void InputSpineBuffer::update_meta_on_segment(int spine_idx, const SegmentHeader& hdr) {
-  auto& meta = lanes_[spine_idx].meta;
-  if (meta.seg_loaded_count == 0) {
-    const int runtime_batch = core_ ? core_->load_batch_cursor() : 0;
-    meta.batch_id           = static_cast<uint16_t>(runtime_batch);
-    meta.logical_spine_id   = hdr.logical_spine_id;
-    meta.seg_expected_total = hdr.seg_count;
+  if (static_cast<int>(logical_spine_ids_first_batch.size()) > num_phys_) {
+    throw std::invalid_argument("PreloadFirstBatch: more logical spines than physical buffers");
   }
-  if (meta.seg_loaded_count < 0xFF) ++meta.seg_loaded_count;
-  if (hdr.eol || (meta.seg_expected_total > 0 && meta.seg_loaded_count >= meta.seg_expected_total)) {
-    meta.fully_loaded = 1;
-  }
-}
-
-// -------- load from typed entries --------
-
-void InputSpineBuffer::LoadShadowSegment(int spine_idx, const SegmentHeader& hdr,
-                                         const Entry* src, std::size_t count) {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) throw std::out_of_range("LoadShadowSegment: spine_idx");
-  if (count != static_cast<std::size_t>(hdr.size))
-    throw std::invalid_argument("LoadShadowSegment: count must match hdr.size");
-  if (count > LaneCapacity::value)
-    throw std::length_error("LoadShadowSegment: exceeds bank capacity");
-
-  auto& l  = lanes_[spine_idx];
-  auto& sh = l.shadow;
-
-  BindLaneIfFirst(spine_idx, hdr);
-  update_meta_on_segment(spine_idx, hdr);
-
-  sh.clear();
-  if (count) copy_entries(sh, src, count);
-  sh.size = static_cast<uint16_t>(count);
-  sh.tail = sh.size;
-}
-
-// -------- load from DRAM using format --------
-
-void InputSpineBuffer::LoadShadowSegmentFromDRAM(int spine_idx,
-                                                 const DramFormat&   fmt,
-                                                 const std::uint8_t* line_base) {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) throw std::out_of_range("LoadShadowSegmentFromDRAM: spine_idx");
-  if (!line_base) throw std::invalid_argument("LoadShadowSegmentFromDRAM: null line_base");
-
-  // 1) Parse header
-  SegmentHeader hdr{};
-  fmt.parse_header(line_base, hdr);
-
-  // 2) Locate entries area and determine payload size
-  const std::uint8_t* entries_raw = fmt.entries_ptr(line_base);
-  const std::size_t   payloadB    = fmt.payload_bytes(hdr);
-
-  // 3) Sanity: payload must be a multiple of sizeof(Entry)
-  if (payloadB % sizeof(Entry)) {
-    throw std::invalid_argument("LoadShadowSegmentFromDRAM: payload not aligned to Entry size");
-  }
-  const std::size_t count = payloadB / sizeof(Entry);
-  if (count != hdr.size) {
-    throw std::invalid_argument("LoadShadowSegmentFromDRAM: size mismatch with payload");
-  }
-  if (count > LaneCapacity::value) {
-    throw std::length_error("LoadShadowSegmentFromDRAM: exceeds bank capacity");
-  }
-
-  auto& l  = lanes_[spine_idx];
-  auto& sh = l.shadow;
-
-  BindLaneIfFirst(spine_idx, hdr);
-  update_meta_on_segment(spine_idx, hdr);
-
-  sh.clear();
-  if (count) copy_entries_from_raw(sh, entries_raw, count);
-  sh.size = static_cast<uint16_t>(count);
-  sh.tail = sh.size;
-
-  // Note: caller can compute next line address as:
-  // next = line_base + fmt.line_bytes(hdr)
-}
-
-// -------- swap / consume --------
-
-bool InputSpineBuffer::SwapToShadow(int spine_idx) {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) return false;
-
-  auto& l  = lanes_[spine_idx];
-  auto& sh = l.shadow;
-  if (sh.empty()) return false;
-
-  std::swap(l.active, l.shadow);
-  l.shadow.clear();
+  // Load into physical buffers and mark metadata.
+  LoadBatchIntoBuffers_(logical_spine_ids_first_batch, layer_id);
   return true;
 }
 
-const Entry* InputSpineBuffer::Head(int spine_idx) const {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) return nullptr;
-  const auto& a = lanes_[spine_idx].active;
-  if (a.empty()) return nullptr;
-  return &a.data[a.head];
-}
-
-bool InputSpineBuffer::PopHead(int spine_idx) {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) return false;
-  auto& a = lanes_[spine_idx].active;
-  if (a.empty()) return false;
-  ++a.head;
+bool InputSpineBuffer::run(const std::vector<int>& logical_spine_ids_current_batch,
+                           int layer_id,
+                           int current_batch_cursor,
+                           int total_batches_needed)
+{
+  // Guard: only attempt load when batches remain and all buffers are empty.
+  if (current_batch_cursor < 0 || current_batch_cursor >= total_batches_needed) {
+    return false; // no more batches to load or invalid cursor
+  }
+  if (!AllEmpty()) {
+    return false; // not eligible to load; still draining current data
+  }
+  if (static_cast<int>(logical_spine_ids_current_batch.size()) > num_phys_) {
+    throw std::invalid_argument("run(): more logical spines than physical buffers");
+  }
+  // Perform the load.
+  LoadBatchIntoBuffers_(logical_spine_ids_current_batch, layer_id);
   return true;
 }
 
-bool InputSpineBuffer::Empty(int spine_idx) const {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) return true;
-  return lanes_[spine_idx].active.empty();
-}
+bool InputSpineBuffer::PopSmallestTsEntry(Entry& out) {
+  int best_idx = -1;
+  uint8_t best_ts = std::numeric_limits<uint8_t>::max();
 
-uint16_t InputSpineBuffer::Size(int spine_idx) const {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) return 0;
-  const auto& a = lanes_[spine_idx].active;
-  return static_cast<uint16_t>(a.size - a.head);
-}
-
-// -------- lifecycle --------
-
-const InputSpineBuffer::SpineMeta& InputSpineBuffer::LaneMeta(int spine_idx) const {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) throw std::out_of_range("LaneMeta: spine_idx");
-  return lanes_[spine_idx].meta;
-}
-
-void InputSpineBuffer::maybe_mark_fully_drained(LaneDB& l) {
-  if (l.meta.fully_loaded && l.active.empty() && l.shadow.empty()) {
-    l.meta.fully_drained = 1;
+  // Scan all physical buffers for the smallest head timestamp.
+  for (int i = 0; i < num_phys_; ++i) {
+    if (Available_(i) <= 0) continue;
+    const Entry& head = buffers_[static_cast<size_t>(i)][static_cast<size_t>(read_idx_[static_cast<size_t>(i)])];
+    if (best_idx < 0 || head.ts < best_ts) {
+      best_idx = i;
+      best_ts = head.ts;
+    }
   }
+
+  if (best_idx < 0) {
+    return false; // all buffers empty
+  }
+
+  // Pop one entry from the chosen buffer.
+  out = buffers_[static_cast<size_t>(best_idx)][static_cast<size_t>(read_idx_[static_cast<size_t>(best_idx)])];
+  read_idx_[static_cast<size_t>(best_idx)] += 1;
+
+  // When a buffer becomes fully consumed, we leave it as empty (no auto-reload here).
+  return true;
 }
 
-void InputSpineBuffer::MarkFullyDrainedIfApplicable(int spine_idx) {
-  if (spine_idx < 0 || spine_idx >= kNumSpines) throw std::out_of_range("MarkFullyDrainedIfApplicable: spine_idx");
-  auto& l = lanes_[spine_idx];
-  maybe_mark_fully_drained(l);
+bool InputSpineBuffer::AllEmpty() const {
+  for (int i = 0; i < num_phys_; ++i) {
+    if (Available_(i) > 0) return false;
+  }
+  return true;
+}
+
+void InputSpineBuffer::LoadBatchIntoBuffers_(const std::vector<int>& logical_spine_ids,
+                                             int layer_id)
+{
+  // Clear all physical buffers before loading the new batch.
+  for (int i = 0; i < num_phys_; ++i) {
+    read_idx_[static_cast<size_t>(i)] = 0;
+    valid_count_[static_cast<size_t>(i)] = 0;
+    logical_id_loaded_[static_cast<size_t>(i)] = -1;
+  }
+
+  // Load each provided logical spine into the corresponding physical buffer slot.
+  for (int i = 0; i < static_cast<int>(logical_spine_ids.size()); ++i) {
+    const int spine_id = logical_spine_ids[static_cast<size_t>(i)];
+    // Copy bytes directly into the physical buffer storage.
+    const std::uint32_t copied_bytes = dram_->LoadInputSpine(
+        static_cast<std::uint32_t>(layer_id),
+        static_cast<std::uint32_t>(spine_id),
+        static_cast<void*>(buffers_[static_cast<size_t>(i)].data()),
+        static_cast<std::uint32_t>(bytes_per_buf_)
+    );
+
+    // Compute how many entries are valid (partial loads are allowed).
+    const std::size_t entries = copied_bytes / sizeof(Entry);
+    if (entries > static_cast<std::size_t>(entries_per_buf_)) {
+      throw std::runtime_error("LoadBatchIntoBuffers_: DRAM returned more bytes than buffer capacity");
+    }
+    valid_count_[static_cast<size_t>(i)] = static_cast<int>(entries);
+    read_idx_[static_cast<size_t>(i)] = 0;
+    logical_id_loaded_[static_cast<size_t>(i)] = spine_id;
+  }
+
+  // Any remaining physical buffers (beyond provided logical ids) remain empty.
 }
 
 } // namespace sf

@@ -1,95 +1,85 @@
 #pragma once
-#include <array>
-#include <cstddef>
-#include <cstdint>
-#include <optional>
-#include <stdexcept>
-#include <vector>
+// All comments are in English.
 
-#include "common/entry.hpp"
-#include "arch/pe_array.hpp"
-#include "arch/dram/conv_shape.hpp"  // ConvShape (KH,KW,IC)
+#include <array>
+#include <cstdint>
+#include <stdexcept>
+
+#include "common/constants.hpp"
+
+namespace sf { namespace dram {
+
+// Minimal declaration so we can call LoadWeightTile without including a full header.
+// Must match the real SimpleDRAM interface in your project.
+class SimpleDRAM {
+public:
+  // uint32_t LoadWeightTile(uint32_t L, uint32_t tile_id, void* dst, uint32_t max_bytes);
+  uint32_t LoadWeightTile(uint32_t L, uint32_t tile_id, void* dst, uint32_t max_bytes);
+};
+
+}} // namespace sf::dram
 
 namespace sf {
 
 /**
- * FilterBuffer
- *  - Total size: 576 KB
- *  - Banks: 32
- *  - Row width: 128 bytes (1024-bit bus to feed 128 PEs per cycle)
- *  - Interleaved row mapping by default:
- *        bank       = global_row_id % kNumBanks
- *        rowInBank  = global_row_id / kNumBanks
+ * FilterBuffer (Plan C, members-only ComputeRowId)
  *
- * In the MVP, the buffer holds exactly one oc_group at a time.
- * A "row" provides 128 signed 8-bit weights (one per PE).
+ * rows[c_in][r][c][0..127] is flattened as ((c_in * K_h) + r) * K_w + c.
+ * DRAM layout: [tile][input_channel][kh][kw][0..127]
+ *
+ * - Configure(...) sets layer-wise static parameters and DRAM ptr.
+ * - Update(h_out, w_out) sets current output spatial coords.
+ * - ComputeRowId(neuron_id) uses ONLY members (Cin, Win, Sh, Sw, Ph, Pw, Kh, Kw, h_out_cur, w_out_cur).
  */
 class FilterBuffer {
 public:
-    static constexpr std::size_t kTotalBytes     = 576u * 1024u;  // 576 KB
-    static constexpr int         kNumBanks       = 32;
-    static constexpr int         kRowBytes       = 128;           // 128 weights per row
-    static constexpr int         kNumPEs         = 128;           // bus width = 1024 bits
-    static constexpr int         kRowsPerBank    =
-        static_cast<int>(kTotalBytes / (kNumBanks * kRowBytes));  // 144
-    static constexpr int         kTotalRows      = kRowsPerBank * kNumBanks; // 4608
+  using Row = std::array<std::uint8_t, kNumPE>;
 
-    using Row = std::array<int8_t, kRowBytes>;
+  FilterBuffer() = default;
 
-public:
-    FilterBuffer();
+  // Layer-wise configuration (static).
+  void Configure(int C_in, int W_in,
+                 int Kh, int Kw,
+                 int Sh, int Sw,
+                 int Ph, int Pw,
+                 sf::dram::SimpleDRAM* dram_ptr);
 
-    // Load contiguous bytes from a DRAM-like memory into the buffer.
-    // 'bytes' must be a multiple of kRowBytes and must not exceed kTotalBytes.
-    void LoadFromDRAM(const int8_t* base, std::size_t bytes);
+  // Per-step update of the current output site (h_out, w_out).
+  void Update(int h_out, int w_out);
 
-    // Read a whole row by global row id into 'out'.
-    bool ReadRow(int row_id, Row& out) const;
+  // Compute row id using ONLY member configuration/state.
+  // Returns -1 if the tap maps outside the kernel window (padding/invalid).
+  int ComputeRowId(std::uint32_t neuron_id) const;
 
-    // Convenience: dispatch the row indicated by entry.neuron_id to all PEs.
-    // The mapping from neuron_id -> global_row_id is 1:1 in this demo.
-    // Returns PE outputs (timestamp or PE::kNoSpike).
-    std::vector<int8_t> DispatchToPEs(const Entry& entry,
-                                      std::vector<PE>& pes,
-                                      int8_t threshold);
+  // Return a row by id (by value).
+  Row GetRow(int row_id) const;
 
-    // New dispatcher that uses (ky, kx, in_c) to pick the correct 128-wide row.
-    // MVP: FilterBuffer holds exactly one oc_group at a time.
-    std::vector<int8_t> DispatchToPEs_KKIC(
-        uint8_t ky, uint8_t kx, uint16_t in_c,
-        const Entry& entry, std::vector<PE>& pes, int8_t threshold);
+  // Load a weight tile for the current layer/tile into rows[].
+  std::uint32_t LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id);
 
-    // Set convolution shape (KH, KW, IC) for this layer. This also validates capacity.
-    void SetConvShape(const sf::dram::ConvShape& s);
+  // Optional helper.
+  std::size_t NumRows() const { return kFilterRows; }
 
 private:
-    // Map a global row id to (bank, rowInBank) with interleaving.
-    static inline void MapRowInterleaved(int global_row_id, int& bank, int& row_in_bank) {
-        bank       = global_row_id % kNumBanks;
-        row_in_bank= global_row_id / kNumBanks;
-    }
+  // Fixed-capacity storage: 4068 rows × 128 weights
+  std::array<Row, kFilterRows> rows_{};
 
-private:
-    // banks_[bank][rowIdx][byte]
-    std::vector<std::vector<Row>> banks_;
+  // Layer-wise configuration
+  int C_in_ = 0;   // input channels
+  int W_in_ = 0;   // input width
+  int K_h_  = 0;   // kernel height
+  int K_w_  = 0;   // kernel width
+  int S_h_  = 0;   // stride (height)
+  int S_w_  = 0;   // stride (width)
+  int P_h_  = 0;   // padding (height)
+  int P_w_  = 0;   // padding (width)
 
-    // Tiny one-row cache to avoid re-reading the same row repeatedly.
-    mutable int cached_row_id_{-1};
-    mutable Row cached_row_{};
+  // Per-step state (current output site)
+  int h_out_cur_ = 0;
+  int w_out_cur_ = 0;
 
-    // Convolution shape for current layer; FB stores one oc_group at a time.
-    sf::dram::ConvShape shape_{1,1,1};
-
-    // Compute "local" row id inside the currently loaded oc_group.
-    // local_row = (inC * KH + ky) * KW + kx
-    inline int RowId_KKIC_Local(uint8_t ky, uint8_t kx, uint16_t in_c) const {
-        if (in_c >= shape_.IC) return -1;
-        if (ky    >= shape_.KH) return -1;
-        if (kx    >= shape_.KW) return -1;
-        const int kh = static_cast<int>(shape_.KH);
-        const int kw = static_cast<int>(shape_.KW);
-        return (static_cast<int>(in_c) * kh + static_cast<int>(ky)) * kw + static_cast<int>(kx);
-    }
+  // DRAM interface (non-owning)
+  sf::dram::SimpleDRAM* dram_ = nullptr;
 };
 
 } // namespace sf
