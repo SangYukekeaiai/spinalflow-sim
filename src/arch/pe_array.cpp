@@ -4,7 +4,7 @@
 
 namespace sf {
 
-bool PEArray::run(FilterBuffer& fb, int h, int w, int W) {
+bool PEArray::run(FilterBuffer& fb) {
   // Try to fetch one entry from Global Merger.
   if (!gm_.run(gm_entry_)) {
     return false; // no input this cycle

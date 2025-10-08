@@ -1,9 +1,10 @@
 // simple_dram.cpp
 // All comments are in English.
-#include "simple_dram.hpp"
+#include "arch/dram/simple_dram.hpp"
 #include <fstream>
 #include <iterator>
 #include <nlohmann/json.hpp>
+#include <iostream>  // NEW
 
 using nlohmann::json;
 using sf::dram::SimpleDRAM;

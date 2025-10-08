@@ -11,19 +11,19 @@ namespace sf {
 // ISB (InputSpineBuffer)
 // -----------------------------------------------------------------------------
 inline constexpr int kNumPhysISB = 16;
-inline constexpr int kIsbEntries = 1024;
+inline constexpr int kIsbEntries = 2048;
 
 // -----------------------------------------------------------------------------
 // Intermediate FIFO
 // -----------------------------------------------------------------------------
 inline constexpr std::size_t kInterFifoCapacityBytes = 256;
-inline constexpr std::size_t kNumIntermediateFifos   = 16;
+inline constexpr std::size_t kNumIntermediateFifos   = 4;
 
 // -----------------------------------------------------------------------------
 // PEs / Filter Buffer
 // -----------------------------------------------------------------------------
 inline constexpr std::size_t kNumPE      = 128;   // weights per row / PEs per array
-inline constexpr std::size_t kFilterRows = 4068;  // total rows stored in FilterBuffer
+inline constexpr std::size_t kFilterRows = 4608;  // total rows stored in FilterBuffer
 
 // -----------------------------------------------------------------------------
 // Tiled Output Buffer / Output path

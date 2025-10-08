@@ -1,5 +1,5 @@
 // All comments are in English.
-#include "simulation.hpp"
+#include "runner/simulation.hpp"
 #include <fstream>
 #include <iterator>
 #include <algorithm>
@@ -37,7 +37,7 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
 
     s.name = jl.value("name", std::string("L") + std::to_string(s.L));
     s.kind = ParseKind_(jl.at("kind").get<std::string>());
-
+    s.threshold_ = jl.value("threshold", 0);
     // params_in
     {
       const auto& pin = jl.at("params_in");
@@ -113,6 +113,7 @@ void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram)
                           s.Kh,     s.Kw,
                           s.Sh,     s.Sw,
                           s.Ph,     s.Pw,
+                          s.threshold_,
                           dram);
       conv.run_layer();
     } else if (s.kind == LayerKind::kFC) {
@@ -123,6 +124,7 @@ void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram)
                         s.Kh,     s.Kw,
                         s.Sh,     s.Sw,
                         s.Ph,     s.Pw,
+                        s.threshold_,
                         dram);
       fc.run_layer();
     } else {

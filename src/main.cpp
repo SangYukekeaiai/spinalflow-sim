@@ -3,10 +3,12 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include <iostream>
 
-#include "simulation.hpp"
+#include "runner/simulation.hpp"
 
 int main(int argc, char** argv) {
+  // std::cout << "Entry size is " << sizeof(sf::Entry) << " bytes\n";
   // Usage: ./sim <bin_path> <json_path>
   if (argc < 3) {
     std::cerr << "Usage: " << argv[0] << " <dram_image.bin> <config.json>\n";

@@ -21,6 +21,7 @@ struct LayerSpec {
   int Cin_w = 0, Cout = 0, Kh = 1, Kw = 1;
   int Sh = 1, Sw = 1, Ph = 0, Pw = 0, Dh = 1, Dw = 1;
   int Cout_out = 0, H_out = 0, W_out = 0;
+  int threshold_ = 0;
   std::string name;
 };
 

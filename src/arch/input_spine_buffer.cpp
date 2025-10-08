@@ -3,7 +3,7 @@
 #include "arch/input_spine_buffer.hpp"
 
 // Include your DRAM header (adjust path if needed in your repo).
-#include "simple_dram.hpp"  // provides sf::dram::SimpleDRAM
+#include "arch/dram/simple_dram.hpp"  // provides sf::dram::SimpleDRAM
 
 namespace sf {
 
@@ -87,8 +87,9 @@ bool InputSpineBuffer::PopSmallestTsEntry(Entry& out) {
   // Pop one entry from the chosen buffer.
   out = buffers_[static_cast<size_t>(best_idx)][static_cast<size_t>(read_idx_[static_cast<size_t>(best_idx)])];
   read_idx_[static_cast<size_t>(best_idx)] += 1;
-
   // When a buffer becomes fully consumed, we leave it as empty (no auto-reload here).
+  // std::cout << "Popped Entry from buffer " << best_idx << ": (ts=" << static_cast<int>(out.ts)
+  //           << ", neuron_id=" << out.neuron_id << ")\n";
   return true;
 }
 

@@ -6,17 +6,10 @@
 #include <stdexcept>
 
 #include "common/constants.hpp"
-
+#include "arch/dram/simple_dram.hpp"
 namespace sf { namespace dram {
-
-// Minimal declaration so we can call LoadWeightTile without including a full header.
-// Must match the real SimpleDRAM interface in your project.
-class SimpleDRAM {
-public:
-  // uint32_t LoadWeightTile(uint32_t L, uint32_t tile_id, void* dst, uint32_t max_bytes);
-  uint32_t LoadWeightTile(uint32_t L, uint32_t tile_id, void* dst, uint32_t max_bytes);
-};
-
+  // Forward-declare SimpleDRAM to avoid forcing include path here.
+  class SimpleDRAM;
 }} // namespace sf::dram
 
 namespace sf {
@@ -33,7 +26,7 @@ namespace sf {
  */
 class FilterBuffer {
 public:
-  using Row = std::array<std::uint8_t, kNumPE>;
+  using Row = std::array<std::int8_t, kNumPE>;
 
   FilterBuffer() = default;
 

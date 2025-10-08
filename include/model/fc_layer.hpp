@@ -30,6 +30,7 @@ public:
                       int Kh, int Kw,
                       int Sh, int Sw,
                       int Ph, int Pw,
+                      int Threshold,
                       sf::dram::SimpleDRAM* dram);
 
   std::vector<std::vector<int>> generate_batches(int h_out, int w_out) const;
@@ -39,7 +40,7 @@ public:
 private:
   static int DeriveOutDim(int in, int pad, int kernel, int stride) {
     const int numer = in + 2 * pad - kernel;
-    if (numer < 0 || numer % stride != 0) {
+    if (numer < 0) {
       throw std::invalid_argument("FCLayer: invalid shape for output dimension derivation.");
     }
     return numer / stride + 1;
@@ -55,6 +56,7 @@ private:
   int Sh_{1}, Sw_{1};
   int Ph_{0}, Pw_{0};
   int H_out_{0}, W_out_{0};
+  int threshold_{0};
 
   std::unique_ptr<FilterBuffer>     fb_;
   std::unique_ptr<InputSpineBuffer> isb_;

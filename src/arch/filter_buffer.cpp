@@ -1,6 +1,7 @@
 // All comments are in English.
 
 #include "arch/filter_buffer.hpp"
+#include <iostream>
 
 namespace sf {
 
@@ -49,6 +50,8 @@ int FilterBuffer::ComputeRowId(std::uint32_t neuron_id) const {
 
   // 4) Check (r,c) within the kernel window.
   if (r < 0 || r >= K_h_ || c < 0 || c >= K_w_) {
+    std::cout << "ComputeRowId: neuron_id=" << neuron_id
+              << " maps to (c_in=" << c_in << ", r=" << r << ", c=" << c << ") outside kernel window\n";
     return -1; // invalid/padded tap
   }
 
@@ -57,6 +60,11 @@ int FilterBuffer::ComputeRowId(std::uint32_t neuron_id) const {
       (static_cast<long long>(c_in) * K_h_ + r) * K_w_ + c;
 
   if (row_id_ll < 0 || row_id_ll >= static_cast<long long>(kFilterRows)) {
+    std::cout << "ComputeRowId: neuron_id=" << neuron_id
+              << " maps to out-of-bounds row_id=" << row_id_ll
+              << " (c_in=" << c_in << ", r=" << r << ", c=" << c
+              << ", K_h=" << K_h_ << ", K_w=" << K_w_ <<
+            ")\n";
     return -1; // storage bound check (fixed capacity)
   }
 
@@ -67,6 +75,12 @@ FilterBuffer::Row FilterBuffer::GetRow(int row_id) const {
   if (row_id < 0 || row_id >= static_cast<int>(kFilterRows)) {
     throw std::out_of_range("FilterBuffer::GetRow: row_id out of range.");
   }
+  // for (std::size_t i = 0; i < kNumPE; ++i) {
+    
+  //   if(static_cast<int>(rows_[static_cast<std::size_t>(row_id)][i]) != 0)std::cout << static_cast<int>(rows_[static_cast<std::size_t>(row_id)][i]) << " ";
+  // }
+  // std::cout << "\n";
+  
   return rows_[static_cast<std::size_t>(row_id)];
 }
 

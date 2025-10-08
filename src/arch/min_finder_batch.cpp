@@ -52,7 +52,7 @@ bool MinFinderBatch::run(int current_batch_cursor, int batches_needed) {
       last_batch_first_entry_pushed = true;
     }
   }
-
+  ++entry_count_total;
   return true;
 }
 

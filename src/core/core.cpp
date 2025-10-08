@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <algorithm>
+#include <iostream>
 
 namespace sf {
 
@@ -46,7 +47,9 @@ void Core::ConfigureTiles(int C_out) {
   if (C_out <= 0) {
     throw std::invalid_argument("Core::ConfigureTiles: C_out must be positive.");
   }
-  total_tiles_ = static_cast<int>(C_out / static_cast<int>(kNumPE));
+  total_tiles_ = static_cast<int>(
+    (C_out + static_cast<int>(kNumPE) - 1) / static_cast<int>(kNumPE));
+  // std::cout<<"Core::ConfigureTiles: total_tiles = " << std::to_string(total_tiles_) << "\n";
   if (total_tiles_ <= 0) {
     throw std::runtime_error("Core::ConfigureTiles: computed total_tiles <= 0.");
   }
@@ -92,6 +95,34 @@ void Core::PreloadFirstBatch() {
   batch_cursor_ = 0;
 }
 
+
+void Core::InitPEsBeforeLoop(int threshold, int tile_idx) {
+  // Basic guards to avoid programming PEs with invalid parameters.
+  if (total_tiles_ <= 0) {
+    throw std::runtime_error("Core::InitPEsBeforeLoop: total_tiles_ not configured. Call ConfigureTiles(C_out) first.");
+  }
+  if (tile_idx < 0 || tile_idx >= total_tiles_) {
+    throw std::out_of_range("Core::InitPEsBeforeLoop: tile_idx out of range.");
+  }
+  if (W_out_ <= 0) {
+    throw std::runtime_error("Core::InitPEsBeforeLoop: W_out_ not set. Call SetSpineContext(...) first.");
+  }
+  if (h_out_ < 0 || w_out_ < 0) {
+    throw std::runtime_error("Core::InitPEsBeforeLoop: invalid (h_out_, w_out_).");
+  }
+
+  // Forward to PEArray's helper. PEArray will:
+  // - Compute out_id for each PE = base_pos + tile_offset + pe_idx
+  // - Register per-PE output id and set threshold
+  // - Clear its internal out_spike_entries_ for a fresh tile
+  pe_array_.InitPEsBeforeLoop(
+      /*threshold   =*/ threshold,
+      /*total_tiles =*/ total_tiles_,
+      /*tile_idx    =*/ tile_idx,
+      /*h           =*/ h_out_,
+      /*w           =*/ w_out_,
+      /*W           =*/ W_out_);
+}
 bool Core::StepOnce(int tile_id) {
   if (tile_id < 0 || tile_id >= total_tiles_) {
     throw std::out_of_range("Core::StepOnce: tile_id out of range.");
@@ -101,7 +132,7 @@ bool Core::StepOnce(int tile_id) {
   ran_tob_in_ = v_tob_in_ ? tob_.run(tile_id) : false;
 
   // Stage 1 – PEArray: compute if allowed; will fetch (GM entry + FB row) internally.
-  ran_pe_ = v_pe_ ? pe_array_.run(*fb_, h_out_, w_out_, W_out_) : false;
+  ran_pe_ = v_pe_ ? pe_array_.run(*fb_) : false;
 
   // Stage 2 – MinFinderBatch: drain ISB -> FIFOs (pass batch cursor/total by value).
   ran_mfb_ = v_mfb_ ? mfb_.run(batch_cursor_, total_batches_needed_) : false;
@@ -133,10 +164,12 @@ bool Core::StepOnce(int tile_id) {
       (!cooldown) && !fifo_has && !pe_hasout && !isb_has;
 
   ++cycle_;
+  // if(compute_finished_) std::cout << "total input entries:" << mfb_.entry_count_total << "\n";
   return (ran_tob_in_ || ran_pe_ || ran_mfb_);
 }
 
 void Core::DrainAllTilesAndStore() {
+   
   if (!sorter_) {
     sorter_ = std::make_unique<OutputSorter>(&tob_, &out_spine_);
   }
@@ -145,6 +178,7 @@ void Core::DrainAllTilesAndStore() {
     // keep popping one-by-one
   }
   // Store to DRAM (throws on failure). Clears OutputSpine on success.
+  // std::cout << "Check how many entries in the sorter before draining: " << out_spine_.size() << "\n";
   out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_));
 }
 

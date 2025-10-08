@@ -52,6 +52,7 @@ public:
   // Internal state.
   Entry picked_entry{};                                 // (3) entry to receive picked/pop result
   bool  last_batch_first_entry_pushed = false;          // (4) tracking flag
+  int entry_count_total = 0;                             // (5) total entries pushed (for debug)
 };
 
 } // namespace sf

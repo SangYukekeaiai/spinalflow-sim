@@ -1,4 +1,0 @@
-/home/yy/snn/spinalflow-sim/build/CMakeFiles/sf_core.dir
-/home/yy/snn/spinalflow-sim/build/CMakeFiles/smoke_conv_layer.dir
-/home/yy/snn/spinalflow-sim/build/CMakeFiles/edit_cache.dir
-/home/yy/snn/spinalflow-sim/build/CMakeFiles/rebuild_cache.dir

@@ -1,6 +1,7 @@
 // All comments are in English.
 #include "model/conv_layer.hpp"
 #include <algorithm>
+#include <iostream>
 
 namespace sf {
 
@@ -21,6 +22,7 @@ void ConvLayer::ConfigureLayer(int layer_id,
                                int Kh, int Kw,
                                int Sh, int Sw,
                                int Ph, int Pw,
+                               int Threshold,
                                sf::dram::SimpleDRAM* dram)
 {
   // Save params
@@ -30,7 +32,7 @@ void ConvLayer::ConfigureLayer(int layer_id,
   Kh_ = Kh; Kw_ = Kw;
   Sh_ = Sh; Sw_ = Sw;
   Ph_ = Ph; Pw_ = Pw;
-
+  threshold_ = Threshold;
   // Derive output spatial dimensions.
   H_out_ = DeriveOutDim(H_in_, Ph_, Kh_, Sh_);
   W_out_ = DeriveOutDim(W_in_, Pw_, Kw_, Sw_);
@@ -42,7 +44,7 @@ void ConvLayer::ConfigureLayer(int layer_id,
   fb_->Configure(C_in_, W_in_, Kh_, Kw_, Sh_, Sw_, Ph_, Pw_, dram);
 
   // Validate tiling
-  if (C_out_ <= 0 || (C_out_ % static_cast<int>(kNumPE)) != 0) {
+  if (C_out_ <= 0) {
     throw std::invalid_argument("ConvLayer::ConfigureLayer: C_out must be positive and divisible by kNumPE.");
   }
   const int total_tiles = C_out_ / static_cast<int>(kNumPE);
@@ -87,10 +89,15 @@ std::vector<std::vector<int>> ConvLayer::generate_batches(int h_out, int w_out) 
 }
 
 void ConvLayer::run_layer() {
+    std::cout << "Running ConvLayer L=" << layer_id_ << " with C_in=" << C_in_ << ", C_out=" << C_out_
+              << ", H_in=" << H_in_ << ", W_in=" << W_in_ << ", Kh=" << Kh_ << ", Kw=" << Kw_
+              << ", Sh=" << Sh_ << ", Sw=" << Sw_ << ", Ph=" << Ph_ << ", Pw=" << Pw_
+              << ", H_out=" << H_out_ << ", W_out=" << W_out_ << "\n";
   if (!core_ || !fb_) throw std::runtime_error("ConvLayer::run_layer: engines not configured.");
 
   for (int h = 0; h < H_out_; ++h) {
     for (int w = 0; w < W_out_; ++w) {
+        // std::cout << "  Processing output site (h=" << h << ", w=" << w << ")\n";
       fb_->Update(h, w);
       core_->SetSpineContext(layer_id_, h, w, W_out_);
       core_->ConfigureTiles(C_out_);
@@ -103,6 +110,7 @@ void ConvLayer::run_layer() {
       for (int tile_id = 0; tile_id < total_tiles; ++tile_id) {
         fb_->LoadWeightFromDram(static_cast<std::uint32_t>(layer_id_),
                                 static_cast<std::uint32_t>(tile_id));
+        core_->InitPEsBeforeLoop(threshold_, tile_id); // threshold=1 for now
         while (!core_->FinishedCompute()) {
           core_->StepOnce(tile_id);
         }

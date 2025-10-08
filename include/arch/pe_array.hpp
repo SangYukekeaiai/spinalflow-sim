@@ -9,6 +9,7 @@
 #include "common/entry.hpp"
 #include "arch/global_merger.hpp"   // uses GlobalMerger::run(Entry&)
 #include "arch/filter_buffer.hpp"   // FilterBuffer::ComputeRowId/GetRow
+#include <iostream>
 
 namespace sf {
 
@@ -20,7 +21,7 @@ public:
   void RegisterOutputId(std::uint32_t outputId) { output_neuron_id_ = outputId; }
   void SetThreshold(std::int32_t th) { threshold_ = th; }
 
-  void Process(std::uint8_t ts, std::int32_t weight) {
+  void Process(std::int8_t ts, std::int32_t weight) {
     vmem_ += weight;
     if (vmem_ >= threshold_) {
       vmem_ = 0;
@@ -37,7 +38,7 @@ public:
 
 private:
   std::int32_t  vmem_ = 0;
-  std::int32_t  threshold_ = 0;
+  std::int32_t  threshold_ = 1;
   std::uint32_t output_neuron_id_ = 0;
   bool          spiked_ = false;
   std::uint8_t  last_ts_ = 0;
@@ -85,7 +86,7 @@ public:
   }
 
   // Main step: true if the array ran this cycle (GM provided an entry).
-  bool run(FilterBuffer& fb, int h, int w, int W);
+  bool run(FilterBuffer& fb);
 
   // Access the spike outputs produced in the latest run-step.
   const std::vector<Entry>& out_spike_entries() const { return out_spike_entries_; }
@@ -96,7 +97,7 @@ public:
 private:
   GlobalMerger& gm_;                                          // reference to GM
   Entry gm_entry_{};                                          // input from GM
-  std::array<std::uint8_t, kNumPE> weight_row_{};             // weight row for current computation
+  std::array<std::int8_t, kNumPE> weight_row_{};             // weight row for current computation
   std::array<PE, kNumPE> pe_array_{};                         // 128 PEs
   std::vector<Entry> out_spike_entries_;                      // output spikes for the current step
 };

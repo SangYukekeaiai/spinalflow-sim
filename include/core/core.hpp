@@ -43,6 +43,18 @@ public:
 
   // ----- High-level context setters -----
 
+
+  /**
+   * Initialize PEArray before entering the per-tile compute loop.
+   * - Programs each PE's output neuron id for this (h_out_, w_out_, tile_idx).
+   * - Sets the firing threshold for all PEs.
+   *
+   * Pre-conditions:
+   *   - ConfigureTiles(C_out) has been called (so total_tiles_ > 0).
+   *   - SetSpineContext(...) has been called (valid h_out_, w_out_, W_out_).
+   *   - 0 <= tile_idx < total_tiles_.
+   */
+  void InitPEsBeforeLoop(int threshold, int tile_idx);
   // Set layer id and output-spine coordinates (h_out, w_out, W_out).
   // Rebinds OutputSpine's spine_id accordingly.
   void SetSpineContext(int layer_id, int h_out, int w_out, int W_out);

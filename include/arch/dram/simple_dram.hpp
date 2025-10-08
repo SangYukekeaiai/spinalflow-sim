@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <string>      // NEW
 #include <utility>     // NEW
-
+#include <iostream>    // NEW
 namespace sf { namespace dram {
 
 struct SpineMeta {
