@@ -146,26 +146,38 @@ bool Core::StepOnce(int tile_id) {
   }
 
   // Compute next valids (hard backpressure + FIFO capacity for MFB).
-  const bool cooldown  = (tob_.writeback_cooldown_cycles() > 0);
-  const bool pe_hasout = !pe_array_.out_spike_entries().empty();
-  const bool fifo_has  = FifosHaveData();
-  const bool isb_has   = !isb_->AllEmpty();
-  const bool fifo_space= TargetFifoHasSpace();
+  // NEW: TOB exposes a boolean stall flag for the *next* cycle.
+  const bool stall = tob_.stall_next_cycle();  // replaces cooldown semantics
 
-  const bool v_tob_in_next = cooldown || pe_hasout;
-  const bool v_pe_next     = (!cooldown) && fifo_has;
-  const bool v_mfb_next    = (!cooldown) && isb_has && fifo_space;
+  // NEW: PE outputs are a fixed array of optionals; detect "any has value".
+  const auto& pe_slots = pe_array_.out_spike_entries();
+  bool pe_hasout = false;
+  for (const auto& s : pe_slots) {
+    if (s.has_value()) { pe_hasout = true; break; }
+  }
+
+  const bool fifo_has   = FifosHaveData();
+  const bool isb_has    = !isb_->AllEmpty();
+  const bool fifo_space = TargetFifoHasSpace();
+
+  // Allow TOB to run every cycle so it can drain its local per-PE FIFOs
+  // even if the PEArray has no new outputs this cycle.
+  const bool v_tob_in_next = true;
+
+  // Stall from TOB blocks PE/MFB ingestion for the next cycle.
+  const bool v_pe_next  = (!stall) && fifo_has;
+  const bool v_mfb_next = (!stall) && isb_has && fifo_space;
 
   v_tob_in_ = v_tob_in_next;
   v_pe_     = v_pe_next;
   v_mfb_    = v_mfb_next;
 
-  // Finish condition for compute of THIS tile_id (does not include global drain/store).
-  compute_finished_ =
-      (!cooldown) && !fifo_has && !pe_hasout && !isb_has;
+  // Finish condition for compute of THIS tile_id (no cooldown anymore).
+  // Note: this ignores TOB's internal FIFOs; TOB will keep draining them since
+  // v_tob_in_next is always true.
+  compute_finished_ = (!stall) && !fifo_has && !pe_hasout && !isb_has;
 
   ++cycle_;
-  // if(compute_finished_) std::cout << "total input entries:" << mfb_.entry_count_total << "\n";
   return (ran_tob_in_ || ran_pe_ || ran_mfb_);
 }
 

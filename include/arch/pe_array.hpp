@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <optional>               // NEW
 
 #include "common/constants.hpp"
 #include "common/entry.hpp"
@@ -52,8 +53,10 @@ private:
 class PEArray {
 public:
   explicit PEArray(GlobalMerger& gm) : gm_(gm) {
-    out_spike_entries_.reserve(kMaxSpikesPerStep);
+    // No reserve needed; we use a fixed array of optionals.
+    ResetOutputSlots();
   }
+
   void SetWeightParamsAndThres(float threshold, int w_bits, bool w_signed, int w_frac_bits, float w_scale) {
     for (std::size_t pe_idx = 0; pe_idx < kNumPE; ++pe_idx) {
       pe_array_[pe_idx].SetThreshold(threshold);
@@ -63,6 +66,7 @@ public:
     w_frac_bits_ = w_frac_bits;
     w_scale_ = w_scale;
   }
+
   // Initialize PEs before the outer while-loop of SpinalFlow.
   // output_id = (total_tiles * 128) * (h * W + w) + (tile_idx * 128) + pe_idx
   void InitPEsOutputNIDBeforeLoop(int total_tiles, int tile_idx, int h, int w, int W) {
@@ -76,7 +80,7 @@ public:
       const std::uint32_t out_id  = static_cast<std::uint32_t>(out_id64); // assume fits 32-bit
       pe_array_[pe_idx].RegisterOutputId(out_id);
     }
-    out_spike_entries_.clear();
+    ResetOutputSlots(); // was: out_spike_entries_.clear();
   }
 
   inline float DecodeWeightToFloat(std::int8_t wq) const noexcept {
@@ -87,6 +91,7 @@ public:
     // Fallback to provided scale (should be 2^-n in your exporter)
     return static_cast<float>(wq) * ((w_scale_ > 0.0f) ? w_scale_ : 1.0f);
   }
+
   // Optional external feeding
   void GetInputEntryFromGM(const Entry& in) { gm_entry_ = in; }
 
@@ -106,21 +111,30 @@ public:
   bool run(FilterBuffer& fb);
 
   // Access the spike outputs produced in the latest run-step.
-  const std::vector<Entry>& out_spike_entries() const { return out_spike_entries_; }
+  // NEW: fixed array with one optional Entry per PE.
+  const std::array<std::optional<Entry>, kNumPE>& out_spike_entries() const { return out_spike_entries_; }
 
-  // NEW: Clear the spike outputs after a consumer (e.g., TiledOutputBuffer) copies them.
+  // Clear the spike outputs after a consumer copies them.
   void ClearOutputSpikes();
 
 private:
+  // Helper to reset all output slots to empty.
+  void ResetOutputSlots() {
+    for (auto& s : out_spike_entries_) s.reset();
+  }
+
   GlobalMerger& gm_;                                          // reference to GM
   Entry gm_entry_{};                                          // input from GM
-  std::array<std::int8_t, kNumPE> weight_row_{};             // weight row for current computation
+  std::array<std::int8_t, kNumPE> weight_row_{};              // weight row for current computation
   std::array<PE, kNumPE> pe_array_{};                         // 128 PEs
-  std::vector<Entry> out_spike_entries_;                      // output spikes for the current step
+
+  // NEW: one optional Entry per PE for the current step.
+  std::array<std::optional<Entry>, kNumPE> out_spike_entries_{};
+
   int w_bits_ = 8;                                           // weight bit-width
   bool w_signed_ = true;                                     // weight signedness
   int w_frac_bits_ = 0;                                      // weight fractional bits (for fixed-point)
-  float w_scale_ = 1.0f;                                     // weight scale (real multiplier
+  float w_scale_ = 1.0f;                                     // weight scale (real multiplier)
 };
 
 } // namespace sf

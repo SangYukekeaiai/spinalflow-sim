@@ -1,7 +1,9 @@
 // All comments are in English.
 
 #include "arch/tiled_output_buffer.hpp"
-#include "arch/pe_array.hpp"  // requires: out_spike_entries() and ClearOutputSpikes()
+#include "arch/pe_array.hpp"  // requires: out_spike_entries() returning fixed array of optionals
+#include <limits>
+#include <optional>            // for std::optional
 
 namespace sf {
 
@@ -11,37 +13,70 @@ bool TiledOutputBuffer::run(int tile_id) {
     throw std::out_of_range("TiledOutputBuffer::run: tile_id out of range.");
   }
 
-  // If in cooldown, decrement and report activity.
-  if (writeback_cooldown_cycles_ > 0) {
-    --writeback_cooldown_cycles_;
-    return true;
+  bool processed = false;
+
+  // 1) If any FIFO is full, assert stall for the next cycle; do NOT return here.
+  bool any_full = false;
+  for (const auto& q : pe_fifos_) {
+    if (q.size() >= kLocalFifoDepth) {
+      any_full = true;
+      break;
+    }
+  }
+  stall_next_cycle_ = any_full;
+
+  // 2) If NOT full, grab the outputs from PEArray and push them to per-PE FIFOs.
+  //    Contract: out_spike_entries() -> std::array<std::optional<Entry>, kNumPE>
+  if (!any_full) {
+    const auto& outs = pe_array_.out_spike_entries();
+
+    bool saw_any = false;
+    // One pass: for each PE i, if outs[i] holds a value, push into pe_fifos_[i].
+    for (std::size_t i = 0; i < kNumPE; ++i) {
+      if (outs[i].has_value()) {
+        // Since we checked "any_full" above and each PE contributes at most one
+        // entry per cycle, pushing one more cannot overflow beyond depth=4 here.
+        pe_fifos_[i].push_back(*outs[i]);
+        saw_any = true;
+      }
+    }
+    if (saw_any) {
+      pe_array_.ClearOutputSpikes();
+      processed = true;
+    }
   }
 
-  // Otherwise, check if PEArray produced outputs for this step.
-  const auto& outs = pe_array_.out_spike_entries();
-  if (outs.empty()) {
-    return false; // nothing to do
+  // 3) Pick the smallest-ts among all FIFO heads.
+  int best_pe = -1;
+  int best_ts = std::numeric_limits<int>::max();
+
+  for (std::size_t i = 0; i < kNumPE; ++i) {
+    auto& q = pe_fifos_[i];
+    if (!q.empty()) {
+      // Replace '.ts' below if your Entry uses a different timestamp field.
+      const int ts = static_cast<int>(q.front().ts);
+      if (ts < best_ts) {
+        best_ts = ts;
+        best_pe = static_cast<int>(i);
+      }
+    }
   }
 
-  // Insert all entries into the tile buffer for the given tile_id.
-  auto& vec = tile_buffers_.at(static_cast<std::size_t>(tile_id));
+  // 4) Emit exactly one entry (the smallest ts) to the given tile buffer.
+  if (best_pe >= 0) {
+    Entry chosen = pe_fifos_[static_cast<std::size_t>(best_pe)].front();
+    pe_fifos_[static_cast<std::size_t>(best_pe)].erase(
+        pe_fifos_[static_cast<std::size_t>(best_pe)].begin());
 
-  // Optional capacity check to detect pathological overflow.
-  if (vec.size() > vec.max_size() - outs.size()) {
-    throw std::runtime_error("TiledOutputBuffer::run: tile buffer overflow.");
+    auto& vec = tile_buffers_.at(static_cast<std::size_t>(tile_id));
+    if (vec.size() > vec.max_size() - 1) {
+      throw std::runtime_error("TiledOutputBuffer::run: tile buffer overflow.");
+    }
+    vec.push_back(chosen);
+    processed = true;
   }
 
-  const std::size_t prev_sz = vec.size();
-  vec.insert(vec.end(), outs.begin(), outs.end());
-  const std::size_t appended = vec.size() - prev_sz;
-
-  // Set cooldown equal to the number of entries copied (simple latency model).
-  writeback_cooldown_cycles_ = static_cast<int>(appended);
-
-  // Clear the PEArray outputs after successful copy.
-  pe_array_.ClearOutputSpikes();
-
-  return true;
+  return processed;
 }
 
 bool TiledOutputBuffer::PeekTileHead(std::size_t tile_id, Entry& out) const {
@@ -57,15 +92,14 @@ bool TiledOutputBuffer::PopTileHead(std::size_t tile_id, Entry& out) {
   auto& vec = tile_buffers_[tile_id];
   if (vec.empty()) return false;
   out = vec.front();
-  // vector pop-front: erase(begin) is O(n), but kTilesPerSpine is small and
-  // the sorter pops one at a time, which is acceptable per the spec.
   vec.erase(vec.begin());
   return true;
 }
 
 void TiledOutputBuffer::ClearAll() {
   for (auto& v : tile_buffers_) v.clear();
-  writeback_cooldown_cycles_ = 0;
+  for (auto& q : pe_fifos_)    q.clear();
+  stall_next_cycle_ = false;
 }
 
 } // namespace sf

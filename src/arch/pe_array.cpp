@@ -8,11 +8,12 @@ namespace sf {
 bool PEArray::run(FilterBuffer& fb) {
   // Try to fetch one entry from Global Merger.
   if (!gm_.run(gm_entry_)) {
-    return false; // no input this cycle
+    // No input this cycle; keep current out_spike_entries_ as-is.
+    return false;
   }
 
-  // We have an input entry. Clear previous outputs for this step.
-  out_spike_entries_.clear();
+  // We have an input entry. Reset output slots for this step.
+  ResetOutputSlots();
 
   // Fetch the corresponding weight row (ComputeRowId uses FilterBuffer's members).
   GetWeightRow(fb);
@@ -25,9 +26,11 @@ bool PEArray::run(FilterBuffer& fb) {
 
     if (pe_array_[pe_idx].spiked()) {
       Entry e{};
-      e.ts = pe_array_[pe_idx].last_ts();
+      e.ts        = pe_array_[pe_idx].last_ts();
       e.neuron_id = pe_array_[pe_idx].output_neuron_id();
-      out_spike_entries_.push_back(e);
+      out_spike_entries_[pe_idx] = e;          // set this PE's slot
+    } else {
+      out_spike_entries_[pe_idx] = std::nullopt; // explicitly empty
     }
   }
 
@@ -35,7 +38,8 @@ bool PEArray::run(FilterBuffer& fb) {
 }
 
 void PEArray::ClearOutputSpikes() {
-  out_spike_entries_.clear();
+  // Clear all per-PE slots to empty.
+  ResetOutputSlots();
 }
 
 } // namespace sf
