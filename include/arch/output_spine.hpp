@@ -41,7 +41,7 @@ public:
     }
     const std::uint32_t bytes =
         static_cast<std::uint32_t>(buf_.size() * sizeof(Entry));
-        if (buf_.size() >= 1000) std::cout << "OutputSpine::StoreOutputSpineToDRAM: Storing " << buf_.size() << " entries to DRAM for layer " << layer_id << ", spine_id " << spine_id_ << "\n";
+        // std::cout << "OutputSpine::StoreOutputSpineToDRAM: Storing " << buf_.size() << " entries to DRAM for layer " << layer_id << ", spine_id " << spine_id_ << "\n";
     buf_.clear();
     // const std::uint32_t written =
     //     dram_->StoreOutputSpine(layer_id, static_cast<std::uint32_t>(spine_id_),

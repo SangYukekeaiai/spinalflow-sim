@@ -43,7 +43,8 @@ public:
 
   // ----- High-level context setters -----
 
-
+  // Set weight quantization params for the PEArray.
+  void SetPEsWeightParamsAndThres(float threshold, int w_bits, bool w_signed, int w_frac_bits, float w_scale);
   /**
    * Initialize PEArray before entering the per-tile compute loop.
    * - Programs each PE's output neuron id for this (h_out_, w_out_, tile_idx).
@@ -54,7 +55,7 @@ public:
    *   - SetSpineContext(...) has been called (valid h_out_, w_out_, W_out_).
    *   - 0 <= tile_idx < total_tiles_.
    */
-  void InitPEsBeforeLoop(int threshold, int tile_idx);
+  void InitPEsOutputNIDBeforeLoop(int tile_idx);
   // Set layer id and output-spine coordinates (h_out, w_out, W_out).
   // Rebinds OutputSpine's spine_id accordingly.
   void SetSpineContext(int layer_id, int h_out, int w_out, int W_out);
@@ -80,7 +81,7 @@ public:
 
   // Drain all per-tile buffers (inside TOB) into OutputSpine using the sorter,
   // then store OutputSpine to DRAM.
-  void DrainAllTilesAndStore();
+  void DrainAllTilesAndStore(int & drained_entries);
 
   // ----- Status / helpers -----
   bool FinishedCompute() const { return compute_finished_; }

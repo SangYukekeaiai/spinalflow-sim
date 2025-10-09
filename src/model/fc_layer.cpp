@@ -15,7 +15,11 @@ void FCLayer::ConfigureLayer(int layer_id,
                              int Kh, int Kw,
                              int Sh, int Sw,
                              int Ph, int Pw,
-                             int Threshold,
+                             float Threshold,
+                             int  w_bits,
+                             bool w_signed,
+                             int  w_frac_bits,
+                             float w_scale,
                              sf::dram::SimpleDRAM* dram)
 {
   layer_id_ = layer_id;
@@ -24,6 +28,10 @@ void FCLayer::ConfigureLayer(int layer_id,
   Kh_ = Kh; Kw_ = Kw;
   Sh_ = Sh; Sw_ = Sw;
   Ph_ = Ph; Pw_ = Pw;
+  w_bits_      = w_bits;
+  w_signed_    = w_signed;
+  w_frac_bits_ = w_frac_bits;
+  w_scale_     = w_scale;
 
   H_out_ = DeriveOutDim(H_in_, Ph_, Kh_, Sh_);
   W_out_ = DeriveOutDim(W_in_, Pw_, Kw_, Sw_);
@@ -32,6 +40,7 @@ void FCLayer::ConfigureLayer(int layer_id,
 
   EnsureEngines_(dram);
   fb_->Configure(C_in_, W_in_, Kh_, Kw_, Sh_, Sw_, Ph_, Pw_, dram);
+  core_->SetPEsWeightParamsAndThres(threshold_, w_bits_, w_signed_, w_frac_bits_, w_scale_);
 
   if (C_out_ <= 0) {
     throw std::invalid_argument("FCLayer::ConfigureLayer: C_out must be positive and divisible by kNumPE.");
@@ -74,7 +83,7 @@ std::vector<std::vector<int>> FCLayer::generate_batches(int /*h_out*/, int /*w_o
 void FCLayer::run_layer() {
   std::cout << "FCLayer::run_layer: Running layer " << layer_id_ << " with output shape (" << H_out_ << ", " << W_out_ << ")\n";
   if (!core_ || !fb_) throw std::runtime_error("FCLayer::run_layer: engines not configured.");
-
+  int total_drained_entries = 0;
   for (int h = 0; h < H_out_; ++h) {
     for (int w = 0; w < W_out_; ++w) {
       fb_->Update(h, w);
@@ -89,14 +98,15 @@ void FCLayer::run_layer() {
       for (int tile_id = 0; tile_id < total_tiles; ++tile_id) {
         fb_->LoadWeightFromDram(static_cast<std::uint32_t>(layer_id_),
                                 static_cast<std::uint32_t>(tile_id));
-        core_->InitPEsBeforeLoop(threshold_, tile_id); // threshold=1 for now
+        core_->InitPEsOutputNIDBeforeLoop(tile_id); // threshold=1 for now
         while (!core_->FinishedCompute()) {
           core_->StepOnce(tile_id);
         }
       }
-      core_->DrainAllTilesAndStore();
+      core_->DrainAllTilesAndStore(total_drained_entries);
     }
   }
+  std::cout << "FCLayer: "<< layer_id_ <<" Total drained entries to DRAM: " << total_drained_entries << "\n";
 }
 
 } // namespace sf

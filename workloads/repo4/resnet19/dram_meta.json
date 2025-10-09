@@ -5,7 +5,7 @@
       "L": 0,
       "name": "layer1.0.conv1",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 64,
         "H": 32,
@@ -4140,13 +4140,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.0839468240737915,
+      "weight_float_max": 1.1680412292480469
     },
     {
       "L": 1,
       "name": "layer1.0.conv2",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 128,
         "H": 16,
@@ -5209,13 +5217,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.7076280117034912,
+      "weight_float_max": 0.5639758110046387
     },
     {
       "L": 2,
       "name": "layer1.1.conv1",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 128,
         "H": 16,
@@ -6278,13 +6294,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.6503869891166687,
+      "weight_float_max": 0.5624470710754395
     },
     {
       "L": 3,
       "name": "layer1.1.conv2",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 128,
         "H": 16,
@@ -7347,13 +7371,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.5672022700309753,
+      "weight_float_max": 0.5715088844299316
     },
     {
       "L": 4,
       "name": "layer1.2.conv1",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 128,
         "H": 16,
@@ -8416,13 +8448,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.5629932880401611,
+      "weight_float_max": 0.631933867931366
     },
     {
       "L": 5,
       "name": "layer1.2.conv2",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 128,
         "H": 16,
@@ -9485,13 +9525,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.5259888172149658,
+      "weight_float_max": 0.5995238423347473
     },
     {
       "L": 6,
       "name": "layer2.0.conv1",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 128,
         "H": 16,
@@ -10558,13 +10606,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.4108944535255432,
+      "weight_float_max": 0.39522695541381836
     },
     {
       "L": 7,
       "name": "layer2.0.conv2",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 8,
@@ -10863,13 +10919,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.4275311827659607,
+      "weight_float_max": 0.45894768834114075
     },
     {
       "L": 8,
       "name": "layer2.1.conv1",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 8,
@@ -11168,13 +11232,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.6636446118354797,
+      "weight_float_max": 0.5707144737243652
     },
     {
       "L": 9,
       "name": "layer2.1.conv2",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 8,
@@ -11473,13 +11545,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.9254749417304993,
+      "weight_float_max": 0.9233520030975342
     },
     {
       "L": 10,
       "name": "layer2.2.conv1",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 8,
@@ -11778,13 +11858,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.3367502689361572,
+      "weight_float_max": 1.4369888305664062
     },
     {
       "L": 11,
       "name": "layer2.2.conv2",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 8,
@@ -12083,13 +12171,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.4112173318862915,
+      "weight_float_max": 1.236267328262329
     },
     {
       "L": 12,
       "name": "layer3.0.conv1",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 8,
@@ -12396,13 +12492,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.8387113809585571,
+      "weight_float_max": 0.8125854134559631
     },
     {
       "L": 13,
       "name": "layer3.0.conv2",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 4,
@@ -12517,13 +12621,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.062082290649414,
+      "weight_float_max": 0.8170192241668701
     },
     {
       "L": 14,
       "name": "layer3.1.conv1",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 4,
@@ -12638,13 +12750,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.808425784111023,
+      "weight_float_max": 1.1092628240585327
     },
     {
       "L": 15,
       "name": "layer3.1.conv2",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 4,
@@ -12759,7 +12879,15 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.3926904201507568,
+      "weight_float_max": 0.6386948227882385
     }
   ]
 }

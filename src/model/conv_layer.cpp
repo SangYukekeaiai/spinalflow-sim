@@ -22,7 +22,11 @@ void ConvLayer::ConfigureLayer(int layer_id,
                                int Kh, int Kw,
                                int Sh, int Sw,
                                int Ph, int Pw,
-                               int Threshold,
+                               float Threshold,
+                               int  w_bits,
+                               bool w_signed,
+                               int  w_frac_bits,
+                               float w_scale,
                                sf::dram::SimpleDRAM* dram)
 {
   // Save params
@@ -32,6 +36,10 @@ void ConvLayer::ConfigureLayer(int layer_id,
   Kh_ = Kh; Kw_ = Kw;
   Sh_ = Sh; Sw_ = Sw;
   Ph_ = Ph; Pw_ = Pw;
+  w_bits_      = w_bits;
+  w_signed_    = w_signed;
+  w_frac_bits_ = w_frac_bits;
+  w_scale_     = w_scale;
   threshold_ = Threshold;
   // Derive output spatial dimensions.
   H_out_ = DeriveOutDim(H_in_, Ph_, Kh_, Sh_);
@@ -42,7 +50,7 @@ void ConvLayer::ConfigureLayer(int layer_id,
 
   // Configure FilterBuffer with static layer params.
   fb_->Configure(C_in_, W_in_, Kh_, Kw_, Sh_, Sw_, Ph_, Pw_, dram);
-
+  core_->SetPEsWeightParamsAndThres(threshold_, w_bits_, w_signed_, w_frac_bits_, w_scale_);
   // Validate tiling
   if (C_out_ <= 0) {
     throw std::invalid_argument("ConvLayer::ConfigureLayer: C_out must be positive and divisible by kNumPE.");
@@ -94,13 +102,13 @@ void ConvLayer::run_layer() {
               << ", Sh=" << Sh_ << ", Sw=" << Sw_ << ", Ph=" << Ph_ << ", Pw=" << Pw_
               << ", H_out=" << H_out_ << ", W_out=" << W_out_ << "\n";
   if (!core_ || !fb_) throw std::runtime_error("ConvLayer::run_layer: engines not configured.");
-
+  int total_drained_entries = 0;
   for (int h = 0; h < H_out_; ++h) {
     for (int w = 0; w < W_out_; ++w) {
         // std::cout << "  Processing output site (h=" << h << ", w=" << w << ")\n";
       fb_->Update(h, w);
       core_->SetSpineContext(layer_id_, h, w, W_out_);
-      core_->ConfigureTiles(C_out_);
+      core_->ConfigureTiles(C_out_); // sign the total_tiles_ inside Core
 
       auto batches = generate_batches(h, w);
       core_->BindTileBatches(&batches);
@@ -110,14 +118,15 @@ void ConvLayer::run_layer() {
       for (int tile_id = 0; tile_id < total_tiles; ++tile_id) {
         fb_->LoadWeightFromDram(static_cast<std::uint32_t>(layer_id_),
                                 static_cast<std::uint32_t>(tile_id));
-        core_->InitPEsBeforeLoop(threshold_, tile_id); // threshold=1 for now
+        core_->InitPEsOutputNIDBeforeLoop(tile_id); // threshold=1 for now
         while (!core_->FinishedCompute()) {
           core_->StepOnce(tile_id);
         }
       }
-      core_->DrainAllTilesAndStore();
+      core_->DrainAllTilesAndStore(total_drained_entries);
     }
   }
+  std::cout << "ConvLayer: "<< layer_id_ <<" Total drained entries to DRAM: " << total_drained_entries << " ,Mean entries per spine: " << total_drained_entries/(H_out_ * W_out_) << "\n";
 }
 
 } // namespace sf

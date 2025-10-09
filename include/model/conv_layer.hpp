@@ -32,7 +32,11 @@ public:
                       int Kh, int Kw,
                       int Sh, int Sw,
                       int Ph, int Pw,
-                      int Threshold,
+                      float Threshold,
+                      int  w_bits,
+                      bool w_signed,
+                      int  w_frac_bits,
+                      float w_scale,
                       sf::dram::SimpleDRAM* dram);
 
   std::vector<std::vector<int>> generate_batches(int h_out, int w_out) const;
@@ -59,7 +63,11 @@ private:
   int Kh_ = 0, Kw_ = 0;
   int Sh_ = 0, Sw_ = 0;
   int Ph_ = 0, Pw_ = 0;
-  int threshold_ = 0;
+  float threshold_ = 0.0f;
+  int   w_bits_      = 8;
+  bool  w_signed_    = true;
+  int   w_frac_bits_ = -1;    // -1 means "unknown"
+  float w_scale_     = 1.0f;  // equals 2^-n when fixed-point is used
 
   // Owning engines
   std::unique_ptr<FilterBuffer>    fb_;

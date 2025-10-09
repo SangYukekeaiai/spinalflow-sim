@@ -5,7 +5,7 @@
       "L": 0,
       "name": "features.3",
       "kind": "conv",
-      "threshold": 106,
+      "threshold": 1.0,
       "params_in": {
         "C": 64,
         "H": 32,
@@ -4140,13 +4140,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.0236397981643677,
+      "weight_float_max": 1.2020822763442993
     },
     {
       "L": 1,
       "name": "features.7",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 64,
         "H": 16,
@@ -5209,13 +5217,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.6450936794281006,
+      "weight_float_max": 0.5745999813079834
     },
     {
       "L": 2,
       "name": "features.10",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 128,
         "H": 16,
@@ -6278,13 +6294,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.5819941163063049,
+      "weight_float_max": 0.55419921875
     },
     {
       "L": 3,
       "name": "features.14",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 128,
         "H": 8,
@@ -6583,13 +6607,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.690905749797821,
+      "weight_float_max": 0.807817280292511
     },
     {
       "L": 4,
       "name": "features.17",
       "kind": "conv",
-      "threshold": 118,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 8,
@@ -6888,13 +6920,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.0779569149017334,
+      "weight_float_max": 0.5975177884101868
     },
     {
       "L": 5,
       "name": "features.20",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 8,
@@ -7193,13 +7233,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.5510804057121277,
+      "weight_float_max": 0.5078548192977905
     },
     {
       "L": 6,
       "name": "features.24",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 256,
         "H": 4,
@@ -7314,13 +7362,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.6166135668754578,
+      "weight_float_max": 0.6232167482376099
     },
     {
       "L": 7,
       "name": "features.27",
       "kind": "conv",
-      "threshold": 127,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 4,
@@ -7435,13 +7491,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.6971321702003479,
+      "weight_float_max": 0.6321795582771301
     },
     {
       "L": 8,
       "name": "features.30",
       "kind": "conv",
-      "threshold": 106,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 4,
@@ -7556,13 +7620,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -0.7738267779350281,
+      "weight_float_max": 1.1979750394821167
     },
     {
       "L": 9,
       "name": "features.34",
       "kind": "conv",
-      "threshold": 100,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 2,
@@ -7629,13 +7701,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.2746458053588867,
+      "weight_float_max": 1.242490291595459
     },
     {
       "L": 10,
       "name": "features.37",
       "kind": "conv",
-      "threshold": 96,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 2,
@@ -7702,13 +7782,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.3288929462432861,
+      "weight_float_max": 0.9475546479225159
     },
     {
       "L": 11,
       "name": "features.40",
       "kind": "conv",
-      "threshold": 59,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 2,
@@ -7775,13 +7863,21 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 5
+      },
+      "weight_scale": 0.03125,
+      "weight_float_min": -2.1457791328430176,
+      "weight_float_max": 1.434090495109558
     },
     {
       "L": 12,
       "name": "classifier",
       "kind": "fc",
-      "threshold": 119,
+      "threshold": 1.0,
       "params_in": {
         "C": 512,
         "H": 1,
@@ -7824,7 +7920,15 @@
       },
       "output_region_begin": 0,
       "output_region_end": 0,
-      "output_write_ptr": 0
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 6
+      },
+      "weight_scale": 0.015625,
+      "weight_float_min": -1.0659503936767578,
+      "weight_float_max": 0.5913622379302979
     }
   ]
 }

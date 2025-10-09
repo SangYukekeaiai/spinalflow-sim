@@ -1,6 +1,7 @@
 // All comments are in English.
 
 #include "arch/pe_array.hpp"
+#include <iostream>
 
 namespace sf {
 
@@ -18,8 +19,9 @@ bool PEArray::run(FilterBuffer& fb) {
 
   // Drive all PEs for this step.
   for (std::size_t pe_idx = 0; pe_idx < kNumPE; ++pe_idx) {
-    const std::int32_t w_val = static_cast<std::int32_t>(weight_row_[pe_idx]);
-    pe_array_[pe_idx].Process(gm_entry_.ts, w_val);
+    // Decode weight to float (fixed-point or scale)
+    float w_float = DecodeWeightToFloat(weight_row_[pe_idx]);
+    pe_array_[pe_idx].Process(gm_entry_.ts, w_float);
 
     if (pe_array_[pe_idx].spiked()) {
       Entry e{};

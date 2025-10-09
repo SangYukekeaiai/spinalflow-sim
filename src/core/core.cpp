@@ -28,7 +28,10 @@ Core::Core(sf::dram::SimpleDRAM* dram,
   v_pe_     = false;
   v_mfb_    = false;
 }
-
+// Set weight quantization params for the PEArray.
+void Core::SetPEsWeightParamsAndThres(float threshold, int w_bits, bool w_signed, int w_frac_bits, float w_scale) {
+  pe_array_.SetWeightParamsAndThres(threshold, w_bits, w_signed, w_frac_bits, w_scale);
+}
 void Core::SetSpineContext(int layer_id, int h_out, int w_out, int W_out) {
   layer_id_ = layer_id;
   h_out_    = h_out;
@@ -95,8 +98,7 @@ void Core::PreloadFirstBatch() {
   batch_cursor_ = 0;
 }
 
-
-void Core::InitPEsBeforeLoop(int threshold, int tile_idx) {
+void Core::InitPEsOutputNIDBeforeLoop(int tile_idx) {
   // Basic guards to avoid programming PEs with invalid parameters.
   if (total_tiles_ <= 0) {
     throw std::runtime_error("Core::InitPEsBeforeLoop: total_tiles_ not configured. Call ConfigureTiles(C_out) first.");
@@ -115,8 +117,7 @@ void Core::InitPEsBeforeLoop(int threshold, int tile_idx) {
   // - Compute out_id for each PE = base_pos + tile_offset + pe_idx
   // - Register per-PE output id and set threshold
   // - Clear its internal out_spike_entries_ for a fresh tile
-  pe_array_.InitPEsBeforeLoop(
-      /*threshold   =*/ threshold,
+  pe_array_.InitPEsOutputNIDBeforeLoop(
       /*total_tiles =*/ total_tiles_,
       /*tile_idx    =*/ tile_idx,
       /*h           =*/ h_out_,
@@ -168,7 +169,7 @@ bool Core::StepOnce(int tile_id) {
   return (ran_tob_in_ || ran_pe_ || ran_mfb_);
 }
 
-void Core::DrainAllTilesAndStore() {
+void Core::DrainAllTilesAndStore(int & drained_entries) {
    
   if (!sorter_) {
     sorter_ = std::make_unique<OutputSorter>(&tob_, &out_spine_);
@@ -178,8 +179,12 @@ void Core::DrainAllTilesAndStore() {
     // keep popping one-by-one
   }
   // Store to DRAM (throws on failure). Clears OutputSpine on success.
-  // std::cout << "Check how many entries in the sorter before draining: " << out_spine_.size() << "\n";
+  
+
+  drained_entries += static_cast<int>(out_spine_.size());
+  // std::cout << "callee addr=" << &drained_entries << "\n";
   out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_));
+
 }
 
 bool Core::FifosHaveData() const {

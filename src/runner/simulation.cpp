@@ -14,6 +14,7 @@ static LayerKind ParseKind_(const std::string& s) {
   throw std::invalid_argument("Unknown layer kind: " + s);
 }
 
+
 std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
   // Read entire JSON file as text
   std::ifstream ifs(json_path);
@@ -38,6 +39,7 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
     s.name = jl.value("name", std::string("L") + std::to_string(s.L));
     s.kind = ParseKind_(jl.at("kind").get<std::string>());
     s.threshold_ = jl.value("threshold", 0);
+
     // params_in
     {
       const auto& pin = jl.at("params_in");
@@ -80,6 +82,46 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
       s.W_out    = po.at("W").get<int>();
     }
 
+    // ---- NEW: parse minimal quantization metadata ----
+    // weight_q_format: {bits, signed, frac_bits}
+    if (jl.contains("weight_q_format") && jl["weight_q_format"].is_object()) {
+      const auto& qf = jl["weight_q_format"];
+      s.w_bits      = qf.value("bits", 8);
+      s.w_signed    = qf.value("signed", true);
+      s.w_frac_bits = qf.value("frac_bits", -1);
+      s.has_w_qformat = true;
+    }
+
+    // weight_scale: float (preferred). If missing, fall back to legacy "weight_qparams.scale".
+    if (jl.contains("weight_scale")) {
+      s.w_scale = jl.at("weight_scale").get<float>();
+      s.has_w_scale = true;
+    } else if (jl.contains("weight_qparams") && jl["weight_qparams"].is_object()) {
+      // Backward-compat: older exporter might have emitted this.
+      const auto& qp = jl["weight_qparams"];
+      if (qp.contains("scale")) {
+        s.w_scale = qp.at("scale").get<float>();
+        s.has_w_scale = true;
+      }
+    }
+
+    // Optional debug provenance
+    if (jl.contains("weight_float_min")) s.w_float_min = jl.at("weight_float_min").get<float>();
+    if (jl.contains("weight_float_max")) s.w_float_max = jl.at("weight_float_max").get<float>();
+
+    // Consistency checks (non-fatal warnings)
+    if (s.has_w_qformat && s.has_w_scale && s.w_frac_bits >= 0) {
+      // If frac_bits is present, the scale should be 2^-frac_bits for fixed-point.
+      const float expect = std::ldexp(1.0f, -s.w_frac_bits); // 2^-n
+      const float eps = 1e-6f * std::max(1.0f, std::abs(expect));
+      if (std::abs(s.w_scale - expect) > eps) {
+        std::cerr << "[ParseConfig][Warn] L=" << s.L
+                  << " weight_scale (" << s.w_scale
+                  << ") != 2^-frac_bits (" << expect
+                  << "). Proceeding with provided values.\n";
+      }
+    }
+
     // Basic sanity checks to fail fast
     if (s.Cin_in != s.Cin_w) {
       throw std::invalid_argument("ParseConfig: Cin mismatch between params_in.C and params_weight.Cin at L=" + std::to_string(s.L));
@@ -114,6 +156,10 @@ void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram)
                           s.Sh,     s.Sw,
                           s.Ph,     s.Pw,
                           s.threshold_,
+                          s.w_bits,
+                          s.w_signed,
+                          s.w_frac_bits,
+                          s.w_scale,
                           dram);
       conv.run_layer();
     } else if (s.kind == LayerKind::kFC) {
@@ -125,6 +171,10 @@ void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram)
                         s.Sh,     s.Sw,
                         s.Ph,     s.Pw,
                         s.threshold_,
+                        s.w_bits,
+                        s.w_signed,
+                        s.w_frac_bits,
+                        s.w_scale,
                         dram);
       fc.run_layer();
     } else {

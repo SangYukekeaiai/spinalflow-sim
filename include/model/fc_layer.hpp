@@ -30,7 +30,11 @@ public:
                       int Kh, int Kw,
                       int Sh, int Sw,
                       int Ph, int Pw,
-                      int Threshold,
+                      float Threshold,
+                      int  w_bits,
+                      bool w_signed,
+                      int  w_frac_bits,
+                      float w_scale,
                       sf::dram::SimpleDRAM* dram);
 
   std::vector<std::vector<int>> generate_batches(int h_out, int w_out) const;
@@ -56,7 +60,11 @@ private:
   int Sh_{1}, Sw_{1};
   int Ph_{0}, Pw_{0};
   int H_out_{0}, W_out_{0};
-  int threshold_{0};
+  float threshold_{0.0f};
+  int  w_bits_{8};
+  bool w_signed_{true};
+  int  w_frac_bits_{-1}; // -1 means "not specified"
+  float w_scale_{1.0f};
 
   std::unique_ptr<FilterBuffer>     fb_;
   std::unique_ptr<InputSpineBuffer> isb_;
