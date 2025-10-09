@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/test_simple_dram_read.dir/tests/test_simple_dram_read.cpp.o -o bin/test_simple_dram_read  lib/libsfs_core.a 

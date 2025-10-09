@@ -1,0 +1,5 @@
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/sfs_core.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/spinalflow-sim.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/test_simple_dram_read.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/edit_cache.dir
+/home/yy/snn/spinalflow-sim/build/CMakeFiles/rebuild_cache.dir
