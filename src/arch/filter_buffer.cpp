@@ -22,6 +22,11 @@ void FilterBuffer::Configure(int C_in, int W_in,
   P_h_  = Ph;
   P_w_  = Pw;
   dram_ = dram_ptr;
+  // Reset ownership on (re)configuration
+  ClearAllOwnership();
+
+  // Optional: zero the storage (not strictly required)
+  for (auto& r : rows_) r.fill(0);
 }
 
 void FilterBuffer::Update(int h_out, int w_out) {
@@ -72,36 +77,86 @@ int FilterBuffer::ComputeRowId(std::uint32_t neuron_id) const {
 }
 
 FilterBuffer::Row FilterBuffer::GetRow(int row_id) const {
-  if (row_id < 0 || row_id >= static_cast<int>(kFilterRows)) {
-    throw std::out_of_range("FilterBuffer::GetRow: row_id out of range.");
-  }
-  // for (std::size_t i = 0; i < kNumPE; ++i) {
-    
-  //   if(static_cast<int>(rows_[static_cast<std::size_t>(row_id)][i]) != 0)std::cout << static_cast<int>(rows_[static_cast<std::size_t>(row_id)][i]) << " ";
-  // }
-  // std::cout << "\n";
-  
-  return rows_[static_cast<std::size_t>(row_id)];
+  const int rpt = RowsPerTile();
+  if (rpt <= 0) throw std::logic_error("GetRow: invalid rows-per-tile (configure layer first).");
+  if (row_id < 0 || row_id >= rpt) throw std::out_of_range("GetRow: row_id out of range for active tile.");
+  const uint32_t base = ActiveBaseRow();
+  const uint32_t idx  = base + static_cast<uint32_t>(row_id);
+  if (idx >= kFilterRows) throw std::out_of_range("GetRow: computed row index exceeds buffer.");
+  return rows_[idx];
 }
 
-std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id, uint64_t* out_cycles) {
+std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
+                                               std::uint32_t tile_id,
+                                               std::uint32_t layer_id,
+                                               uint64_t* out_cycles) {
   if (out_cycles) *out_cycles = 0;
+
   if (!dram_) {
     throw std::runtime_error("FilterBuffer::LoadWeightFromDram: DRAM pointer is null.");
   }
+  if (total_tiles == 0) {
+    throw std::invalid_argument("FilterBuffer::LoadWeightFromDram: total_tiles must be > 0.");
+  }
 
-  // Destination pointer to the first byte of rows[][].
-  void* dst = static_cast<void*>(rows_.front().data());
-  const std::uint32_t max_bytes =
-      static_cast<std::uint32_t>(kFilterRows * kNumPE * sizeof(std::uint8_t));
-  
-  const uint32_t bw = std::max(1u, wtiming_.bw_bytes_per_cycle);
-  const uint64_t data_cycles = CeilDivU64(static_cast<uint64_t>(max_bytes),
-                                          static_cast<uint64_t>(bw));
-  const uint64_t total_cycles = data_cycles + static_cast<uint64_t>(wtiming_.fixed_latency);
+  // If already resident: make it active and return.
+  if (owned_tile_id_.count(tile_id)) {
+    active_tile_id_ = tile_id; // just switch active tile
+    return 0;                  // no DRAM access
+  }
 
-  if (out_cycles) *out_cycles = total_cycles;
-  return dram_->LoadWeightTile(layer_id, tile_id, dst, max_bytes);
+  // Compute rows per tile and capacity checks.
+  const int rows_per_tile = RowsPerTile();
+  if (rows_per_tile <= 0) {
+    throw std::logic_error("FilterBuffer::LoadWeightFromDram: rows_per_tile <= 0 (configure layer first).");
+  }
+  if (kFilterRows % rows_per_tile != 0) {
+    throw std::invalid_argument("FilterBuffer::LoadWeightFromDram: rows_per_tile must divide the buffer capacity (4608).");
+  }
+  const uint32_t tiles_capacity = static_cast<uint32_t>(kFilterRows / rows_per_tile);
+  if (tiles_capacity == 0) {
+    throw std::logic_error("FilterBuffer::LoadWeightFromDram: tiles_capacity computed as 0.");
+  }
+
+  // Clear existing residency (we will refill from the requested tile forward).
+  ClearAllOwnership();
+  for (auto& r : rows_) r.fill(0); // optional but keeps debugging clean
+
+  // Byte math per tile and per-transaction timing
+  const uint32_t bytes_per_tile = static_cast<uint32_t>(rows_per_tile) * kNumPE * sizeof(std::int8_t);
+  const uint32_t bw              = std::max(1u, wtiming_.bw_bytes_per_cycle);
+  const uint64_t data_cycles     = CeilDivU64(static_cast<uint64_t>(bytes_per_tile),
+                                              static_cast<uint64_t>(bw));
+  const uint64_t xact_overhead   = static_cast<uint64_t>(wtiming_.fixed_latency);
+
+  // How many tiles to load this time (fill as much as possible)
+  const uint32_t tiles_to_load = std::min<uint32_t>(tiles_capacity, total_tiles);
+
+  uint32_t total_bytes_loaded = 0;
+  uint32_t base_row           = 0;
+
+  for (uint32_t i = 0; i < tiles_to_load; ++i) {
+    const uint32_t cur_id = (tile_id + i) % total_tiles;
+
+    // Destination pointer starts at rows_[base_row]
+    void* dst = static_cast<void*>(const_cast<std::int8_t*>(rows_[base_row].data()));
+    const uint32_t n = dram_->LoadWeightTile(layer_id, cur_id, dst, bytes_per_tile);
+
+    // Record residency and base row mapping
+    owned_tile_id_.insert(cur_id);
+    tile_base_row_[cur_id] = base_row;
+
+    // Set the first one as active
+    if (i == 0) active_tile_id_ = cur_id;
+
+    // Timing accumulation (one transaction per tile)
+    if (out_cycles) *out_cycles += (data_cycles + xact_overhead);
+    total_bytes_loaded += n;
+
+    base_row += static_cast<uint32_t>(rows_per_tile);
+    if (base_row >= kFilterRows) break; // safety guard; should match tiles_to_load anyway
+  }
+
+  return total_bytes_loaded;
 }
-
-} // namespace sf
+}

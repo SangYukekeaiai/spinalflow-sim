@@ -104,7 +104,7 @@ void Core::PreloadFirstBatch(uint64_t* out_cycles) {
 
 std::uint32_t Core::LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id, uint64_t* out_cycles) {
   uint64_t cycles = 0;
-  const std::uint32_t bytes = fb_->LoadWeightFromDram(layer_id, tile_id, &cycles);
+  const std::uint32_t bytes = fb_->LoadWeightFromDram( total_tiles_ ,tile_id, layer_id, &cycles);
   cycle_ += cycles;
   if (stats_) stats_->weight_load_cycles += cycles;
   if (out_cycles) *out_cycles = cycles;

@@ -4,7 +4,10 @@
 #include <array>
 #include <cstdint>
 #include <stdexcept>
-
+#include <unordered_set>   
+#include <unordered_map>   
+#include <optional>        
+#include <algorithm>       
 #include "common/constants.hpp"
 #include "arch/dram/simple_dram.hpp"
 namespace sf { namespace dram {
@@ -54,8 +57,12 @@ public:
   // Return a row by id (by value).
   Row GetRow(int row_id) const;
 
-  // Load a weight tile for the current layer/tile into rows[].
-  std::uint32_t LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id,
+  // NEW: load as many tiles as possible starting at `tile_id`.
+  // If `tile_id` is already owned, do nothing (0 cycles) and make it active.
+  // Returns the total bytes pulled from DRAM in this call.
+  std::uint32_t LoadWeightFromDram(std::uint32_t total_tiles,
+                                   std::uint32_t tile_id,
+                                   std::uint32_t layer_id,
                                    uint64_t* out_cycles = nullptr);
 
   // Optional helper.
@@ -87,6 +94,32 @@ private:
   }
 
   WeightTiming wtiming_; // NEW: timing model for weights
+
+  // --- Ownership & mapping of resident tiles in rows_ ---
+  // All tile_ids currently resident in rows_
+  std::unordered_set<std::uint32_t> owned_tile_id_;            // NEW
+  // For each owned tile_id, the base row offset inside rows_
+  std::unordered_map<std::uint32_t, std::uint32_t> tile_base_row_; // NEW
+  // The currently active tile
+  std::optional<std::uint32_t> active_tile_id_;                // NEW
+
+  // Helpers
+  inline void ClearAllOwnership() {
+    owned_tile_id_.clear();
+    tile_base_row_.clear();
+    active_tile_id_.reset();
+  }
+
+  inline int RowsPerTile() const {
+    // rows per tiled weight = K_w * K_h * C_in
+    return K_w_ * K_h_ * C_in_;
+  }
+
+  inline std::uint32_t ActiveBaseRow() const {
+    if (!active_tile_id_.has_value()) return 0;
+    auto it = tile_base_row_.find(active_tile_id_.value());
+    return (it == tile_base_row_.end()) ? 0u : it->second;
+  }
 };
 
 } // namespace sf
