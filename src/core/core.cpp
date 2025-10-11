@@ -89,13 +89,27 @@ void Core::BindTileBatches(const std::vector<std::vector<int>>* batches) {
   v_mfb_    = (!isb_->AllEmpty()) && TargetFifoHasSpace();
 }
 
-void Core::PreloadFirstBatch() {
+void Core::PreloadFirstBatch(uint64_t* out_cycles) {
   if (!spine_batches_ || spine_batches_->empty()) {
     throw std::runtime_error("Core::PreloadFirstBatch: spine_batches not bound or empty.");
   }
+  uint64_t preload_cycles = 0;
   // Dispatch logical ids to physical ISBs via DRAM.
-  isb_->PreloadFirstBatch((*spine_batches_)[0], layer_id_);
+  isb_->PreloadFirstBatch((*spine_batches_)[0], layer_id_, &preload_cycles);
   batch_cursor_ = 0;
+  cycle_ += preload_cycles;
+  if (stats_) stats_->preload_input_cycles += preload_cycles;
+  if (out_cycles) *out_cycles = preload_cycles;
+}
+
+std::uint32_t Core::LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id, uint64_t* out_cycles) {
+  uint64_t cycles = 0;
+  const std::uint32_t bytes = fb_->LoadWeightFromDram(layer_id, tile_id, &cycles);
+  cycle_ += cycles;
+  if (stats_) stats_->weight_load_cycles += cycles;
+  if (out_cycles) *out_cycles = cycles;
+
+  return bytes;
 }
 
 void Core::InitPEsOutputNIDBeforeLoop(int tile_idx) {
@@ -124,32 +138,80 @@ void Core::InitPEsOutputNIDBeforeLoop(int tile_idx) {
       /*w           =*/ w_out_,
       /*W           =*/ W_out_);
 }
+// All comments are in English.
 bool Core::StepOnce(int tile_id) {
   if (tile_id < 0 || tile_id >= total_tiles_) {
     throw std::out_of_range("Core::StepOnce: tile_id out of range.");
   }
 
-  // Stage 0 – TiledOutputBuffer: copy PE outputs to the per-tile buffer or decrement cooldown.
+  // One StepOnce call equals one synchronous tick.
+  uint64_t step_extra_cycles = 0;       // extra cycles charged inside this step (e.g., ISB load)
+  if (stats_) stats_->step_ticks += 1;  // count this tick
+
+  // ---------------------------
+  // Stage 0 – TiledOutputBuffer
+  // ---------------------------
   ran_tob_in_ = v_tob_in_ ? tob_.run(tile_id) : false;
+  if (stats_) {
+    if (!v_tob_in_)                 stats_->tob_in.gated_off++;
+    else if (!ran_tob_in_)          stats_->tob_in.eligible_but_noop++;
+    else                            stats_->tob_in.ran++;
+  }
 
-  // Stage 1 – PEArray: compute if allowed; will fetch (GM entry + FB row) internally.
+  // ---------------------------
+  // Stage 1 – PEArray
+  // ---------------------------
   ran_pe_ = v_pe_ ? pe_array_.run(*fb_) : false;
+  if (stats_) {
+    if (!v_pe_)                     stats_->pe.gated_off++;
+    else if (!ran_pe_)              stats_->pe.eligible_but_noop++;
+    else                            stats_->pe.ran++;
+  }
 
-  // Stage 2 – MinFinderBatch: drain ISB -> FIFOs (pass batch cursor/total by value).
+  // ---------------------------
+  // Stage 2 – MinFinderBatch
+  // ---------------------------
   ran_mfb_ = v_mfb_ ? mfb_.run(batch_cursor_, total_batches_needed_) : false;
+  if (stats_) {
+    if (!v_mfb_)                    stats_->mfb.gated_off++;
+    else if (!ran_mfb_)             stats_->mfb.eligible_but_noop++;
+    else                            stats_->mfb.ran++;
+  }
 
-  // Stage 3 – Load next batch if needed.
-  if (isb_->AllEmpty() && (batch_cursor_ + 1 < total_batches_needed_)) {
+  // ---------------------------
+  // Stage 3 – ISB batch load (if buffers empty and more batches remain)
+  // ---------------------------
+  uint64_t load_cycles = 0; // must be filled by isb_->run(..., &load_cycles)
+  const bool can_try_isb_load = isb_->AllEmpty() && (batch_cursor_ + 1 < total_batches_needed_);
+  if (!can_try_isb_load) {
+    if (stats_) stats_->isb_ld.gated_off++;
+  } else {
     ++batch_cursor_;
-    // Load the next batch into ISB.
-    isb_->run((*spine_batches_)[batch_cursor_], layer_id_, batch_cursor_, total_batches_needed_);
+    // IMPORTANT: use the out_cycles overload so load_cycles is populated.
+    const bool loaded = isb_->run((*spine_batches_)[batch_cursor_],
+                                  layer_id_,
+                                  batch_cursor_,
+                                  total_batches_needed_,
+                                  &load_cycles);
+    if (stats_) {
+      if (!loaded) stats_->isb_ld.eligible_but_noop++;
+      else         stats_->isb_ld.ran++;
+    }
+    if (loaded) {
+      // Charge the memory load cycles to this step and to the global clock.
+      step_extra_cycles += load_cycles;
+      cycle_ += load_cycles;
+      if (stats_) {
+        // This belongs to the "in-step" input load bucket, not preload.
+        stats_->load_input_cycles_in_step += load_cycles;
+        stats_->step_extra_memload_cycles += load_cycles;
+      }
+    }
   }
 
   // Compute next valids (hard backpressure + FIFO capacity for MFB).
-  // NEW: TOB exposes a boolean stall flag for the *next* cycle.
   const bool stall = tob_.stall_next_cycle();  // replaces cooldown semantics
 
-  // NEW: PE outputs are a fixed array of optionals; detect "any has value".
   const auto& pe_slots = pe_array_.out_spike_entries();
   bool pe_hasout = false;
   for (const auto& s : pe_slots) {
@@ -177,25 +239,44 @@ bool Core::StepOnce(int tile_id) {
   // v_tob_in_next is always true.
   compute_finished_ = (!stall) && !fifo_has && !pe_hasout && !isb_has;
 
-  ++cycle_;
+  // End-of-step: add the synchronous tick + any extra cycles charged above.
+  cycle_ += 1;
+  if (stats_) stats_->step_cycles_total += (1 + step_extra_cycles);
+
   return (ran_tob_in_ || ran_pe_ || ran_mfb_);
 }
+
 
 void Core::DrainAllTilesAndStore(int & drained_entries) {
    
   if (!sorter_) {
     sorter_ = std::make_unique<OutputSorter>(&tob_, &out_spine_);
   }
+
+  const uint64_t kCyclesPerEntryDrain = 1;
   // Drain tile buffers to OutputSpine, one entry per Sort() call.
+  uint64_t drain_sort_calls = 0;
   while (sorter_->Sort()) {
-    // keep popping one-by-one
+    ++drain_sort_calls;
   }
   // Store to DRAM (throws on failure). Clears OutputSpine on success.
   
 
   drained_entries += static_cast<int>(out_spine_.size());
-  // std::cout << "callee addr=" << &drained_entries << "\n";
-  out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_));
+  if(drain_sort_calls != out_spine_.size()){
+    std::cout << "Warning: drain_sort_calls(" << drain_sort_calls << ") != out_spine_size(" << out_spine_.size() << ")\n";
+  }
+  uint64_t store_cycles = 0;
+  out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_), &store_cycles);
+
+  // Accumulate cycles to core_ clock and stats.
+  const uint64_t drain_cycles = drain_sort_calls * kCyclesPerEntryDrain;
+  cycle_ += drain_cycles + store_cycles;
+
+  if (stats_) {
+    stats_->output_drain_cycles += drain_cycles;
+    stats_->output_store_cycles += store_cycles;
+  }
 
 }
 

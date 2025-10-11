@@ -84,7 +84,8 @@ FilterBuffer::Row FilterBuffer::GetRow(int row_id) const {
   return rows_[static_cast<std::size_t>(row_id)];
 }
 
-std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id) {
+std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id, uint64_t* out_cycles) {
+  if (out_cycles) *out_cycles = 0;
   if (!dram_) {
     throw std::runtime_error("FilterBuffer::LoadWeightFromDram: DRAM pointer is null.");
   }
@@ -93,7 +94,13 @@ std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t layer_id, std::uint
   void* dst = static_cast<void*>(rows_.front().data());
   const std::uint32_t max_bytes =
       static_cast<std::uint32_t>(kFilterRows * kNumPE * sizeof(std::uint8_t));
+  
+  const uint32_t bw = std::max(1u, wtiming_.bw_bytes_per_cycle);
+  const uint64_t data_cycles = CeilDivU64(static_cast<uint64_t>(max_bytes),
+                                          static_cast<uint64_t>(bw));
+  const uint64_t total_cycles = data_cycles + static_cast<uint64_t>(wtiming_.fixed_latency);
 
+  if (out_cycles) *out_cycles = total_cycles;
   return dram_->LoadWeightTile(layer_id, tile_id, dst, max_bytes);
 }
 

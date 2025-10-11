@@ -19,6 +19,7 @@
 #include "arch/tiled_output_buffer.hpp"
 #include "arch/output_spine.hpp"
 #include "arch/output_sorter.hpp"
+#include "stats/sim_stats.hpp"
 
 namespace sf {
 
@@ -71,6 +72,9 @@ public:
   // Pre-load the first batch into ISB; 'spine_batches' must be bound.
   void PreloadFirstBatch();
 
+  // Load weight tile for the current layer/tile into FilterBuffer.
+  std::uint32_t LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id, uint64_t* out_cycles = nullptr);
+
   // ----- Cycle-level stepping -----
 
   // Execute one scheduler step (one cycle) for the provided tile_id.
@@ -86,6 +90,12 @@ public:
   // ----- Status / helpers -----
   bool FinishedCompute() const { return compute_finished_; }
   int  total_tiles() const { return total_tiles_; }
+
+  // cycle statistics
+  void AttachStats(LayerCycleStats* stats) { stats_ = stats; }
+
+  // Overload PreloadFirstBatch to optionally return cycles consumed.
+  void PreloadFirstBatch(uint64_t* out_cycles = nullptr);
 
 private:
   // Helpers
@@ -134,6 +144,7 @@ private:
   // -------- Progress (for the last StepOnce(tile_id)) --------
   bool      compute_finished_ = false;  // compute loop done for the tile of the last StepOnce
   uint64_t  cycle_ = 0;
+  LayerCycleStats* stats_ = nullptr;      // NEW: optional stats sink
 };
 
 } // namespace sf

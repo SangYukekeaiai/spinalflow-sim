@@ -1325,18 +1325,29 @@ CMakeFiles/sfs_core.dir/src/arch/output_sorter.cpp.o: ../src/arch/output_sorter.
   /usr/include/c++/11/bits/stl_bvector.h \
   /usr/include/c++/11/bits/vector.tcc \
   ../include/arch/output_spine.hpp \
-  ../include/arch/dram/simple_dram.hpp \
+  /usr/include/c++/11/algorithm \
+  /usr/include/c++/11/bits/stl_algo.h \
+  /usr/include/c++/11/bits/algorithmfwd.h \
+  /usr/include/c++/11/bits/stl_heap.h \
+  /usr/include/c++/11/bits/stl_tempbuf.h \
+  /usr/include/c++/11/bits/uniform_int_dist.h \
+  /usr/include/c++/11/pstl/glue_algorithm_defs.h \
+  /usr/include/c++/11/functional \
+  /usr/include/c++/11/tuple \
+  /usr/include/c++/11/bits/uses_allocator.h \
+  /usr/include/c++/11/bits/invoke.h \
+  /usr/include/c++/11/bits/refwrap.h \
+  /usr/include/c++/11/bits/std_function.h \
   /usr/include/c++/11/unordered_map \
   /usr/include/c++/11/ext/aligned_buffer.h \
   /usr/include/c++/11/bits/hashtable.h \
   /usr/include/c++/11/bits/hashtable_policy.h \
-  /usr/include/c++/11/tuple \
-  /usr/include/c++/11/bits/uses_allocator.h \
-  /usr/include/c++/11/bits/invoke.h \
   /usr/include/c++/11/bits/enable_special_members.h \
   /usr/include/c++/11/bits/node_handle.h \
   /usr/include/c++/11/bits/unordered_map.h \
   /usr/include/c++/11/bits/erase_if.h \
+  /usr/include/c++/11/pstl/execution_defs.h \
+  ../include/arch/dram/simple_dram.hpp \
   /usr/include/c++/11/cstring \
   /usr/include/string.h \
   /usr/include/strings.h \
@@ -1427,9 +1438,16 @@ CMakeFiles/sfs_core.dir/src/arch/pe_array.cpp.o: ../src/arch/pe_array.cpp \
   /usr/include/c++/11/bits/functional_hash.h \
   /usr/include/c++/11/bits/hash_bytes.h \
   /usr/include/c++/11/bits/vector.tcc \
+  /usr/include/c++/11/optional \
+  /usr/include/c++/11/exception \
+  /usr/include/c++/11/bits/exception_ptr.h \
+  /usr/include/c++/11/bits/cxxabi_init_exception.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
+  /usr/include/c++/11/typeinfo \
+  /usr/include/c++/11/bits/nested_exception.h \
+  /usr/include/c++/11/bits/enable_special_members.h \
   ../include/common/constants.hpp \
   /usr/include/c++/11/cstddef \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
   ../include/common/entry.hpp \
   /usr/include/c++/11/cmath \
   /usr/include/math.h \
@@ -1490,11 +1508,6 @@ CMakeFiles/sfs_core.dir/src/arch/pe_array.cpp.o: ../src/arch/pe_array.cpp \
   /usr/include/c++/11/tr1/riemann_zeta.tcc \
   ../include/arch/global_merger.hpp \
   /usr/include/c++/11/stdexcept \
-  /usr/include/c++/11/exception \
-  /usr/include/c++/11/bits/exception_ptr.h \
-  /usr/include/c++/11/bits/cxxabi_init_exception.h \
-  /usr/include/c++/11/typeinfo \
-  /usr/include/c++/11/bits/nested_exception.h \
   /usr/include/c++/11/string \
   /usr/include/c++/11/bits/stringfwd.h \
   /usr/include/c++/11/bits/char_traits.h \
@@ -1559,8 +1572,6 @@ CMakeFiles/sfs_core.dir/src/arch/pe_array.cpp.o: ../src/arch/pe_array.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
   /usr/include/c++/11/bits/charconv.h \
   /usr/include/c++/11/bits/basic_string.tcc \
-  /usr/include/c++/11/optional \
-  /usr/include/c++/11/bits/enable_special_members.h \
   ../include/arch/intermediate_fifo.hpp \
   ../include/arch/min_finder_batch.hpp \
   ../include/arch/filter_buffer.hpp \
@@ -1772,6 +1783,8 @@ CMakeFiles/sfs_core.dir/src/arch/tiled_output_buffer.cpp.o: ../src/arch/tiled_ou
   ../include/common/constants.hpp \
   ../include/common/entry.hpp \
   ../include/arch/pe_array.hpp \
+  /usr/include/c++/11/optional \
+  /usr/include/c++/11/bits/enable_special_members.h \
   /usr/include/c++/11/cmath \
   /usr/include/math.h \
   /usr/include/x86_64-linux-gnu/bits/math-vector.h \
@@ -1798,8 +1811,6 @@ CMakeFiles/sfs_core.dir/src/arch/tiled_output_buffer.cpp.o: ../src/arch/tiled_ou
   /usr/include/c++/11/tr1/poly_laguerre.tcc \
   /usr/include/c++/11/tr1/riemann_zeta.tcc \
   ../include/arch/global_merger.hpp \
-  /usr/include/c++/11/optional \
-  /usr/include/c++/11/bits/enable_special_members.h \
   ../include/arch/intermediate_fifo.hpp \
   ../include/arch/min_finder_batch.hpp \
   ../include/arch/filter_buffer.hpp \
@@ -2107,7 +2118,8 @@ CMakeFiles/sfs_core.dir/src/core/core.cpp.o: ../src/core/core.cpp \
   /usr/include/c++/11/tr1/riemann_zeta.tcc \
   ../include/arch/tiled_output_buffer.hpp \
   ../include/arch/output_spine.hpp \
-  ../include/arch/output_sorter.hpp
+  ../include/arch/output_sorter.hpp \
+  ../include/stats/sim_stats.hpp
 
 CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o: ../src/model/conv_layer.cpp \
   /usr/include/stdc-predef.h \
@@ -2376,7 +2388,26 @@ CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o: ../src/model/conv_layer.cpp 
   /usr/include/c++/11/tr1/riemann_zeta.tcc \
   ../include/arch/tiled_output_buffer.hpp \
   ../include/arch/output_spine.hpp \
-  ../include/arch/output_sorter.hpp
+  ../include/arch/output_sorter.hpp \
+  ../include/stats/sim_stats.hpp \
+  ../include/stats/layer_summary_csv.hpp \
+  /usr/include/c++/11/fstream \
+  /usr/include/c++/11/bits/codecvt.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
+  /usr/include/c++/11/bits/fstream.tcc \
+  /usr/include/c++/11/iomanip \
+  /usr/include/c++/11/locale \
+  /usr/include/c++/11/bits/locale_facets_nonio.h \
+  /usr/include/c++/11/ctime \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/11/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/11/bits/locale_conv.h \
+  /usr/include/c++/11/bits/quoted_string.h \
+  /usr/include/c++/11/sstream \
+  /usr/include/c++/11/bits/sstream.tcc
 
 CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o: ../src/model/fc_layer.cpp \
   /usr/include/stdc-predef.h \
@@ -2645,7 +2676,26 @@ CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o: ../src/model/fc_layer.cpp \
   /usr/include/c++/11/tr1/riemann_zeta.tcc \
   ../include/arch/tiled_output_buffer.hpp \
   ../include/arch/output_spine.hpp \
-  ../include/arch/output_sorter.hpp
+  ../include/arch/output_sorter.hpp \
+  ../include/stats/sim_stats.hpp \
+  ../include/stats/layer_summary_csv.hpp \
+  /usr/include/c++/11/fstream \
+  /usr/include/c++/11/bits/codecvt.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
+  /usr/include/c++/11/bits/fstream.tcc \
+  /usr/include/c++/11/iomanip \
+  /usr/include/c++/11/locale \
+  /usr/include/c++/11/bits/locale_facets_nonio.h \
+  /usr/include/c++/11/ctime \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/11/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/11/bits/locale_conv.h \
+  /usr/include/c++/11/bits/quoted_string.h \
+  /usr/include/c++/11/sstream \
+  /usr/include/c++/11/bits/sstream.tcc
 
 CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o: ../src/runner/simulation.cpp \
   /usr/include/stdc-predef.h \
@@ -2965,6 +3015,7 @@ CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o: ../src/runner/simulation.cp
   ../include/arch/tiled_output_buffer.hpp \
   ../include/arch/output_spine.hpp \
   ../include/arch/output_sorter.hpp \
+  ../include/stats/sim_stats.hpp \
   ../include/model/fc_layer.hpp \
   /usr/include/c++/11/fstream \
   /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
@@ -2973,6 +3024,8 @@ CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o: ../src/runner/simulation.cp
 
 
 ../src/runner/simulation.cpp:
+
+../include/stats/layer_summary_csv.hpp:
 
 ../include/model/conv_layer.hpp:
 
@@ -3243,6 +3296,8 @@ CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o: ../src/runner/simulation.cp
 /usr/include/c++/11/bits/stl_function.h:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/gthr.h:
+
+../include/stats/sim_stats.hpp:
 
 /usr/include/c++/11/bits/functexcept.h:
 

@@ -319,6 +319,7 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: ../src/main.cpp \
   ../include/arch/tiled_output_buffer.hpp \
   ../include/arch/output_spine.hpp \
   ../include/arch/output_sorter.hpp \
+  ../include/stats/sim_stats.hpp \
   ../include/model/fc_layer.hpp
 
 
@@ -709,6 +710,8 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/c++/11/bits/string_view.tcc:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/gthr.h:
+
+../include/stats/sim_stats.hpp:
 
 /usr/include/c++/11/bits/functexcept.h:
 

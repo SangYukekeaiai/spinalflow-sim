@@ -2,6 +2,8 @@
 #include "model/conv_layer.hpp"
 #include <algorithm>
 #include <iostream>
+#include "stats/layer_summary_csv.hpp"   // NEW
+#include "stats/sim_stats.hpp"
 
 namespace sf {
 
@@ -102,31 +104,63 @@ void ConvLayer::run_layer() {
               << ", Sh=" << Sh_ << ", Sw=" << Sw_ << ", Ph=" << Ph_ << ", Pw=" << Pw_
               << ", H_out=" << H_out_ << ", W_out=" << W_out_ << "\n";
   if (!core_ || !fb_) throw std::runtime_error("ConvLayer::run_layer: engines not configured.");
-  int total_drained_entries = 0;
+  sf::LayerCycleStats layer_sum;     // aggregated over all sites
+  int drained_entries_total = 0;     // aggregated over all sites
+  int total_tiles_for_layer = 0;     // take from core after ConfigureTiles()
+
+  sf::LayerCycleStats stats;           // NEW
+  core_->AttachStats(&stats);          // NEW
+  int total_drained_entries_running = 0; // this is your running counter from core->Drain...
+
   for (int h = 0; h < H_out_; ++h) {
     for (int w = 0; w < W_out_; ++w) {
         // std::cout << "  Processing output site (h=" << h << ", w=" << w << ")\n";
+      stats.ResetSite();
       fb_->Update(h, w);
       core_->SetSpineContext(layer_id_, h, w, W_out_);
       core_->ConfigureTiles(C_out_); // sign the total_tiles_ inside Core
-
+      total_tiles_for_layer = core_->total_tiles(); // should be constant for the layer
       auto batches = generate_batches(h, w);
       core_->BindTileBatches(&batches);
-      core_->PreloadFirstBatch();
 
+      uint64_t preload_cycles = 0;
+      core_->PreloadFirstBatch(&preload_cycles);
       const int total_tiles = core_->total_tiles();
       for (int tile_id = 0; tile_id < total_tiles; ++tile_id) {
-        fb_->LoadWeightFromDram(static_cast<std::uint32_t>(layer_id_),
-                                static_cast<std::uint32_t>(tile_id));
+        uint64_t weight_load_cycles = 0;
+        core_->LoadWeightFromDram(static_cast<std::uint32_t>(layer_id_),
+                                static_cast<std::uint32_t>(tile_id),
+                                &weight_load_cycles);
         core_->InitPEsOutputNIDBeforeLoop(tile_id); // threshold=1 for now
         while (!core_->FinishedCompute()) {
           core_->StepOnce(tile_id);
         }
       }
-      core_->DrainAllTilesAndStore(total_drained_entries);
+      const int drained_before = total_drained_entries_running;
+      core_->DrainAllTilesAndStore(total_drained_entries_running);
+      const int drained_after = total_drained_entries_running;
+      const int drained_site  = drained_after - drained_before;
+
+      sf::AccumulateLayerStats(layer_sum, stats);
+      drained_entries_total += drained_site;
     }
   }
-  std::cout << "ConvLayer: "<< layer_id_ <<" Total drained entries to DRAM: " << total_drained_entries << " ,Mean entries per spine: " << total_drained_entries/(H_out_ * W_out_) << "\n";
+  std::cout << "Drained a total of " << drained_entries_total << " entries over " << (H_out_*W_out_) << " sites.\n";
+  static sf::LayerSummaryCsvLogger layer_logger("cycles_layer_summary.csv", /*append=*/true);
+  layer_logger.AppendRow(
+      layer_id_,
+      H_out_, W_out_,
+      total_tiles_for_layer,
+      layer_sum,
+      drained_entries_total);
+
+  // Optional: stdout summary
+  // std::cout << "ConvLayer " << layer_id_
+  //           << " summary: sites=" << (H_out_ * W_out_)
+  //           << ", drained=" << drained_entries_total
+  //           << ", mean_entries_per_spine=" << drained_entries_total / (H_out_*W_out_)
+  //           << "\n";
+  // std::cout << "CSV (layer-wide) written to cycles_layer_summary.csv\n";
 }
 
 } // namespace sf

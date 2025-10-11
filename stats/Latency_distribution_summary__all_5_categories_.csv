@@ -1,0 +1,6 @@
+Latency component,Total cycles,Share (%)
+Weight load,79663104,97.95557129254176
+Step cycles (step_cycles_total),1164200,1.4315268973046433
+Preload input,363498,0.4469654390280392
+Output drain,102185,0.1256490087623046
+Output store,32764,0.040287362363244573

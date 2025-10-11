@@ -34,13 +34,22 @@ public:
   // Construct with a DRAM handle; sizes come from common/constants.hpp.
   explicit InputSpineBuffer(sf::dram::SimpleDRAM* dram);
 
+  struct Timing {
+    uint32_t bw_bytes_per_cycle = 16; // e.g., 128b/cycle by default
+    uint32_t fixed_latency = 0;       // per-load fixed cycles (DMA setup)
+    uint32_t wire_entry_bytes = 5;    // ts:uint8 + nid:uint32 on the wire
+    uint32_t parallel_loads = 1;      // number of loads that can progress in parallel
+  };
+
+  void SetTiming(const Timing& t) { timing_ = t; }
+
   // Reset all buffers to empty (helper; not required by your spec but useful).
   void Reset();
 
   // (A) Pre-load the first batch into the physical buffers.
   // Returns true if load happened, false if the input list is empty.
   bool PreloadFirstBatch(const std::vector<int>& logical_spine_ids_first_batch,
-                         int layer_id);
+                         int layer_id, uint64_t* out_cycles = nullptr);
 
   // (B) Run-time loader: if all buffers are empty and batches remain,
   // load the current batch into physical buffers.
@@ -48,7 +57,8 @@ public:
   bool run(const std::vector<int>& logical_spine_ids_current_batch,
            int layer_id,
            int current_batch_cursor,
-           int total_batches_needed);
+           int total_batches_needed,
+           uint64_t* out_cycles);
 
   // (C) Pop the Entry with the globally-smallest timestamp among all buffers.
   // Returns true if an entry was popped; false if all buffers are empty.
@@ -64,8 +74,12 @@ public:
 private:
   // Load a batch of logical spine ids into the physical buffers.
   // The list size must be <= number of physical buffers.
-  void LoadBatchIntoBuffers_(const std::vector<int>& logical_spine_ids,
+  uint64_t LoadBatchIntoBuffers_(const std::vector<int>& logical_spine_ids,
                              int layer_id);
+
+  static inline uint64_t CeilDivU64(uint64_t a, uint64_t b) {
+    return (a + b - 1) / b;
+  }
 
   // Compute available entries in buffer i.
   int Available_(int i) const {
@@ -92,6 +106,8 @@ private:
 
   // DRAM interface for table-driven memcpy loads.
   sf::dram::SimpleDRAM* dram_ = nullptr;
+
+  Timing timing_;
 };
 
 } // namespace sf

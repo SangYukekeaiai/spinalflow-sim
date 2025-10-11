@@ -28,8 +28,15 @@ class FilterBuffer {
 public:
   using Row = std::array<std::int8_t, kNumPE>;
 
+  struct WeightTiming {
+    // Bandwidth in bytes per cycle for weight loads.
+    uint32_t bw_bytes_per_cycle = 16; // e.g., 128-bit bus => 16B/cycle
+    // Fixed per-transaction latency in cycles (e.g., DMA setup).
+    uint32_t fixed_latency = 0;
+  };
   FilterBuffer() = default;
 
+  void SetWeightTiming(const WeightTiming& t) { wtiming_ = t; }
   // Layer-wise configuration (static).
   void Configure(int C_in, int W_in,
                  int Kh, int Kw,
@@ -48,7 +55,8 @@ public:
   Row GetRow(int row_id) const;
 
   // Load a weight tile for the current layer/tile into rows[].
-  std::uint32_t LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id);
+  std::uint32_t LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id,
+                                   uint64_t* out_cycles = nullptr);
 
   // Optional helper.
   std::size_t NumRows() const { return kFilterRows; }
@@ -73,6 +81,12 @@ private:
 
   // DRAM interface (non-owning)
   sf::dram::SimpleDRAM* dram_ = nullptr;
+
+  static inline uint64_t CeilDivU64(uint64_t a, uint64_t b) {
+    return (a + b - 1) / b;
+  }
+
+  WeightTiming wtiming_; // NEW: timing model for weights
 };
 
 } // namespace sf

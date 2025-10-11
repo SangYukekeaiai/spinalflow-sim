@@ -219,4 +219,5 @@ CMakeFiles/sfs_core.dir/src/core/core.cpp.o: \
  /usr/include/c++/11/tr1/riemann_zeta.tcc \
  /home/yy/snn/spinalflow-sim/include/arch/tiled_output_buffer.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_spine.hpp \
- /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp
+ /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp \
+ /home/yy/snn/spinalflow-sim/include/stats/sim_stats.hpp

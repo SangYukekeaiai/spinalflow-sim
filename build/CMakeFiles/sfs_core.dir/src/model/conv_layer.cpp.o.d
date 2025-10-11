@@ -222,4 +222,18 @@ CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o: \
  /usr/include/c++/11/tr1/riemann_zeta.tcc \
  /home/yy/snn/spinalflow-sim/include/arch/tiled_output_buffer.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_spine.hpp \
- /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp
+ /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp \
+ /home/yy/snn/spinalflow-sim/include/stats/sim_stats.hpp \
+ /home/yy/snn/spinalflow-sim/include/stats/layer_summary_csv.hpp \
+ /usr/include/c++/11/fstream /usr/include/c++/11/bits/codecvt.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
+ /usr/include/c++/11/bits/fstream.tcc /usr/include/c++/11/iomanip \
+ /usr/include/c++/11/locale \
+ /usr/include/c++/11/bits/locale_facets_nonio.h /usr/include/c++/11/ctime \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
+ /usr/include/libintl.h /usr/include/c++/11/bits/locale_facets_nonio.tcc \
+ /usr/include/c++/11/bits/locale_conv.h \
+ /usr/include/c++/11/bits/quoted_string.h /usr/include/c++/11/sstream \
+ /usr/include/c++/11/bits/sstream.tcc
