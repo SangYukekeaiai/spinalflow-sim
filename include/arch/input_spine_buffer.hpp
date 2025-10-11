@@ -35,7 +35,7 @@ public:
   explicit InputSpineBuffer(sf::dram::SimpleDRAM* dram);
 
   struct Timing {
-    uint32_t bw_bytes_per_cycle = 16; // e.g., 128b/cycle by default
+    uint32_t bw_bytes_per_cycle = 160; // e.g., 128b/cycle by default
     uint32_t fixed_latency = 0;       // per-load fixed cycles (DMA setup)
     uint32_t wire_entry_bytes = 5;    // ts:uint8 + nid:uint32 on the wire
     uint32_t parallel_loads = 1;      // number of loads that can progress in parallel

@@ -127,6 +127,12 @@ void Core::InitPEsOutputNIDBeforeLoop(int tile_idx) {
     throw std::runtime_error("Core::InitPEsBeforeLoop: invalid (h_out_, w_out_).");
   }
 
+  // Fresh tile: allow the outer loop to enter StepOnce again and re-prime valids.
+  compute_finished_ = false;
+  v_tob_in_ = true;
+  v_pe_     = false;
+  v_mfb_    = (!isb_->AllEmpty()) && TargetFifoHasSpace();
+
   // Forward to PEArray's helper. PEArray will:
   // - Compute out_id for each PE = base_pos + tile_offset + pe_idx
   // - Register per-PE output id and set threshold
@@ -252,7 +258,7 @@ void Core::DrainAllTilesAndStore(int & drained_entries) {
   if (!sorter_) {
     sorter_ = std::make_unique<OutputSorter>(&tob_, &out_spine_);
   }
-
+  // sorter_->AnnouncedSize();
   const uint64_t kCyclesPerEntryDrain = 1;
   // Drain tile buffers to OutputSpine, one entry per Sort() call.
   uint64_t drain_sort_calls = 0;

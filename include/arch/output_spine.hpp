@@ -13,7 +13,7 @@ namespace sf {
 class OutputSpine {
 public:
   struct Timing {
-    uint32_t bw_bytes_per_cycle = 16; // e.g., 128-bit bus
+    uint32_t bw_bytes_per_cycle = 160; // e.g., 128-bit bus
     uint32_t fixed_latency = 0;       // per store transaction
     uint32_t wire_entry_bytes = 5;    // e.g., ts:uint8 + nid:uint32
   };

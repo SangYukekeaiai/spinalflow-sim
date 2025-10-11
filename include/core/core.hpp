@@ -70,7 +70,6 @@ public:
   void BindTileBatches(const std::vector<std::vector<int>>* batches);
 
   // Pre-load the first batch into ISB; 'spine_batches' must be bound.
-  void PreloadFirstBatch();
 
   // Load weight tile for the current layer/tile into FilterBuffer.
   std::uint32_t LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id, uint64_t* out_cycles = nullptr);

@@ -91,7 +91,6 @@ std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
                                                std::uint32_t layer_id,
                                                uint64_t* out_cycles) {
   if (out_cycles) *out_cycles = 0;
-
   if (!dram_) {
     throw std::runtime_error("FilterBuffer::LoadWeightFromDram: DRAM pointer is null.");
   }
@@ -141,7 +140,6 @@ std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
     // Destination pointer starts at rows_[base_row]
     void* dst = static_cast<void*>(const_cast<std::int8_t*>(rows_[base_row].data()));
     const uint32_t n = dram_->LoadWeightTile(layer_id, cur_id, dst, bytes_per_tile);
-
     // Record residency and base row mapping
     owned_tile_id_.insert(cur_id);
     tile_base_row_[cur_id] = base_row;

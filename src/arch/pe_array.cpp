@@ -8,7 +8,6 @@ namespace sf {
 bool PEArray::run(FilterBuffer& fb) {
   // Try to fetch one entry from Global Merger.
   if (!gm_.run(gm_entry_)) {
-    // No input this cycle; keep current out_spike_entries_ as-is.
     return false;
   }
 
@@ -23,7 +22,6 @@ bool PEArray::run(FilterBuffer& fb) {
     // Decode weight to float (fixed-point or scale)
     float w_float = DecodeWeightToFloat(weight_row_[pe_idx]);
     pe_array_[pe_idx].Process(gm_entry_.ts, w_float);
-
     if (pe_array_[pe_idx].spiked()) {
       Entry e{};
       e.ts        = pe_array_[pe_idx].last_ts();

@@ -33,7 +33,7 @@ public:
 
   struct WeightTiming {
     // Bandwidth in bytes per cycle for weight loads.
-    uint32_t bw_bytes_per_cycle = 16; // e.g., 128-bit bus => 16B/cycle
+    uint32_t bw_bytes_per_cycle = 160; // e.g., 128-bit bus => 16B/cycle
     // Fixed per-transaction latency in cycles (e.g., DMA setup).
     uint32_t fixed_latency = 0;
   };

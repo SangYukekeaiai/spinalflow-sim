@@ -123,10 +123,11 @@ void ConvLayer::run_layer() {
       auto batches = generate_batches(h, w);
       core_->BindTileBatches(&batches);
 
-      uint64_t preload_cycles = 0;
-      core_->PreloadFirstBatch(&preload_cycles);
+      
       const int total_tiles = core_->total_tiles();
       for (int tile_id = 0; tile_id < total_tiles; ++tile_id) {
+        uint64_t preload_cycles = 0;
+        core_->PreloadFirstBatch(&preload_cycles);
         uint64_t weight_load_cycles = 0;
         core_->LoadWeightFromDram(static_cast<std::uint32_t>(layer_id_),
                                 static_cast<std::uint32_t>(tile_id),
@@ -145,7 +146,9 @@ void ConvLayer::run_layer() {
       drained_entries_total += drained_site;
     }
   }
-  std::cout << "Drained a total of " << drained_entries_total << " entries over " << (H_out_*W_out_) << " sites.\n";
+  std::cout << "Average Drained Entries per Output Spine: "
+            << (H_out_ * W_out_ > 0 ? static_cast<float>(drained_entries_total) / static_cast<float>(H_out_ * W_out_) : 0.0f)
+            << "\n";
   static sf::LayerSummaryCsvLogger layer_logger("cycles_layer_summary.csv", /*append=*/true);
   layer_logger.AppendRow(
       layer_id_,
@@ -154,13 +157,6 @@ void ConvLayer::run_layer() {
       layer_sum,
       drained_entries_total);
 
-  // Optional: stdout summary
-  // std::cout << "ConvLayer " << layer_id_
-  //           << " summary: sites=" << (H_out_ * W_out_)
-  //           << ", drained=" << drained_entries_total
-  //           << ", mean_entries_per_spine=" << drained_entries_total / (H_out_*W_out_)
-  //           << "\n";
-  // std::cout << "CSV (layer-wide) written to cycles_layer_summary.csv\n";
 }
 
 } // namespace sf
