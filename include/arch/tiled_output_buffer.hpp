@@ -42,9 +42,12 @@ public:
   void ClearAll();
 
   bool stall_next_cycle() const { return stall_next_cycle_; }
+  std::size_t last_ingested_entries() const { return last_ingested_entries_; }
+  std::size_t last_emitted_entries() const { return last_emitted_entries_; }
+  static constexpr std::size_t LocalFifoDepth() { return kLocalFifoDepth; }
 
 private:
-  static constexpr std::size_t kLocalFifoDepth = 4;
+  static constexpr std::size_t kLocalFifoDepth = 2;
 
   PEArray& pe_array_;
   bool stall_next_cycle_ = false;
@@ -54,6 +57,9 @@ private:
 
   // kTilesPerSpine per-tile buffers (front at index 0).
   std::array<std::vector<Entry>, kTilesPerSpine> tile_buffers_;
+
+  std::size_t last_ingested_entries_ = 0;
+  std::size_t last_emitted_entries_ = 0;
 };
 
 } // namespace sf

@@ -141,9 +141,10 @@ void ConvLayer::run_layer() {
     }
   }
   last_cycle_stats_ = core_->GetCycleStats();
+  last_sram_stats_ = core_->GetSramStats();
   const int sites = H_out_ * W_out_;
   if (sites > 0) {
-    std::cout << "drained entries: " << (drained_entries_total_ / sites) << "\n";
+    std::cout << "drained entries: " << drained_entries_total_ << "\n";
   } else {
     std::cout << "drained entries: " << drained_entries_total_ << "\n";
   }

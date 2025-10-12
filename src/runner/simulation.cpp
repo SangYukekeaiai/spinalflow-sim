@@ -19,6 +19,7 @@ struct LayerStageRecord {
   std::string layer_name;
   LayerKind kind = LayerKind::kConv;
   CoreCycleStats cycles{};
+  CoreSramStats sram_stats{};
 };
 
 std::string SanitizeName(const std::string& input) {
@@ -46,6 +47,26 @@ const char* LayerKindToString(LayerKind kind) {
   }
 }
 
+std::filesystem::path BuildSramAccessCsvPath(const std::string& repo_name,
+                                             const std::string& model_name) {
+  const auto sanitized_repo  = SanitizeName(repo_name);
+  const auto sanitized_model = SanitizeName(model_name);
+  std::filesystem::path dir("stats");
+  std::filesystem::path file =
+      sanitized_repo + "__" + sanitized_model + "__sram_access.csv";
+  return dir / file;
+}
+
+std::filesystem::path BuildSramCapacityCsvPath(const std::string& repo_name,
+                                               const std::string& model_name) {
+  const auto sanitized_repo  = SanitizeName(repo_name);
+  const auto sanitized_model = SanitizeName(model_name);
+  std::filesystem::path dir("stats");
+  std::filesystem::path file =
+      sanitized_repo + "__" + sanitized_model + "__sram_capacity.csv";
+  return dir / file;
+}
+
 std::filesystem::path BuildStageCsvPath(const std::string& repo_name,
                                         const std::string& model_name) {
   const auto sanitized_repo  = SanitizeName(repo_name);
@@ -63,7 +84,7 @@ void WriteStageCyclesCsv(const std::string& repo_name,
   std::filesystem::create_directories(csv_path.parent_path());
   std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
   if (!ofs) {
-    throw std::runtime_error("RunNetwork: failed to open CSV file " + csv_path.string());
+    throw std::runtime_error("RunNetwork: failed to open stage cycles CSV file " + csv_path.string());
   }
 
   ofs << "repo,model,layer_id,layer_name,layer_kind,load_cycles,compute_cycles,store_cycles\n";
@@ -79,6 +100,60 @@ void WriteStageCyclesCsv(const std::string& repo_name,
   }
   ofs.flush();
   std::cout << "[Simulation] Stage cycles CSV written to " << csv_path << "\n";
+}
+
+void WriteSramAccessCsv(const std::string& repo_name,
+                        const std::string& model_name,
+                        const std::vector<LayerStageRecord>& rows) {
+  const auto csv_path = BuildSramAccessCsvPath(repo_name, model_name);
+  std::filesystem::create_directories(csv_path.parent_path());
+  std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
+  if (!ofs) {
+    throw std::runtime_error("RunNetwork: failed to open SRAM access CSV file " + csv_path.string());
+  }
+
+  ofs << "model,layer_id,layer_name,layer_kind,"
+         "isb_accesses,filter_accesses,output_accesses,total_cycles\n";
+  for (const auto& row : rows) {
+    const std::uint64_t total_cycles =
+        row.cycles.load_cycles + row.cycles.compute_cycles + row.cycles.store_cycles;
+    ofs << model_name << ','
+        << row.layer_id << ','
+        << std::quoted(row.layer_name) << ','
+        << LayerKindToString(row.kind) << ','
+        << row.sram_stats.input_spine.accesses << ','
+        << row.sram_stats.filter.accesses << ','
+        << row.sram_stats.output_queue.accesses << ','
+        << total_cycles << '\n';
+  }
+  ofs.flush();
+  std::cout << "[Simulation] SRAM access CSV written to " << csv_path << "\n";
+}
+
+void WriteSramCapacityCsv(const std::string& repo_name,
+                          const std::string& model_name,
+                          const std::vector<LayerStageRecord>& rows) {
+  const auto csv_path = BuildSramCapacityCsvPath(repo_name, model_name);
+  std::filesystem::create_directories(csv_path.parent_path());
+  std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
+  if (!ofs) {
+    throw std::runtime_error("RunNetwork: failed to open SRAM capacity CSV file " + csv_path.string());
+  }
+
+  ofs << "model,layer_id,layer_name,layer_kind,"
+         "isb_capacity_bytes,filter_capacity_bytes,output_queue_capacity_bytes\n";
+
+  for (const auto& row : rows) {
+    ofs << model_name << ','
+        << row.layer_id << ','
+        << std::quoted(row.layer_name) << ','
+        << LayerKindToString(row.kind) << ','
+        << row.sram_stats.input_spine_capacity_bytes << ','
+        << row.sram_stats.filter_capacity_bytes << ','
+        << row.sram_stats.output_queue_capacity_bytes << '\n';
+  }
+  ofs.flush();
+  std::cout << "[Simulation] SRAM capacity CSV written to " << csv_path << "\n";
 }
 
 } // namespace
@@ -244,7 +319,8 @@ void RunNetwork(const std::vector<LayerSpec>& specs,
             s.L,
             s.name,
             s.kind,
-            conv.cycle_stats()
+            conv.cycle_stats(),
+            conv.sram_stats()
         });
         break;
       }
@@ -267,7 +343,8 @@ void RunNetwork(const std::vector<LayerSpec>& specs,
             s.L,
             s.name,
             s.kind,
-            fc.cycle_stats()
+            fc.cycle_stats(),
+            fc.sram_stats()
         });
         break;
       }
@@ -277,6 +354,8 @@ void RunNetwork(const std::vector<LayerSpec>& specs,
   }
 
   WriteStageCyclesCsv(repo_name, model_name, stage_rows);
+  WriteSramAccessCsv(repo_name, model_name, stage_rows);
+  WriteSramCapacityCsv(repo_name, model_name, stage_rows);
 }
 
 } // namespace sf

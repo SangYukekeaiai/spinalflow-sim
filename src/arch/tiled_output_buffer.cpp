@@ -14,6 +14,8 @@ bool TiledOutputBuffer::run(int tile_id) {
   }
 
   bool processed = false;
+  last_ingested_entries_ = 0;
+  last_emitted_entries_ = 0;
 
   // 1) If any FIFO is full, assert stall for the next cycle; do NOT return here.
   bool any_full = false;
@@ -38,6 +40,7 @@ bool TiledOutputBuffer::run(int tile_id) {
         // entry per cycle, pushing one more cannot overflow beyond depth=4 here.
         pe_fifos_[i].push_back(*outs[i]);
         saw_any = true;
+        ++last_ingested_entries_;
       }
     }
     if (saw_any) {
@@ -73,6 +76,7 @@ bool TiledOutputBuffer::run(int tile_id) {
       throw std::runtime_error("TiledOutputBuffer::run: tile buffer overflow.");
     }
     vec.push_back(chosen);
+    last_emitted_entries_ = 1;
     processed = true;
   }
 
@@ -100,6 +104,8 @@ void TiledOutputBuffer::ClearAll() {
   for (auto& v : tile_buffers_) v.clear();
   for (auto& q : pe_fifos_)    q.clear();
   stall_next_cycle_ = false;
+  last_ingested_entries_ = 0;
+  last_emitted_entries_ = 0;
 }
 
 } // namespace sf

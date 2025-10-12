@@ -50,6 +50,19 @@ Core::Core(SimpleDRAM* dram,
   // Program PE weight/threshold params once.
   pe_array_.SetWeightParamsAndThres(Threshold, w_bits, w_signed, w_frac_bits, w_scale);
 
+  sram_stats_.input_spine_capacity_bytes =
+      static_cast<std::uint64_t>(kNumPhysISB) *
+      static_cast<std::uint64_t>(kIsbEntries) *
+      5 / 1024;
+  sram_stats_.filter_capacity_bytes =
+      static_cast<std::uint64_t>(kFilterRows) *
+      static_cast<std::uint64_t>(kNumPE) *
+      sizeof(std::int8_t) / 1024;
+  sram_stats_.output_queue_capacity_bytes =
+      static_cast<std::uint64_t>(kNumPE) *
+      static_cast<std::uint64_t>(TiledOutputBuffer::LocalFifoDepth()) *
+      5 / 1024;
+  ResetSramStats();
 }
 
 
@@ -131,10 +144,15 @@ void Core::ResetCycleStats() {
   cycle_stats_ = {};
   cycle_ = 0;
   io_shadow_.ResetCredit();
+  ResetSramStats();
 }
 
 CoreCycleStats Core::GetCycleStats() const {
   return cycle_stats_;
+}
+
+CoreSramStats Core::GetSramStats() const {
+  return sram_stats_;
 }
 
 // ==================== Per-tile sequence ====================
@@ -255,6 +273,16 @@ void Core::Compute_EachTile(int tile_id)
 
 // ==================== StepOnce & Drain ====================
 
+void Core::ResetSramStats() {
+  sram_stats_.input_spine = {};
+  sram_stats_.filter = {};
+  sram_stats_.output_queue = {};
+  sram_stats_.compute_load_accesses = 0;
+  sram_stats_.compute_load_bytes = 0;
+  sram_stats_.compute_store_accesses = 0;
+  sram_stats_.compute_store_bytes = 0;
+}
+
 bool Core::StepOnce(int tile_id) {
   if (tile_id < 0 || tile_id >= total_tiles_) {
     throw std::out_of_range("Core::StepOnce: tile_id out of range.");
@@ -310,6 +338,47 @@ bool Core::StepOnce(int tile_id) {
   compute_finished_ = (!stall) && !fifo_has && !pe_hasout && !isb_has;
 
   // End-of-step: add the synchronous tick.
+  if (ran_mfb_) {
+    const std::uint64_t bytes = sizeof(Entry);
+    sram_stats_.input_spine.access_cycles += 1;
+    sram_stats_.input_spine.accesses += 1;
+    sram_stats_.input_spine.bytes += bytes;
+    sram_stats_.compute_load_accesses += 1;
+    sram_stats_.compute_load_bytes += bytes;
+  }
+
+  if (ran_pe_) {
+    const std::uint64_t bytes = static_cast<std::uint64_t>(kNumPE) * sizeof(std::int8_t);
+    sram_stats_.filter.access_cycles += 1;
+    sram_stats_.filter.accesses += 1;
+    sram_stats_.filter.bytes += bytes;
+    sram_stats_.compute_load_accesses += 1;
+    sram_stats_.compute_load_bytes += bytes;
+  }
+
+  const std::size_t ingested = tob_.last_ingested_entries();
+  const std::size_t emitted  = tob_.last_emitted_entries();
+  bool output_access = false;
+  if (ingested > 0) {
+    const std::uint64_t entries_u64 = static_cast<std::uint64_t>(ingested);
+    const std::uint64_t bytes = entries_u64 * sizeof(Entry);
+    sram_stats_.output_queue.accesses += entries_u64;
+    sram_stats_.output_queue.bytes += bytes;
+    sram_stats_.compute_store_accesses += entries_u64;
+    sram_stats_.compute_store_bytes += bytes;
+    output_access = true;
+  }
+  if (emitted > 0) {
+    const std::uint64_t entries_u64 = static_cast<std::uint64_t>(emitted);
+    const std::uint64_t bytes = entries_u64 * sizeof(Entry);
+    sram_stats_.output_queue.accesses += entries_u64;
+    sram_stats_.output_queue.bytes += bytes;
+    output_access = true;
+  }
+  if (output_access) {
+    sram_stats_.output_queue.access_cycles += 1;
+  }
+
   io_shadow_.OnComputeCycle(1);
   cycle_ += 1;
   cycle_stats_.compute_cycles += 1;
@@ -347,7 +416,6 @@ void Core::DrainAllTilesAndStore(int & drained_entries) {
     ++sort_cycles;
     ++sorted_entries;
   }
-
   while (!out_spine_.empty()) {
     const std::uint32_t bytes =
         out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_));

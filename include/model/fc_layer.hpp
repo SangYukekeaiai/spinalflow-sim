@@ -41,6 +41,7 @@ public:
 
   void run_layer();
   const CoreCycleStats& cycle_stats() const { return last_cycle_stats_; }
+  const CoreSramStats& sram_stats() const { return last_sram_stats_; }
   int drained_entries_total() const { return drained_entries_total_; }
 
 private:
@@ -83,6 +84,7 @@ private:
   sf::dram::SimpleDRAM* dram_{nullptr}; // non-owning
   std::unique_ptr<Core> core_;          // Core owns its engines as value members
   CoreCycleStats last_cycle_stats_{};
+  CoreSramStats last_sram_stats_{};
   int drained_entries_total_{0};
 };
 

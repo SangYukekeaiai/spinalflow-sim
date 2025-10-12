@@ -131,6 +131,7 @@ void FCLayer::run_layer() {
     }
   }
   last_cycle_stats_ = core_->GetCycleStats();
+  last_sram_stats_ = core_->GetSramStats();
 }
 
 } // namespace sf

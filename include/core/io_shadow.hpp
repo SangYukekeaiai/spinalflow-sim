@@ -47,7 +47,7 @@ public:
   }
 
 private:
-  double bpc_ = 16.0;           // bytes per cycle
+  double bpc_ = 160.0;           // bytes per cycle
   std::uint64_t credit_ = 0;    // accumulated compute cycles
 };
 

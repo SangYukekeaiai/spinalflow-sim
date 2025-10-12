@@ -33,6 +33,27 @@ struct CoreCycleStats {
   std::uint64_t store_cycles = 0;
 };
 
+struct CoreSramStats {
+  struct Component {
+    std::uint64_t access_cycles = 0;
+    std::uint64_t accesses = 0;
+    std::uint64_t bytes = 0;
+  };
+
+  Component input_spine;
+  Component filter;
+  Component output_queue;
+
+  std::uint64_t compute_load_accesses = 0;
+  std::uint64_t compute_load_bytes = 0;
+  std::uint64_t compute_store_accesses = 0;
+  std::uint64_t compute_store_bytes = 0;
+
+  std::uint64_t input_spine_capacity_bytes = 0;
+  std::uint64_t filter_capacity_bytes = 0;
+  std::uint64_t output_queue_capacity_bytes = 0;
+};
+
 class Core {
 public:
   // NOTE: This is a declaration, not a definition. Do NOT write "Core::Core" here.
@@ -83,6 +104,7 @@ public:
   bool TobEmpty() const;
   void ResetCycleStats();
   CoreCycleStats GetCycleStats() const;
+  CoreSramStats GetSramStats() const;
 
   // Accessors
   int  layer_id() const { return layer_id_; }
@@ -101,9 +123,11 @@ public:
            static_cast<std::uint32_t>(w);
   }
 
+
 private:
   void ResetIOTracking();
   void ConsumeBlockingCycles(std::uint64_t cycles);
+  void ResetSramStats();
 
 private:
   // ---- Wiring ----
@@ -155,6 +179,7 @@ private:
   std::uint64_t cycle_ = 0;
 
   CoreCycleStats cycle_stats_{};
+  CoreSramStats sram_stats_{};
   IOShadow io_shadow_{kDefaultDramBytesPerCycle};
 };
 
