@@ -29,7 +29,7 @@ inline constexpr std::size_t kFilterRows = 4608;  // total rows stored in Filter
 // Tiled Output Buffer / Output path
 // -----------------------------------------------------------------------------
 inline constexpr std::size_t kTilesPerSpine          = 8;       // 8 tile buffers per spine
-inline constexpr std::size_t kOutputSpineMaxEntries  = 65536;   // capacity limit for OutputSpine buffer
+inline constexpr std::size_t kOutputSpineMaxEntries  = 1024;    // double buffer (2 x 512 entries)
 inline constexpr std::size_t kMaxSpikesPerStep       = kNumPE;  // worst-case: all PEs spike in a step
 
 // ----------------------------------------------------------------------------- 

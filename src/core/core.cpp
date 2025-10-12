@@ -127,6 +127,16 @@ void Core::ComputeInputSpineBatches_Eachhw()
   total_batches_needed_ = static_cast<int>(current_inputspine_batches_.size());
 }
 
+void Core::ResetCycleStats() {
+  cycle_stats_ = {};
+  cycle_ = 0;
+  io_shadow_.ResetCredit();
+}
+
+CoreCycleStats Core::GetCycleStats() const {
+  return cycle_stats_;
+}
+
 // ==================== Per-tile sequence ====================
 
 void Core::PrepareForTile(int tile_id)
@@ -137,6 +147,7 @@ void Core::PrepareForTile(int tile_id)
   {
     const std::uint32_t bytes = LoadWeightFromDram_EachTile(tile_id);
     const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
+    cycle_stats_.load_cycles += block;
     ConsumeBlockingCycles(block);
     io_shadow_.ResetCredit();
   }
@@ -196,6 +207,7 @@ void Core::LoadInputSpine_EachTile()
   {
     const std::uint64_t bytes = isb_.LastLoadedBytes();
     const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
+    cycle_stats_.load_cycles += block;
     ConsumeBlockingCycles(block);
     io_shadow_.ResetCredit();
   }
@@ -232,6 +244,7 @@ void Core::Compute_EachTile(int tile_id)
       // Apply compute credit from current batch to the load of the next batch.
         const std::uint64_t bytes = isb_.LastLoadedBytes();
         const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
+        cycle_stats_.load_cycles += block;
         ConsumeBlockingCycles(block);
         io_shadow_.ResetCredit();
       
@@ -299,27 +312,61 @@ bool Core::StepOnce(int tile_id) {
   // End-of-step: add the synchronous tick.
   io_shadow_.OnComputeCycle(1);
   cycle_ += 1;
+  cycle_stats_.compute_cycles += 1;
 
   return (ran_tob_in_ || ran_pe_ || ran_mfb_);
 }
 void Core::DrainAllTilesAndStore(int & drained_entries) {
-  const uint64_t kCyclesPerEntryDrain = 1;
-  uint64_t drain_sort_calls = 0;
+  constexpr std::uint64_t kDrainBytesPerCycle = 160;
 
-  while (sorter_.Sort()) {
-    ++drain_sort_calls;
+  auto ceil_div = [](std::uint64_t num, std::uint64_t denom) -> std::uint64_t {
+    return (num + denom - 1) / denom;
+  };
+
+  std::uint64_t sort_cycles = 0;
+  std::uint64_t dram_cycles = 0;
+  std::uint64_t sorted_entries = 0;
+  std::uint64_t drained_this_call = 0;
+
+  while (true) {
+    if (out_spine_.IsFull()) {
+      const std::uint32_t bytes =
+          out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_));
+      if (bytes == 0) {
+        break;
+      }
+      dram_cycles += ceil_div(bytes, kDrainBytesPerCycle);
+      drained_this_call += bytes / sizeof(Entry);
+      continue;
+    }
+
+    if (!sorter_.Sort()) {
+      break;
+    }
+
+    ++sort_cycles;
+    ++sorted_entries;
   }
 
-  drained_entries += static_cast<int>(out_spine_.size());
-  if (drain_sort_calls != out_spine_.size()) {
-    std::cout << "Warning: drain_sort_calls(" << drain_sort_calls
-              << ") != out_spine_size(" << out_spine_.size() << ")\n";
+  while (!out_spine_.empty()) {
+    const std::uint32_t bytes =
+        out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_));
+    if (bytes == 0) {
+      break;
+    }
+    dram_cycles += ceil_div(bytes, kDrainBytesPerCycle);
+    drained_this_call += bytes / sizeof(Entry);
   }
 
-  out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_));
+  if (sorted_entries != drained_this_call) {
+    std::cout << "Warning: sorted_entries(" << sorted_entries
+              << ") != drained_entries(" << drained_this_call << ")\n";
+  }
 
-  const uint64_t drain_cycles = drain_sort_calls * kCyclesPerEntryDrain;
-  drained_entries += static_cast<int>(out_spine_.size());
+  drained_entries += static_cast<int>(drained_this_call);
+  const std::uint64_t store_cycles = sort_cycles + dram_cycles;
+  cycle_stats_.store_cycles += store_cycles;
+  ConsumeBlockingCycles(store_cycles);
 }
 
 bool Core::FifosHaveData() const {

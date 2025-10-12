@@ -1,0 +1,17 @@
+repo,model,layer_id,layer_name,layer_kind,load_cycles,compute_cycles,store_cycles
+repo4,resnet19,0,"layer1.0.conv1",conv,4806,85129,28595
+repo4,resnet19,1,"layer1.0.conv2",conv,8817,156085,15784
+repo4,resnet19,2,"layer1.1.conv1",conv,10965,198823,6428
+repo4,resnet19,3,"layer1.1.conv2",conv,7845,136618,22151
+repo4,resnet19,4,"layer1.2.conv1",conv,12013,219986,26255
+repo4,resnet19,5,"layer1.2.conv2",conv,11595,211641,77695
+repo4,resnet19,6,"layer2.0.conv1",conv,10480,171721,33687
+repo4,resnet19,7,"layer2.0.conv2",conv,14005,205470,52097
+repo4,resnet19,8,"layer2.1.conv1",conv,28655,498345,109465
+repo4,resnet19,9,"layer2.1.conv2",conv,37323,671637,270810
+repo4,resnet19,10,"layer2.2.conv1",conv,45053,826425,96190
+repo4,resnet19,11,"layer2.2.conv2",conv,48575,896845,111254
+repo4,resnet19,12,"layer3.0.conv1",conv,24666,406251,16977
+repo4,resnet19,13,"layer3.0.conv2",conv,24495,366428,2894
+repo4,resnet19,14,"layer3.1.conv1",conv,28934,307924,4432
+repo4,resnet19,15,"layer3.1.conv2",conv,30579,537428,3100

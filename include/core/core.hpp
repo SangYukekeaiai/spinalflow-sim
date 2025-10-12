@@ -27,6 +27,12 @@ namespace sf { namespace dram { class SimpleDRAM; } }
 
 namespace sf {
 
+struct CoreCycleStats {
+  std::uint64_t load_cycles = 0;
+  std::uint64_t compute_cycles = 0;
+  std::uint64_t store_cycles = 0;
+};
+
 class Core {
 public:
   // NOTE: This is a declaration, not a definition. Do NOT write "Core::Core" here.
@@ -75,6 +81,8 @@ public:
   bool FifosHaveData() const;
   bool TargetFifoHasSpace() const;
   bool TobEmpty() const;
+  void ResetCycleStats();
+  CoreCycleStats GetCycleStats() const;
 
   // Accessors
   int  layer_id() const { return layer_id_; }
@@ -146,6 +154,7 @@ private:
   // Cycle counter (optional)
   std::uint64_t cycle_ = 0;
 
+  CoreCycleStats cycle_stats_{};
   IOShadow io_shadow_{kDefaultDramBytesPerCycle};
 };
 

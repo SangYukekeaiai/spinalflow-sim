@@ -4,10 +4,84 @@
 #include <iterator>
 #include <algorithm>
 #include <cmath>     // for std::ldexp, std::abs
+#include <filesystem>
+#include <cctype>
+#include <iomanip>
 
 using nlohmann::json;
 
 namespace sf {
+
+namespace {
+
+struct LayerStageRecord {
+  int layer_id = 0;
+  std::string layer_name;
+  LayerKind kind = LayerKind::kConv;
+  CoreCycleStats cycles{};
+};
+
+std::string SanitizeName(const std::string& input) {
+  std::string out;
+  out.reserve(input.size());
+  for (char ch : input) {
+    const unsigned char uch = static_cast<unsigned char>(ch);
+    if (std::isalnum(uch) || ch == '_' || ch == '-') {
+      out.push_back(ch);
+    } else {
+      out.push_back('_');
+    }
+  }
+  if (out.empty()) {
+    out = "unnamed";
+  }
+  return out;
+}
+
+const char* LayerKindToString(LayerKind kind) {
+  switch (kind) {
+    case LayerKind::kConv: return "conv";
+    case LayerKind::kFC:   return "fc";
+    default:               return "unknown";
+  }
+}
+
+std::filesystem::path BuildStageCsvPath(const std::string& repo_name,
+                                        const std::string& model_name) {
+  const auto sanitized_repo  = SanitizeName(repo_name);
+  const auto sanitized_model = SanitizeName(model_name);
+  std::filesystem::path dir("stats");
+  std::filesystem::path file =
+      sanitized_repo + "__" + sanitized_model + "__stage_cycles.csv";
+  return dir / file;
+}
+
+void WriteStageCyclesCsv(const std::string& repo_name,
+                         const std::string& model_name,
+                         const std::vector<LayerStageRecord>& rows) {
+  const auto csv_path = BuildStageCsvPath(repo_name, model_name);
+  std::filesystem::create_directories(csv_path.parent_path());
+  std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
+  if (!ofs) {
+    throw std::runtime_error("RunNetwork: failed to open CSV file " + csv_path.string());
+  }
+
+  ofs << "repo,model,layer_id,layer_name,layer_kind,load_cycles,compute_cycles,store_cycles\n";
+  for (const auto& row : rows) {
+    ofs << repo_name << ','
+        << model_name << ','
+        << row.layer_id << ','
+        << std::quoted(row.layer_name) << ','
+        << LayerKindToString(row.kind) << ','
+        << row.cycles.load_cycles << ','
+        << row.cycles.compute_cycles << ','
+        << row.cycles.store_cycles << '\n';
+  }
+  ofs.flush();
+  std::cout << "[Simulation] Stage cycles CSV written to " << csv_path << "\n";
+}
+
+} // namespace
 
 static LayerKind ParseKind_(const std::string& s) {
   if (s == "conv") return LayerKind::kConv;
@@ -140,8 +214,14 @@ sf::dram::SimpleDRAM InitDram(const std::string& bin_path, const std::string& js
   return sf::dram::SimpleDRAM::FromFiles(bin_path, json_path);
 }
 
-void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram) {
+void RunNetwork(const std::vector<LayerSpec>& specs,
+                sf::dram::SimpleDRAM* dram,
+                const std::string& repo_name,
+                const std::string& model_name) {
   if (!dram) throw std::invalid_argument("RunNetwork: null DRAM pointer");
+
+  std::vector<LayerStageRecord> stage_rows;
+  stage_rows.reserve(specs.size());
 
   for (const auto& s : specs) {
     switch (s.kind) {
@@ -160,6 +240,12 @@ void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram)
                             s.w_scale,
                             dram);
         conv.run_layer();
+        stage_rows.push_back(LayerStageRecord{
+            s.L,
+            s.name,
+            s.kind,
+            conv.cycle_stats()
+        });
         break;
       }
       case LayerKind::kFC: {
@@ -177,12 +263,20 @@ void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram)
                           s.w_scale,
                           dram);
         fc.run_layer();
+        stage_rows.push_back(LayerStageRecord{
+            s.L,
+            s.name,
+            s.kind,
+            fc.cycle_stats()
+        });
         break;
       }
       default:
         throw std::runtime_error("RunNetwork: unsupported layer kind at L=" + std::to_string(s.L));
     }
   }
+
+  WriteStageCyclesCsv(repo_name, model_name, stage_rows);
 }
 
 } // namespace sf

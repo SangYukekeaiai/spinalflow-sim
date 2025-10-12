@@ -115,7 +115,8 @@ void FCLayer::run_layer() {
   if (!core_) {
     throw std::runtime_error("FCLayer::run_layer: core not configured.");
   }
-
+  core_->ResetCycleStats();
+  drained_entries_total_ = 0;
   for (int h = 0; h < H_out_; ++h) {
     for (int w = 0; w < W_out_; ++w) {
       core_->PrepareForSpine(h, w);
@@ -126,10 +127,10 @@ void FCLayer::run_layer() {
         core_->Compute_EachTile(tile_id);
       }
 
-      int unused = 0;
-      core_->DrainAllTilesAndStore(unused);
+      core_->DrainAllTilesAndStore(drained_entries_total_);
     }
   }
+  last_cycle_stats_ = core_->GetCycleStats();
 }
 
 } // namespace sf

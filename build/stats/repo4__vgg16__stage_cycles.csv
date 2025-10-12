@@ -1,0 +1,14 @@
+repo,model,layer_id,layer_name,layer_kind,load_cycles,compute_cycles,store_cycles
+repo4,vgg16,0,"features.3",conv,20446,392005,44315
+repo4,vgg16,1,"features.7",conv,5408,97145,13263
+repo4,vgg16,2,"features.10",conv,13153,242711,14535
+repo4,vgg16,3,"features.14",conv,6080,83741,2074
+repo4,vgg16,4,"features.17",conv,12477,174836,2263
+repo4,vgg16,5,"features.20",conv,12251,170321,3625
+repo4,vgg16,6,"features.24",conv,86814,70549,700
+repo4,vgg16,7,"features.27",conv,75656,175354,4397
+repo4,vgg16,8,"features.30",conv,26567,457101,115667
+repo4,vgg16,9,"features.34",conv,22760,40832,657
+repo4,vgg16,10,"features.37",conv,11863,53104,126
+repo4,vgg16,11,"features.40",conv,7271,71648,1272
+repo4,vgg16,12,"classifier",fc,447,734,5

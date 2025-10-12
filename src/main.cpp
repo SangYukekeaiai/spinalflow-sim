@@ -1,5 +1,5 @@
 // All comments are in English.
-#include <iostream>
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <exception>
@@ -21,12 +21,25 @@ int main(int argc, char** argv) {
   try {
     // (1) Parse config → vector<LayerSpec>
     auto specs = sf::ParseConfig(json_path);
+    namespace fs = std::filesystem;
+    const fs::path json_fs = fs::absolute(fs::path(json_path));
+    std::string model_name = json_fs.parent_path().filename().string();
+    std::string repo_name = json_fs.parent_path().parent_path().filename().string();
+    if (model_name.empty()) {
+      model_name = json_fs.stem().string();
+    }
+    if (repo_name.empty()) {
+      repo_name = fs::current_path().filename().string();
+      if (repo_name.empty()) {
+        repo_name = "repo";
+      }
+    }
 
     // (2) Init DRAM (load bin + build per-layer metadata)
     auto dram = sf::InitDram(bin_path, json_path);
 
     // (3) Run all layers in order
-    sf::RunNetwork(specs, &dram);
+    sf::RunNetwork(specs, &dram, repo_name, model_name);
 
     std::cout << "[Simulation] Completed successfully.\n";
     return 0;

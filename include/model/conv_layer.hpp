@@ -34,6 +34,8 @@ public:
   std::vector<std::vector<int>> generate_batches(int h_out, int w_out) const;
 
   void run_layer();
+  const CoreCycleStats& cycle_stats() const { return last_cycle_stats_; }
+  int drained_entries_total() const { return drained_entries_total_; }
 private:
   static int DeriveOutDim(int in, int pad, int kernel, int stride) {
     const int numer = in + 2 * pad - kernel;
@@ -78,7 +80,8 @@ private:
   // --- Runtime handles ---
   sf::dram::SimpleDRAM* dram_ = nullptr;     // non-owning
   std::unique_ptr<Core> core_;               // Core owns its own FB/ISB/etc.
+  CoreCycleStats last_cycle_stats_{};
+  int drained_entries_total_ = 0;
 };
 
 } // namespace sf
-

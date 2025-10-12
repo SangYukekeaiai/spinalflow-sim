@@ -2,8 +2,6 @@
 #include "model/conv_layer.hpp"
 #include <algorithm>
 #include <iostream>
-#include "stats/layer_summary_csv.hpp"   // NEW
-#include "stats/sim_stats.hpp"
 
 namespace sf {
 
@@ -121,7 +119,8 @@ void ConvLayer::run_layer() {
   if (!core_) {
     throw std::runtime_error("ConvLayer::run_layer: core not configured.");
   }
-  int unused = 0;
+  core_->ResetCycleStats();
+  drained_entries_total_ = 0;
   for (int h = 0; h < H_out_; ++h) {
     for (int w = 0; w < W_out_; ++w) {
       // Per-output-spine preparation.
@@ -137,11 +136,17 @@ void ConvLayer::run_layer() {
 
       // Drain tile buffers into OutputSpine and store to DRAM.
       
-      core_->DrainAllTilesAndStore(unused);
+      core_->DrainAllTilesAndStore(drained_entries_total_);
 
     }
   }
-  std::cout << "drained entries: " << unused / (H_out_ * W_out_) << "\n";
+  last_cycle_stats_ = core_->GetCycleStats();
+  const int sites = H_out_ * W_out_;
+  if (sites > 0) {
+    std::cout << "drained entries: " << (drained_entries_total_ / sites) << "\n";
+  } else {
+    std::cout << "drained entries: " << drained_entries_total_ << "\n";
+  }
 }
 
 

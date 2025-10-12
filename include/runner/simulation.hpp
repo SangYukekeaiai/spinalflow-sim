@@ -49,6 +49,9 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path);
 sf::dram::SimpleDRAM InitDram(const std::string& bin_path, const std::string& json_path);
 
 // Layers own their engines; RunNetwork simply configures and runs them.
-void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram);
+void RunNetwork(const std::vector<LayerSpec>& specs,
+                sf::dram::SimpleDRAM* dram,
+                const std::string& repo_name,
+                const std::string& model_name);
 
 } // namespace sf
