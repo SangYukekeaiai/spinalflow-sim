@@ -20,6 +20,7 @@
 #include "arch/tiled_output_buffer.hpp"
 #include "arch/output_spine.hpp"
 #include "arch/output_sorter.hpp"
+#include "core/io_shadow.hpp"
 
 // DRAM fwd-decl
 namespace sf { namespace dram { class SimpleDRAM; } }
@@ -93,7 +94,8 @@ public:
   }
 
 private:
-
+  void ResetIOTracking();
+  void ConsumeBlockingCycles(std::uint64_t cycles);
 
 private:
   // ---- Wiring ----
@@ -143,6 +145,8 @@ private:
 
   // Cycle counter (optional)
   std::uint64_t cycle_ = 0;
+
+  IOShadow io_shadow_{kDefaultDramBytesPerCycle};
 };
 
 } // namespace sf

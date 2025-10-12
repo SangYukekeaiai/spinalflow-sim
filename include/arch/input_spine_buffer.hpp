@@ -61,6 +61,9 @@ public:
   int NumPhysBuffers() const { return num_phys_; }
   int EntriesPerBuffer() const { return entries_per_buf_; }
 
+  // Bytes loaded by the most recent batch load (PreloadFirstBatch/run).
+  std::uint64_t LastLoadedBytes() const { return last_loaded_bytes_; }
+
 private:
   // Load a batch of logical spine ids into the physical buffers.
   // The list size must be <= number of physical buffers.
@@ -96,6 +99,9 @@ private:
 
   // DRAM interface for table-driven memcpy loads.
   sf::dram::SimpleDRAM* dram_ = nullptr;
+
+  // Accounting: total bytes copied by the last batch load.
+  std::uint64_t last_loaded_bytes_ = 0;
 
 };
 

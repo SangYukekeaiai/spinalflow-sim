@@ -32,6 +32,11 @@ inline constexpr std::size_t kTilesPerSpine          = 8;       // 8 tile buffer
 inline constexpr std::size_t kOutputSpineMaxEntries  = 65536;   // capacity limit for OutputSpine buffer
 inline constexpr std::size_t kMaxSpikesPerStep       = kNumPE;  // worst-case: all PEs spike in a step
 
+// ----------------------------------------------------------------------------- 
+// DRAM timing (default assumption; use IOShadow::SetBytesPerCycle to override)
+// ----------------------------------------------------------------------------- 
+inline constexpr double kDefaultDramBytesPerCycle = 160.0; // 128-bit bus @ 1 cycle per transfer
+
 // -----------------------------------------------------------------------------
 // Sanity checks
 // -----------------------------------------------------------------------------

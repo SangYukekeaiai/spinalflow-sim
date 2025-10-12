@@ -105,6 +105,7 @@ uint64_t InputSpineBuffer::LoadBatchIntoBuffers_(const std::vector<int>& logical
                                              int layer_id)
 {
   // Clear all physical buffers before loading the new batch.
+  last_loaded_bytes_ = 0;
   for (int i = 0; i < num_phys_; ++i) {
     read_idx_[static_cast<size_t>(i)] = 0;
     valid_count_[static_cast<size_t>(i)] = 0;
@@ -130,9 +131,10 @@ uint64_t InputSpineBuffer::LoadBatchIntoBuffers_(const std::vector<int>& logical
     valid_count_[static_cast<size_t>(i)] = static_cast<int>(entries);
     read_idx_[static_cast<size_t>(i)] = 0;
     logical_id_loaded_[static_cast<size_t>(i)] = spine_id;
+    last_loaded_bytes_ += copied_bytes;
 
   }
-  return 0;
+  return last_loaded_bytes_;
 }
 
 } // namespace sf

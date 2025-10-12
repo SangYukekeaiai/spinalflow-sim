@@ -224,6 +224,7 @@ CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o: \
  /home/yy/snn/spinalflow-sim/include/arch/tiled_output_buffer.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_spine.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp \
+ /home/yy/snn/spinalflow-sim/include/core/io_shadow.hpp \
  /home/yy/snn/spinalflow-sim/include/stats/layer_summary_csv.hpp \
  /usr/include/c++/11/fstream /usr/include/c++/11/bits/codecvt.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \

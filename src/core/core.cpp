@@ -131,9 +131,15 @@ void Core::ComputeInputSpineBatches_Eachhw()
 
 void Core::PrepareForTile(int tile_id)
 {
+  // Apply previous compute credit to the first load of this tile.
   ComputePEArrayOutID_EachTile(tile_id);
   ResetSignal_EachTile();
-  LoadWeightFromDram_EachTile(tile_id);
+  {
+    const std::uint32_t bytes = LoadWeightFromDram_EachTile(tile_id);
+    const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
+    ConsumeBlockingCycles(block);
+    io_shadow_.ResetCredit();
+  }
   LoadInputSpine_EachTile();
 }
 
@@ -187,6 +193,12 @@ void Core::LoadInputSpine_EachTile()
     throw std::runtime_error("Core::LoadInputSpine_EachTile: no batches for current (h,w).");
   }
   isb_.PreloadFirstBatch(current_inputspine_batches_[0], layer_id_);
+  {
+    const std::uint64_t bytes = isb_.LastLoadedBytes();
+    const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
+    ConsumeBlockingCycles(block);
+    io_shadow_.ResetCredit();
+  }
   batch_cursor_ = 0;
 }
 
@@ -204,12 +216,11 @@ void Core::Compute_EachTile(int tile_id)
 
   for (int b = batch_cursor_; b < total_batches_needed_; ++b) {
     // Run the compute loop for the current batch.
+    const bool has_next = (b + 1 < total_batches_needed_);
     compute_finished_ = false;
     while (!compute_finished_) {
       StepOnce(tile_id);
     }
-
-    const bool has_next = (b + 1 < total_batches_needed_);
     if (has_next) {
       const int next_b = b + 1;
       const bool loaded = isb_.run(
@@ -218,6 +229,12 @@ void Core::Compute_EachTile(int tile_id)
           next_b,
           total_batches_needed_);
       (void)loaded;
+      // Apply compute credit from current batch to the load of the next batch.
+        const std::uint64_t bytes = isb_.LastLoadedBytes();
+        const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
+        ConsumeBlockingCycles(block);
+        io_shadow_.ResetCredit();
+      
       batch_cursor_ = next_b;
     }
   }
@@ -280,6 +297,7 @@ bool Core::StepOnce(int tile_id) {
   compute_finished_ = (!stall) && !fifo_has && !pe_hasout && !isb_has;
 
   // End-of-step: add the synchronous tick.
+  io_shadow_.OnComputeCycle(1);
   cycle_ += 1;
 
   return (ran_tob_in_ || ran_pe_ || ran_mfb_);
@@ -328,6 +346,14 @@ bool Core::TobEmpty() const {
     }
   }
   return true;
+}
+
+
+void Core::ConsumeBlockingCycles(std::uint64_t cycles) {
+  if (cycles == 0) {
+    return;
+  }
+  cycle_ += cycles;
 }
 
 } // namespace sf

@@ -99,5 +99,4 @@ SimpleDRAM SimpleDRAM::FromFiles(const std::string& bin_path, const std::string&
   dram.BuildFromJson(jtxt);
   return dram;
 }
-
 }} // namespace sf::dram

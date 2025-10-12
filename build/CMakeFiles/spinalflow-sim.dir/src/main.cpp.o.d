@@ -257,4 +257,5 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: \
  /home/yy/snn/spinalflow-sim/include/arch/tiled_output_buffer.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_spine.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp \
+ /home/yy/snn/spinalflow-sim/include/core/io_shadow.hpp \
  /home/yy/snn/spinalflow-sim/include/model/fc_layer.hpp
