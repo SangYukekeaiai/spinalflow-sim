@@ -1,11 +1,12 @@
-#pragma once
 // All comments are in English.
-
+#pragma once
 #include <cstdint>
-#include <cstddef>
-#include <memory>
 #include <vector>
+#include <unordered_map>
+#include <stdexcept>
+#include <iostream>
 
+// Common
 #include "common/constants.hpp"
 #include "common/entry.hpp"
 
@@ -19,131 +20,129 @@
 #include "arch/tiled_output_buffer.hpp"
 #include "arch/output_spine.hpp"
 #include "arch/output_sorter.hpp"
-#include "stats/sim_stats.hpp"
+
+// DRAM fwd-decl
+namespace sf { namespace dram { class SimpleDRAM; } }
 
 namespace sf {
 
-/**
- * Core
- *
- * Scheduler and glue between: ISB -> MinFinderBatch -> FIFOs -> GM -> PEArray
- * -> TiledOutputBuffer -> OutputSorter -> OutputSpine.
- *
- * Design notes (per latest spec):
- * - No StartTile(): TOB does not carry a tile_id. The caller passes tile_id to StepOnce(tile_id).
- * - Sorting/draining to OutputSpine must happen only after ALL tiles have finished compute.
- * - OutputSorter remains the original single-entry "Sort()" popper scanning kTilesPerSpine heads.
- * - total_tiles = C_out / kNumPE and must be <= kTilesPerSpine (guarded).
- * - conv_layer (or driver) is responsible for calling FB::Configure(...) and FB::Update(h_out,w_out).
- */
 class Core {
 public:
-  Core(sf::dram::SimpleDRAM* dram,
-       FilterBuffer* fb,
-       InputSpineBuffer* isb);
+  // NOTE: This is a declaration, not a definition. Do NOT write "Core::Core" here.
+  explicit Core(sf::dram::SimpleDRAM* dram,
+                int layer_id, int C_in, int C_out,
+                int H_in, int W_in,
+                int H_out, int W_out,
+                int Kh, int Kw,
+                int Sh, int Sw,
+                int Ph, int Pw,
+                float Threshold,
+                int  w_bits,
+                bool w_signed,
+                int  w_frac_bits,
+                float w_scale,
+                int total_tiles,
+                const std::unordered_map<std::uint64_t, std::vector<std::vector<int>>>* batches_per_hw,
+                int batch_needed);
 
-  // ----- High-level context setters -----
 
-  // Set weight quantization params for the PEArray.
-  void SetPEsWeightParamsAndThres(float threshold, int w_bits, bool w_signed, int w_frac_bits, float w_scale);
-  /**
-   * Initialize PEArray before entering the per-tile compute loop.
-   * - Programs each PE's output neuron id for this (h_out_, w_out_, tile_idx).
-   * - Sets the firing threshold for all PEs.
-   *
-   * Pre-conditions:
-   *   - ConfigureTiles(C_out) has been called (so total_tiles_ > 0).
-   *   - SetSpineContext(...) has been called (valid h_out_, w_out_, W_out_).
-   *   - 0 <= tile_idx < total_tiles_.
-   */
-  void InitPEsOutputNIDBeforeLoop(int tile_idx);
-  // Set layer id and output-spine coordinates (h_out, w_out, W_out).
-  // Rebinds OutputSpine's spine_id accordingly.
-  void SetSpineContext(int layer_id, int h_out, int w_out, int W_out);
+  void SetBatchesTable(const std::unordered_map<std::uint64_t,
+                        std::vector<std::vector<int>>>* batches_per_hw);
+  void SetTotalTiles(int total_tiles);
 
-  // Compute total tiles from C_out and kNumPE; clears TOB buffers for a fresh site.
-  // Also rebinds/refreshes the sorter to (tob_, out_spine_).
-  void ConfigureTiles(int C_out);
+  // ---- Per-(h,w) prep ----
+  void PrepareForSpine(int h_out, int w_out);
+  void UpdatehwOut_Eachhw(int h_out, int w_out);
+  void UpdateOutputSpineID_Eachhw();
+  void ClearTOB_Eachhw();
+  void ResetSignal_Eachhw();
+  void ComputeInputSpineBatches_Eachhw();
 
-  // Bind spine_batches pointer for this (h_out, w_out) site.
-  // total_batches_needed is derived as spine_batches->size() or kernel-slot bound.
-  void BindTileBatches(const std::vector<std::vector<int>>* batches);
+  // ---- Per-tile prep ----
+  void PrepareForTile(int tile_id);
+  void ComputePEArrayOutID_EachTile(int tile_id);
+  void ResetSignal_EachTile();
+  std::uint32_t LoadWeightFromDram_EachTile(int tile_id);
+  void LoadInputSpine_EachTile();
+  void Compute_EachTile(int tile_id);
 
-  // Pre-load the first batch into ISB; 'spine_batches' must be bound.
-
-  // Load weight tile for the current layer/tile into FilterBuffer.
-  std::uint32_t LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id, uint64_t* out_cycles = nullptr);
-
-  // ----- Cycle-level stepping -----
-
-  // Execute one scheduler step (one cycle) for the provided tile_id.
-  // Returns true if any stage ran; false if completely idle this cycle.
+  // ---- Main step + drain ----
   bool StepOnce(int tile_id);
+  void DrainAllTilesAndStore(int& drained_entries);
 
-  // ----- Global drain & store (to be called only after all tiles computed) -----
-
-  // Drain all per-tile buffers (inside TOB) into OutputSpine using the sorter,
-  // then store OutputSpine to DRAM.
-  void DrainAllTilesAndStore(int & drained_entries);
-
-  // ----- Status / helpers -----
-  bool FinishedCompute() const { return compute_finished_; }
-  int  total_tiles() const { return total_tiles_; }
-
-  // cycle statistics
-  void AttachStats(LayerCycleStats* stats) { stats_ = stats; }
-
-  // Overload PreloadFirstBatch to optionally return cycles consumed.
-  void PreloadFirstBatch(uint64_t* out_cycles = nullptr);
-
-private:
-  // Helpers
+  // ---- Helpers ----
   bool FifosHaveData() const;
   bool TargetFifoHasSpace() const;
   bool TobEmpty() const;
 
+  // Accessors
+  int  layer_id() const { return layer_id_; }
+  int  H_out()    const { return H_out_; }
+  int  W_out()    const { return W_out_; }
+  int  h_out()    const { return h_out_cur_; }
+  int  w_out()    const { return w_out_cur_; }
+  int  total_tiles() const { return total_tiles_; }
+
+  const std::vector<std::vector<int>>& current_inputspine_batches() const {
+    return current_inputspine_batches_;
+  }
+
+  static std::uint64_t PackHW(int h, int w) {
+    return (static_cast<std::uint64_t>(static_cast<std::uint32_t>(h)) << 32) |
+           static_cast<std::uint32_t>(w);
+  }
+
 private:
-  // -------- External context (from conv_layer) --------
+
+
+private:
+  // ---- Wiring ----
+  sf::dram::SimpleDRAM* dram_ = nullptr;
+
+  // ---- Per-layer params ----
   int layer_id_ = 0;
-  int h_out_ = 0, w_out_ = 0, W_out_ = 0;
+  int H_in_ = 0, W_in_ = 0;
+  int H_out_ = 0, W_out_ = 0;
+  int Kh_ = 0, Kw_ = 0;
+  int Sh_ = 0, Sw_ = 0;
+  int Ph_ = 0, Pw_ = 0;
 
-  // -------- Tile control (Core-owned) --------
-  int total_tiles_ = 0;   // C_out / kNumPE  (must be <= kTilesPerSpine)
+  // ---- External tables (non-owning) ----
+  const std::unordered_map<std::uint64_t, std::vector<std::vector<int>>>* batches_per_hw_ = nullptr;
 
-  // -------- Batching --------
-  const std::vector<std::vector<int>>* spine_batches_ = nullptr;
-  int total_batches_needed_ = 0;
-  int batch_cursor_ = 0;
-
-  // -------- Subsystems / wiring --------
-  sf::dram::SimpleDRAM* dram_ = nullptr;  // non-owning
-  FilterBuffer*         fb_   = nullptr;  // non-owning
-  InputSpineBuffer*     isb_  = nullptr;  // non-owning
-
-  IntermediateFIFO fifos_[kNumIntermediateFifos]; // owned
-  MinFinderBatch   mfb_;   // uses isb_ and fifos_
-  GlobalMerger     gm_;    // uses fifos_ and mfb_
-  PEArray          pe_array_;
-
-  // Single TOB that holds all per-tile buffers; no tile_id member inside.
+  // ---- Value-owned subsystems ----
+  IntermediateFIFO  fifos_[kNumIntermediateFifos];
+  InputSpineBuffer  isb_;
+  FilterBuffer      fb_;
+  MinFinderBatch    mfb_;
+  GlobalMerger      gm_;
+  PEArray           pe_array_;
   TiledOutputBuffer tob_;
+  OutputSpine       out_spine_;
+  OutputSorter      sorter_;
 
-  OutputSpine                          out_spine_;
-  std::unique_ptr<OutputSorter>        sorter_;  // scans all tile heads in TOB
+  // ---- Per-(h,w) state ----
+  int  h_out_cur_ = 0;
+  int  w_out_cur_ = 0;
 
-  // -------- Per-cycle valid / ran (Core-owned) --------
-  bool v_tob_in_ = true;   // Stage 0: TiledOutputBuffer ingress
-  bool v_pe_     = false;  // Stage 1: PEArray.run
-  bool v_mfb_    = false;  // Stage 2: MinFinderBatch.run
+  bool v_tob_in_         = false;
+  bool v_pe_             = false;
+  bool v_mfb_            = false;
+  bool compute_finished_ = false;
 
   bool ran_tob_in_ = false;
   bool ran_pe_     = false;
   bool ran_mfb_    = false;
 
-  // -------- Progress (for the last StepOnce(tile_id)) --------
-  bool      compute_finished_ = false;  // compute loop done for the tile of the last StepOnce
-  uint64_t  cycle_ = 0;
-  LayerCycleStats* stats_ = nullptr;      // NEW: optional stats sink
+  std::vector<std::vector<int>> current_inputspine_batches_;
+  int batch_cursor_ = -1;
+  int total_batches_needed_ = 0;
+
+  // Per-layer tiling
+  int total_tiles_ = 0;
+
+  // Cycle counter (optional)
+  std::uint64_t cycle_ = 0;
 };
 
 } // namespace sf

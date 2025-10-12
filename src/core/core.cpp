@@ -1,219 +1,254 @@
 // All comments are in English.
-
 #include "core/core.hpp"
-
-#include <stdexcept>
-#include <algorithm>
-#include <iostream>
 
 namespace sf {
 
-Core::Core(sf::dram::SimpleDRAM* dram,
-           FilterBuffer* fb,
-           InputSpineBuffer* isb)
+using sf::dram::SimpleDRAM;
+
+Core::Core(SimpleDRAM* dram,
+           int layer_id, int C_in, int C_out,
+           int H_in, int W_in,
+           int H_out, int W_out,
+           int Kh, int Kw,
+           int Sh, int Sw,
+           int Ph, int Pw,
+           float Threshold,
+           int  w_bits,
+           bool w_signed,
+           int  w_frac_bits,
+           float w_scale,
+           int total_tiles,
+           const std::unordered_map<std::uint64_t, std::vector<std::vector<int>>>* batches_per_hw,
+           int batch_needed)
   : dram_(dram),
-    fb_(fb),
-    isb_(isb),
-    mfb_(isb_, fifos_),    // constructed with ISB* and FIFO array
-    gm_(fifos_, mfb_),     // GM sees FIFOs and MFB
-    pe_array_(gm_),        // PE array uses GM
-    tob_(pe_array_),       // TOB aggregates spikes per tile (no tile_id inside)
-    out_spine_(dram_, /*spine_id=*/0, kOutputSpineMaxEntries)
+    // Value members are default-constructed; wire dependencies via their constructors if available.
+    isb_(dram),                 // ISB needs DRAM
+    fb_(),                      // FB configured below
+    mfb_(&isb_, fifos_),        // MFB sees ISB and FIFOs
+    gm_(fifos_, mfb_),          // GM sees FIFOs and MFB
+    pe_array_(gm_),             // PE array uses GM
+    tob_(pe_array_),            // TOB aggregates per-PE spikes by tile
+    out_spine_(dram_, kOutputSpineMaxEntries),
+    sorter_(&tob_, &out_spine_),
+    layer_id_(layer_id),
+    H_in_(H_in), W_in_(W_in),
+    H_out_(H_out), W_out_(W_out),
+    Kh_(Kh), Kw_(Kw),
+    Sh_(Sh), Sw_(Sw),
+    Ph_(Ph), Pw_(Pw),
+    batches_per_hw_(batches_per_hw),   // FIX: was a typo "batcches_per_hw_"
+    total_tiles_(total_tiles),
+    total_batches_needed_(batch_needed)
 {
-  // Bind OutputSorter to current TOB and OutputSpine.
-  sorter_ = std::make_unique<OutputSorter>(&tob_, &out_spine_);
-
-  // Initial valids
-  v_tob_in_ = true;
-  v_pe_     = false;
-  v_mfb_    = false;
-}
-// Set weight quantization params for the PEArray.
-void Core::SetPEsWeightParamsAndThres(float threshold, int w_bits, bool w_signed, int w_frac_bits, float w_scale) {
-  pe_array_.SetWeightParamsAndThres(threshold, w_bits, w_signed, w_frac_bits, w_scale);
-}
-void Core::SetSpineContext(int layer_id, int h_out, int w_out, int W_out) {
-  layer_id_ = layer_id;
-  h_out_    = h_out;
-  w_out_    = w_out;
-  W_out_    = W_out;
-
-  // Rebind OutputSpine to new spine id.
-  const int spine_id = h_out_ * W_out_ + w_out_;
-  out_spine_ = OutputSpine(dram_, spine_id, kOutputSpineMaxEntries);
-
-  // Rebind sorter to current TOB and refreshed OutputSpine.
-  sorter_ = std::make_unique<OutputSorter>(&tob_, &out_spine_);
-}
-
-void Core::ConfigureTiles(int C_out) {
-  if (C_out <= 0) {
-    throw std::invalid_argument("Core::ConfigureTiles: C_out must be positive.");
-  }
-  total_tiles_ = static_cast<int>(
-    (C_out + static_cast<int>(kNumPE) - 1) / static_cast<int>(kNumPE));
-  // std::cout<<"Core::ConfigureTiles: total_tiles = " << std::to_string(total_tiles_) << "\n";
-  if (total_tiles_ <= 0) {
-    throw std::runtime_error("Core::ConfigureTiles: computed total_tiles <= 0.");
-  }
-  if (total_tiles_ > static_cast<int>(kTilesPerSpine)) {
-    throw std::runtime_error("Core::ConfigureTiles: total_tiles exceeds kTilesPerSpine capacity.");
+  if (!dram_) {
+    throw std::invalid_argument("Core: dram pointer must not be null.");
   }
 
-  // Fresh site: clear TOB per-tile buffers to reuse the object.
+  // Configure static FB params once for the layer.
+  fb_.Configure(C_in, W_in, Kh, Kw, Sh, Sw, Ph, Pw, dram_);
+
+  // Program PE weight/threshold params once.
+  pe_array_.SetWeightParamsAndThres(Threshold, w_bits, w_signed, w_frac_bits, w_scale);
+
+}
+
+
+
+void Core::SetBatchesTable(const std::unordered_map<std::uint64_t,
+                             std::vector<std::vector<int>>>* batches_per_hw)
+{
+  batches_per_hw_ = batches_per_hw;
+}
+
+void Core::SetTotalTiles(int total_tiles)
+{
+  if (total_tiles <= 0) {
+    throw std::invalid_argument("Core::SetTotalTiles: total_tiles must be > 0.");
+  }
+  total_tiles_ = total_tiles;
+}
+
+void Core::PrepareForSpine(int h_out, int w_out)
+{
+  UpdatehwOut_Eachhw(h_out, w_out);
+  UpdateOutputSpineID_Eachhw();
+  ClearTOB_Eachhw();
+  ResetSignal_Eachhw();
+  ComputeInputSpineBatches_Eachhw();
+}
+
+void Core::UpdatehwOut_Eachhw(int h_out, int w_out)
+{
+  if (h_out < 0 || h_out >= H_out_ || w_out < 0 || w_out >= W_out_) {
+    throw std::out_of_range("Core::Update_Eachhw: (h_out, w_out) is out of range.");
+  }
+  h_out_cur_ = h_out;
+  w_out_cur_ = w_out;
+  fb_.Update(h_out_cur_, w_out_cur_);
+}
+
+void Core::UpdateOutputSpineID_Eachhw()
+{
+  const int spine_id = h_out_cur_ * W_out_ + w_out_cur_;
+  out_spine_.SetSpineID(spine_id);
+}
+
+void Core::ClearTOB_Eachhw()
+{
   tob_.ClearAll();
+}
 
-  // Rebind sorter (tob_ unchanged, out_spine_ is current site).
-  sorter_ = std::make_unique<OutputSorter>(&tob_, &out_spine_);
-
-  // Reset valids for the upcoming compute.
-  v_tob_in_ = true;
-  v_pe_     = false;
-  v_mfb_    = false;
-
-  // Clear progress flags.
+void Core::ResetSignal_Eachhw()
+{
+  v_tob_in_         = false;
+  v_pe_             = false;
+  v_mfb_            = false;
   compute_finished_ = false;
 }
 
-void Core::BindTileBatches(const std::vector<std::vector<int>>* batches) {
-  spine_batches_ = batches;
-  if (!spine_batches_) {
-    throw std::invalid_argument("Core::BindTileBatches: spine_batches must not be null.");
-  }
-  total_batches_needed_ = static_cast<int>(spine_batches_->size());
-  batch_cursor_ = 0;
+void Core::ComputeInputSpineBatches_Eachhw()
+{
+  current_inputspine_batches_.clear();
+  batch_cursor_ = -1;
 
-  // Initialize valids (start with MFB only if ISB has data and target FIFO has room).
+  if (!batches_per_hw_) {
+    std::cout << "[Core] batches_per_hw_ not set; no input spine batches.\n";
+    total_batches_needed_ = 0;
+    return;
+  }
+
+  const std::uint64_t key = PackHW(h_out_cur_, w_out_cur_);
+  auto it = batches_per_hw_->find(key);
+  if (it == batches_per_hw_->end()) {
+    total_batches_needed_ = 0;
+    return;
+  }
+  current_inputspine_batches_ = it->second; // copy small vectors
+  total_batches_needed_ = static_cast<int>(current_inputspine_batches_.size());
+}
+
+// ==================== Per-tile sequence ====================
+
+void Core::PrepareForTile(int tile_id)
+{
+  ComputePEArrayOutID_EachTile(tile_id);
+  ResetSignal_EachTile();
+  LoadWeightFromDram_EachTile(tile_id);
+  LoadInputSpine_EachTile();
+}
+
+void Core::ComputePEArrayOutID_EachTile(int tile_id)
+{
+  if (total_tiles_ <= 0) {
+    throw std::runtime_error("Core::ComputePEArrayOutID_EachTile: total_tiles_ not set.");
+  }
+  if (tile_id < 0 || tile_id >= total_tiles_) {
+    throw std::out_of_range("Core::ComputePEArrayOutID_EachTile: tile_id out of range.");
+  }
+  if (W_out_ <= 0) {
+    throw std::runtime_error("Core::ComputePEArrayOutID_EachTile: W_out_ not set.");
+  }
+
+  compute_finished_ = false;
+
+  pe_array_.InitPEsOutputNIDBeforeLoop(/*total_tiles=*/ total_tiles_,
+                                       /*tile_idx   =*/ tile_id,
+                                       /*h         =*/ h_out_cur_,
+                                       /*w         =*/ w_out_cur_,
+                                       /*W         =*/ W_out_);
+}
+
+void Core::ResetSignal_EachTile()
+{
+  compute_finished_ = false;
   v_tob_in_ = true;
   v_pe_     = false;
-  v_mfb_    = (!isb_->AllEmpty()) && TargetFifoHasSpace();
+
+  const bool isb_has_data = !isb_.AllEmpty();
+  v_mfb_ = isb_has_data && TargetFifoHasSpace();
 }
 
-void Core::PreloadFirstBatch(uint64_t* out_cycles) {
-  if (!spine_batches_ || spine_batches_->empty()) {
-    throw std::runtime_error("Core::PreloadFirstBatch: spine_batches not bound or empty.");
+std::uint32_t Core::LoadWeightFromDram_EachTile(int tile_id)
+{
+  if (total_tiles_ <= 0) {
+    throw std::runtime_error("Core::LoadWeightFromDram_EachTile: total_tiles_ not set.");
   }
-  uint64_t preload_cycles = 0;
-  // Dispatch logical ids to physical ISBs via DRAM.
-  isb_->PreloadFirstBatch((*spine_batches_)[0], layer_id_, &preload_cycles);
-  batch_cursor_ = 0;
-  cycle_ += preload_cycles;
-  if (stats_) stats_->preload_input_cycles += preload_cycles;
-  if (out_cycles) *out_cycles = preload_cycles;
-}
+  if (tile_id < 0 || tile_id >= total_tiles_) {
+    throw std::out_of_range("Core::LoadWeightFromDram_EachTile: tile_id out of range.");
+  }
 
-std::uint32_t Core::LoadWeightFromDram(std::uint32_t layer_id, std::uint32_t tile_id, uint64_t* out_cycles) {
-  uint64_t cycles = 0;
-  const std::uint32_t bytes = fb_->LoadWeightFromDram( total_tiles_ ,tile_id, layer_id, &cycles);
-  cycle_ += cycles;
-  if (stats_) stats_->weight_load_cycles += cycles;
-  if (out_cycles) *out_cycles = cycles;
-
+  const std::uint32_t bytes = fb_.LoadWeightFromDram(total_tiles_, tile_id, layer_id_);
   return bytes;
 }
 
-void Core::InitPEsOutputNIDBeforeLoop(int tile_idx) {
-  // Basic guards to avoid programming PEs with invalid parameters.
-  if (total_tiles_ <= 0) {
-    throw std::runtime_error("Core::InitPEsBeforeLoop: total_tiles_ not configured. Call ConfigureTiles(C_out) first.");
+void Core::LoadInputSpine_EachTile()
+{
+  if (current_inputspine_batches_.empty()) {
+    throw std::runtime_error("Core::LoadInputSpine_EachTile: no batches for current (h,w).");
   }
-  if (tile_idx < 0 || tile_idx >= total_tiles_) {
-    throw std::out_of_range("Core::InitPEsBeforeLoop: tile_idx out of range.");
-  }
-  if (W_out_ <= 0) {
-    throw std::runtime_error("Core::InitPEsBeforeLoop: W_out_ not set. Call SetSpineContext(...) first.");
-  }
-  if (h_out_ < 0 || w_out_ < 0) {
-    throw std::runtime_error("Core::InitPEsBeforeLoop: invalid (h_out_, w_out_).");
-  }
-
-  // Fresh tile: allow the outer loop to enter StepOnce again and re-prime valids.
-  compute_finished_ = false;
-  v_tob_in_ = true;
-  v_pe_     = false;
-  v_mfb_    = (!isb_->AllEmpty()) && TargetFifoHasSpace();
-
-  // Forward to PEArray's helper. PEArray will:
-  // - Compute out_id for each PE = base_pos + tile_offset + pe_idx
-  // - Register per-PE output id and set threshold
-  // - Clear its internal out_spike_entries_ for a fresh tile
-  pe_array_.InitPEsOutputNIDBeforeLoop(
-      /*total_tiles =*/ total_tiles_,
-      /*tile_idx    =*/ tile_idx,
-      /*h           =*/ h_out_,
-      /*w           =*/ w_out_,
-      /*W           =*/ W_out_);
+  isb_.PreloadFirstBatch(current_inputspine_batches_[0], layer_id_);
+  batch_cursor_ = 0;
 }
-// All comments are in English.
+
+void Core::Compute_EachTile(int tile_id)
+{
+  if (tile_id < 0 || tile_id >= total_tiles_) {
+    throw std::out_of_range("Core::ComputeTiles: tile_id out of range.");
+  }
+  if (total_batches_needed_ <= 0) {
+    return;
+  }
+  if (batch_cursor_ < 0) {
+    throw std::runtime_error("Core::ComputeTiles: first batch not preloaded; call LoadInputSpine_EachTile() first.");
+  }
+
+  for (int b = batch_cursor_; b < total_batches_needed_; ++b) {
+    // Run the compute loop for the current batch.
+    compute_finished_ = false;
+    while (!compute_finished_) {
+      StepOnce(tile_id);
+    }
+
+    const bool has_next = (b + 1 < total_batches_needed_);
+    if (has_next) {
+      const int next_b = b + 1;
+      const bool loaded = isb_.run(
+          current_inputspine_batches_[static_cast<std::size_t>(next_b)],
+          layer_id_,
+          next_b,
+          total_batches_needed_);
+      (void)loaded;
+      batch_cursor_ = next_b;
+    }
+  }
+}
+
+// ==================== StepOnce & Drain ====================
+
 bool Core::StepOnce(int tile_id) {
   if (tile_id < 0 || tile_id >= total_tiles_) {
     throw std::out_of_range("Core::StepOnce: tile_id out of range.");
   }
 
-  // One StepOnce call equals one synchronous tick.
-  uint64_t step_extra_cycles = 0;       // extra cycles charged inside this step (e.g., ISB load)
-  if (stats_) stats_->step_ticks += 1;  // count this tick
-
   // ---------------------------
   // Stage 0 – TiledOutputBuffer
   // ---------------------------
-  ran_tob_in_ = v_tob_in_ ? tob_.run(tile_id) : false;
-  if (stats_) {
-    if (!v_tob_in_)                 stats_->tob_in.gated_off++;
-    else if (!ran_tob_in_)          stats_->tob_in.eligible_but_noop++;
-    else                            stats_->tob_in.ran++;
-  }
+  ran_tob_in_ = v_tob_in_ ? tob_.run(static_cast<std::size_t>(tile_id)) : false;
 
   // ---------------------------
   // Stage 1 – PEArray
   // ---------------------------
-  ran_pe_ = v_pe_ ? pe_array_.run(*fb_) : false;
-  if (stats_) {
-    if (!v_pe_)                     stats_->pe.gated_off++;
-    else if (!ran_pe_)              stats_->pe.eligible_but_noop++;
-    else                            stats_->pe.ran++;
-  }
+  ran_pe_ = v_pe_ ? pe_array_.run(fb_) : false;
 
   // ---------------------------
   // Stage 2 – MinFinderBatch
   // ---------------------------
   ran_mfb_ = v_mfb_ ? mfb_.run(batch_cursor_, total_batches_needed_) : false;
-  if (stats_) {
-    if (!v_mfb_)                    stats_->mfb.gated_off++;
-    else if (!ran_mfb_)             stats_->mfb.eligible_but_noop++;
-    else                            stats_->mfb.ran++;
-  }
 
   // ---------------------------
-  // Stage 3 – ISB batch load (if buffers empty and more batches remain)
+  // NOTE: Stage 3 (ISB load of next batch) has been REMOVED from StepOnce.
+  // Batch progression is now handled by ComputeTiles().
   // ---------------------------
-  uint64_t load_cycles = 0; // must be filled by isb_->run(..., &load_cycles)
-  const bool can_try_isb_load = isb_->AllEmpty() && (batch_cursor_ + 1 < total_batches_needed_);
-  if (!can_try_isb_load) {
-    if (stats_) stats_->isb_ld.gated_off++;
-  } else {
-    ++batch_cursor_;
-    // IMPORTANT: use the out_cycles overload so load_cycles is populated.
-    const bool loaded = isb_->run((*spine_batches_)[batch_cursor_],
-                                  layer_id_,
-                                  batch_cursor_,
-                                  total_batches_needed_,
-                                  &load_cycles);
-    if (stats_) {
-      if (!loaded) stats_->isb_ld.eligible_but_noop++;
-      else         stats_->isb_ld.ran++;
-    }
-    if (loaded) {
-      // Charge the memory load cycles to this step and to the global clock.
-      step_extra_cycles += load_cycles;
-      cycle_ += load_cycles;
-      if (stats_) {
-        // This belongs to the "in-step" input load bucket, not preload.
-        stats_->load_input_cycles_in_step += load_cycles;
-        stats_->step_extra_memload_cycles += load_cycles;
-      }
-    }
-  }
 
   // Compute next valids (hard backpressure + FIFO capacity for MFB).
   const bool stall = tob_.stall_next_cycle();  // replaces cooldown semantics
@@ -225,7 +260,7 @@ bool Core::StepOnce(int tile_id) {
   }
 
   const bool fifo_has   = FifosHaveData();
-  const bool isb_has    = !isb_->AllEmpty();
+  const bool isb_has    = !isb_.AllEmpty();
   const bool fifo_space = TargetFifoHasSpace();
 
   // Allow TOB to run every cycle so it can drain its local per-PE FIFOs
@@ -240,50 +275,33 @@ bool Core::StepOnce(int tile_id) {
   v_pe_     = v_pe_next;
   v_mfb_    = v_mfb_next;
 
-  // Finish condition for compute of THIS tile_id (no cooldown anymore).
-  // Note: this ignores TOB's internal FIFOs; TOB will keep draining them since
-  // v_tob_in_next is always true.
+  // Finish condition for compute of THIS batch for THIS tile.
+  // TOB will keep draining since v_tob_in_next is always true.
   compute_finished_ = (!stall) && !fifo_has && !pe_hasout && !isb_has;
 
-  // End-of-step: add the synchronous tick + any extra cycles charged above.
+  // End-of-step: add the synchronous tick.
   cycle_ += 1;
-  if (stats_) stats_->step_cycles_total += (1 + step_extra_cycles);
 
   return (ran_tob_in_ || ran_pe_ || ran_mfb_);
 }
-
-
 void Core::DrainAllTilesAndStore(int & drained_entries) {
-   
-  if (!sorter_) {
-    sorter_ = std::make_unique<OutputSorter>(&tob_, &out_spine_);
-  }
-  // sorter_->AnnouncedSize();
   const uint64_t kCyclesPerEntryDrain = 1;
-  // Drain tile buffers to OutputSpine, one entry per Sort() call.
   uint64_t drain_sort_calls = 0;
-  while (sorter_->Sort()) {
+
+  while (sorter_.Sort()) {
     ++drain_sort_calls;
   }
-  // Store to DRAM (throws on failure). Clears OutputSpine on success.
-  
 
   drained_entries += static_cast<int>(out_spine_.size());
-  if(drain_sort_calls != out_spine_.size()){
-    std::cout << "Warning: drain_sort_calls(" << drain_sort_calls << ") != out_spine_size(" << out_spine_.size() << ")\n";
+  if (drain_sort_calls != out_spine_.size()) {
+    std::cout << "Warning: drain_sort_calls(" << drain_sort_calls
+              << ") != out_spine_size(" << out_spine_.size() << ")\n";
   }
-  uint64_t store_cycles = 0;
-  out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_), &store_cycles);
 
-  // Accumulate cycles to core_ clock and stats.
+  out_spine_.StoreOutputSpineToDRAM(static_cast<std::uint32_t>(layer_id_));
+
   const uint64_t drain_cycles = drain_sort_calls * kCyclesPerEntryDrain;
-  cycle_ += drain_cycles + store_cycles;
-
-  if (stats_) {
-    stats_->output_drain_cycles += drain_cycles;
-    stats_->output_store_cycles += store_cycles;
-  }
-
+  drained_entries += static_cast<int>(out_spine_.size());
 }
 
 bool Core::FifosHaveData() const {
@@ -294,7 +312,7 @@ bool Core::FifosHaveData() const {
 }
 
 bool Core::TargetFifoHasSpace() const {
-  if (!spine_batches_) return false;
+  if (current_inputspine_batches_.empty()) return false;
   if (batch_cursor_ < 0 || batch_cursor_ >= static_cast<int>(kNumIntermediateFifos)) {
     return false;
   }

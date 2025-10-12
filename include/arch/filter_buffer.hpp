@@ -62,8 +62,7 @@ public:
   // Returns the total bytes pulled from DRAM in this call.
   std::uint32_t LoadWeightFromDram(std::uint32_t total_tiles,
                                    std::uint32_t tile_id,
-                                   std::uint32_t layer_id,
-                                   uint64_t* out_cycles = nullptr);
+                                   std::uint32_t layer_id);
 
   // Optional helper.
   std::size_t NumRows() const { return kFilterRows; }

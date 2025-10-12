@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iterator>
 #include <algorithm>
+#include <cmath>     // for std::ldexp, std::abs
 
 using nlohmann::json;
 
@@ -14,14 +15,13 @@ static LayerKind ParseKind_(const std::string& s) {
   throw std::invalid_argument("Unknown layer kind: " + s);
 }
 
-
 std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
-  // Read entire JSON file as text
+  // Read entire JSON file as text.
   std::ifstream ifs(json_path);
   if (!ifs) throw std::runtime_error("ParseConfig: cannot open json file: " + json_path);
   std::string jtxt((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 
-  // Parse json
+  // Parse json.
   json j = json::parse(jtxt);
   if (!j.contains("layers") || !j["layers"].is_array()) {
     throw std::invalid_argument("ParseConfig: missing 'layers' array");
@@ -36,9 +36,9 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
     if (!jl.contains("L")) throw std::invalid_argument("ParseConfig: layer entry missing 'L'");
     s.L = jl.at("L").get<int>();
 
-    s.name = jl.value("name", std::string("L") + std::to_string(s.L));
-    s.kind = ParseKind_(jl.at("kind").get<std::string>());
-    s.threshold_ = jl.value("threshold", 0);
+    s.name      = jl.value("name", std::string("L") + std::to_string(s.L));
+    s.kind      = ParseKind_(jl.at("kind").get<std::string>());
+    s.threshold_ = jl.value("threshold", 0.0f); // ensure float default
 
     // params_in
     {
@@ -68,7 +68,7 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
       s.Dh = dil.at("h").get<int>();
       s.Dw = dil.at("w").get<int>();
 
-      // For now, we only support dilation = 1
+      // For now, we only support dilation = 1.
       if (s.Dh != 1 || s.Dw != 1) {
         throw std::invalid_argument("ParseConfig: dilation != 1 is not supported yet.");
       }
@@ -82,8 +82,7 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
       s.W_out    = po.at("W").get<int>();
     }
 
-    // ---- NEW: parse minimal quantization metadata ----
-    // weight_q_format: {bits, signed, frac_bits}
+    // ---- Minimal quantization metadata for weights ----
     if (jl.contains("weight_q_format") && jl["weight_q_format"].is_object()) {
       const auto& qf = jl["weight_q_format"];
       s.w_bits      = qf.value("bits", 8);
@@ -92,12 +91,11 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
       s.has_w_qformat = true;
     }
 
-    // weight_scale: float (preferred). If missing, fall back to legacy "weight_qparams.scale".
+    // weight_scale (preferred) or legacy "weight_qparams.scale".
     if (jl.contains("weight_scale")) {
       s.w_scale = jl.at("weight_scale").get<float>();
       s.has_w_scale = true;
     } else if (jl.contains("weight_qparams") && jl["weight_qparams"].is_object()) {
-      // Backward-compat: older exporter might have emitted this.
       const auto& qp = jl["weight_qparams"];
       if (qp.contains("scale")) {
         s.w_scale = qp.at("scale").get<float>();
@@ -111,7 +109,6 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
 
     // Consistency checks (non-fatal warnings)
     if (s.has_w_qformat && s.has_w_scale && s.w_frac_bits >= 0) {
-      // If frac_bits is present, the scale should be 2^-frac_bits for fixed-point.
       const float expect = std::ldexp(1.0f, -s.w_frac_bits); // 2^-n
       const float eps = 1e-6f * std::max(1.0f, std::abs(expect));
       if (std::abs(s.w_scale - expect) > eps) {
@@ -133,7 +130,7 @@ std::vector<LayerSpec> ParseConfig(const std::string& json_path) {
     out.push_back(s);
   }
 
-  // Keep layers ordered by L ascending just in case
+  // Keep layers ordered by L ascending just in case.
   std::sort(out.begin(), out.end(), [](const LayerSpec& a, const LayerSpec& b){ return a.L < b.L; });
   return out;
 }
@@ -147,9 +144,27 @@ void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram)
   if (!dram) throw std::invalid_argument("RunNetwork: null DRAM pointer");
 
   for (const auto& s : specs) {
-    if (s.kind == LayerKind::kConv) {
-      ConvLayer conv;
-      conv.ConfigureLayer(s.L,
+    switch (s.kind) {
+      case LayerKind::kConv: {
+        ConvLayer conv;
+        conv.ConfigureLayer(s.L,
+                            s.Cin_in, s.Cout,
+                            s.H_in,   s.W_in,
+                            s.Kh,     s.Kw,
+                            s.Sh,     s.Sw,
+                            s.Ph,     s.Pw,
+                            s.threshold_,
+                            s.w_bits,
+                            s.w_signed,
+                            s.w_frac_bits,
+                            s.w_scale,
+                            dram);
+        conv.run_layer();
+        break;
+      }
+      case LayerKind::kFC: {
+        FCLayer fc;
+        fc.ConfigureLayer(s.L,
                           s.Cin_in, s.Cout,
                           s.H_in,   s.W_in,
                           s.Kh,     s.Kw,
@@ -161,28 +176,13 @@ void RunNetwork(const std::vector<LayerSpec>& specs, sf::dram::SimpleDRAM* dram)
                           s.w_frac_bits,
                           s.w_scale,
                           dram);
-      conv.run_layer();
-    } else if (s.kind == LayerKind::kFC) {
-      FCLayer fc;
-      fc.ConfigureLayer(s.L,
-                        s.Cin_in, s.Cout,
-                        s.H_in,   s.W_in,
-                        s.Kh,     s.Kw,
-                        s.Sh,     s.Sw,
-                        s.Ph,     s.Pw,
-                        s.threshold_,
-                        s.w_bits,
-                        s.w_signed,
-                        s.w_frac_bits,
-                        s.w_scale,
-                        dram);
-      fc.run_layer();
-    } else {
-      throw std::runtime_error("RunNetwork: unsupported layer kind at L=" + std::to_string(s.L));
+        fc.run_layer();
+        break;
+      }
+      default:
+        throw std::runtime_error("RunNetwork: unsupported layer kind at L=" + std::to_string(s.L));
     }
   }
 }
-
-
 
 } // namespace sf

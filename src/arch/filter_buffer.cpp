@@ -55,6 +55,8 @@ int FilterBuffer::ComputeRowId(std::uint32_t neuron_id) const {
 
   // 4) Check (r,c) within the kernel window.
   if (r < 0 || r >= K_h_ || c < 0 || c >= K_w_) {
+    // std::cout << "Current hout=" << h_out_cur_ << ", wout=" << w_out_cur_ << "\n";
+    // std::cout << "(h_in, w_in)=(" << h_in << ", " << w_in << ")\n";
     std::cout << "ComputeRowId: neuron_id=" << neuron_id
               << " maps to (c_in=" << c_in << ", r=" << r << ", c=" << c << ") outside kernel window\n";
     return -1; // invalid/padded tap
@@ -88,9 +90,7 @@ FilterBuffer::Row FilterBuffer::GetRow(int row_id) const {
 
 std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
                                                std::uint32_t tile_id,
-                                               std::uint32_t layer_id,
-                                               uint64_t* out_cycles) {
-  if (out_cycles) *out_cycles = 0;
+                                               std::uint32_t layer_id) {
   if (!dram_) {
     throw std::runtime_error("FilterBuffer::LoadWeightFromDram: DRAM pointer is null.");
   }
@@ -123,10 +123,6 @@ std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
 
   // Byte math per tile and per-transaction timing
   const uint32_t bytes_per_tile = static_cast<uint32_t>(rows_per_tile) * kNumPE * sizeof(std::int8_t);
-  const uint32_t bw              = std::max(1u, wtiming_.bw_bytes_per_cycle);
-  const uint64_t data_cycles     = CeilDivU64(static_cast<uint64_t>(bytes_per_tile),
-                                              static_cast<uint64_t>(bw));
-  const uint64_t xact_overhead   = static_cast<uint64_t>(wtiming_.fixed_latency);
 
   // How many tiles to load this time (fill as much as possible)
   const uint32_t tiles_to_load = std::min<uint32_t>(tiles_capacity, total_tiles);
@@ -148,7 +144,6 @@ std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
     if (i == 0) active_tile_id_ = cur_id;
 
     // Timing accumulation (one transaction per tile)
-    if (out_cycles) *out_cycles += (data_cycles + xact_overhead);
     total_bytes_loaded += n;
 
     base_row += static_cast<uint32_t>(rows_per_tile);

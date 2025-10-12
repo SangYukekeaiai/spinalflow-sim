@@ -308,12 +308,12 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: ../src/main.cpp \
   ../include/arch/dram/simple_dram.hpp \
   ../include/model/conv_layer.hpp \
   ../include/common/constants.hpp \
+  ../include/core/core.hpp \
+  ../include/common/entry.hpp \
   ../include/arch/filter_buffer.hpp \
   /usr/include/c++/11/unordered_set \
   /usr/include/c++/11/bits/unordered_set.h \
   ../include/arch/input_spine_buffer.hpp \
-  ../include/common/entry.hpp \
-  ../include/core/core.hpp \
   ../include/arch/intermediate_fifo.hpp \
   ../include/arch/min_finder_batch.hpp \
   ../include/arch/global_merger.hpp \
@@ -321,7 +321,6 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: ../src/main.cpp \
   ../include/arch/tiled_output_buffer.hpp \
   ../include/arch/output_spine.hpp \
   ../include/arch/output_sorter.hpp \
-  ../include/stats/sim_stats.hpp \
   ../include/model/fc_layer.hpp
 
 
@@ -716,8 +715,6 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/c++/11/bits/string_view.tcc:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/gthr.h:
-
-../include/stats/sim_stats.hpp:
 
 /usr/include/c++/11/bits/functexcept.h:
 

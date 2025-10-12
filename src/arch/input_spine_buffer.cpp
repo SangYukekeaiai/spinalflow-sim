@@ -33,11 +33,9 @@ void InputSpineBuffer::Reset() {
 }
 
 bool InputSpineBuffer::PreloadFirstBatch(const std::vector<int>& logical_spine_ids_first_batch,
-                                         int layer_id,
-                                         uint64_t* out_cycles)
+                                         int layer_id)
 {
   if (logical_spine_ids_first_batch.empty()) {
-    if (out_cycles) *out_cycles = 0;
     return false; // nothing to do
   }
   if (static_cast<int>(logical_spine_ids_first_batch.size()) > num_phys_) {
@@ -45,17 +43,14 @@ bool InputSpineBuffer::PreloadFirstBatch(const std::vector<int>& logical_spine_i
   }
   // Load into physical buffers and mark metadata.
   const uint64_t cycles = LoadBatchIntoBuffers_(logical_spine_ids_first_batch, layer_id);
-  if (out_cycles) *out_cycles = cycles;
   return true;
 }
 
 bool InputSpineBuffer::run(const std::vector<int>& logical_spine_ids_current_batch,
                            int layer_id,
                            int current_batch_cursor,
-                           int total_batches_needed,
-                           uint64_t* out_cycles)
+                           int total_batches_needed)
 {
-  if (out_cycles) *out_cycles = 0;
   // Guard: only attempt load when batches remain and all buffers are empty.
   if (current_batch_cursor < 0 || current_batch_cursor >= total_batches_needed) {
     return false; // no more batches to load or invalid cursor
@@ -69,7 +64,6 @@ bool InputSpineBuffer::run(const std::vector<int>& logical_spine_ids_current_bat
   }
   // Perform the load.
   const uint64_t cycles = LoadBatchIntoBuffers_(logical_spine_ids_current_batch, layer_id);
-  if (out_cycles) *out_cycles = cycles;
   return true;
 }
 
@@ -117,9 +111,6 @@ uint64_t InputSpineBuffer::LoadBatchIntoBuffers_(const std::vector<int>& logical
     logical_id_loaded_[static_cast<size_t>(i)] = -1;
   }
 
-  uint64_t total_wire_bytes = 0;
-  int num_loaded = 0;
-
   // Load each provided logical spine into the corresponding physical buffer slot.
   for (int i = 0; i < static_cast<int>(logical_spine_ids.size()); ++i) {
     const int spine_id = logical_spine_ids[static_cast<size_t>(i)];
@@ -140,19 +131,8 @@ uint64_t InputSpineBuffer::LoadBatchIntoBuffers_(const std::vector<int>& logical
     read_idx_[static_cast<size_t>(i)] = 0;
     logical_id_loaded_[static_cast<size_t>(i)] = spine_id;
 
-    total_wire_bytes += static_cast<uint64_t>(entries) * static_cast<uint64_t>(timing_.wire_entry_bytes);
-    if (entries > 0) ++num_loaded;
   }
-
-  const uint64_t denom_bw = static_cast<uint64_t>(std::max(1u, timing_.bw_bytes_per_cycle)) *
-                            static_cast<uint64_t>(std::max(1u, timing_.parallel_loads));
-  const uint64_t data_cycles  = CeilDivU64(total_wire_bytes, denom_bw);
-  const uint64_t fixed_cycles = static_cast<uint64_t>(timing_.fixed_latency) *
-                                CeilDivU64(static_cast<uint64_t>(num_loaded),
-                                           static_cast<uint64_t>(std::max(1u, timing_.parallel_loads)));
-
-
-  return data_cycles + fixed_cycles;
+  return 0;
 }
 
 } // namespace sf
