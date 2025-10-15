@@ -77,6 +77,15 @@ std::filesystem::path BuildStageCsvPath(const std::string& repo_name,
   return dir / file;
 }
 
+std::filesystem::path BuildLayerTablesDir(const std::string& repo_name,
+                                          const std::string& model_name) {
+  const auto sanitized_repo  = SanitizeName(repo_name);
+  const auto sanitized_model = SanitizeName(model_name);
+  std::filesystem::path dir("stats");
+  dir /= sanitized_repo + "__" + sanitized_model;
+  return dir;
+}
+
 void WriteStageCyclesCsv(const std::string& repo_name,
                          const std::string& model_name,
                          const std::vector<LayerStageRecord>& rows) {
@@ -123,7 +132,7 @@ void WriteSramAccessCsv(const std::string& repo_name,
         << LayerKindToString(row.kind) << ','
         << row.sram_stats.input_spine.accesses << ','
         << row.sram_stats.filter.accesses << ','
-        << row.sram_stats.output_queue.accesses << ','
+        << row.sram_stats.output_spine.accesses << ','
         << total_cycles << '\n';
   }
   ofs.flush();
@@ -141,7 +150,7 @@ void WriteSramCapacityCsv(const std::string& repo_name,
   }
 
   ofs << "model,layer_id,layer_name,layer_kind,"
-         "isb_capacity_bytes,filter_capacity_bytes,output_queue_capacity_bytes\n";
+         "isb_capacity_bytes,filter_capacity_bytes,output_spine_capacity_bytes\n";
 
   for (const auto& row : rows) {
     ofs << model_name << ','
@@ -150,10 +159,54 @@ void WriteSramCapacityCsv(const std::string& repo_name,
         << LayerKindToString(row.kind) << ','
         << row.sram_stats.input_spine_capacity_bytes << ','
         << row.sram_stats.filter_capacity_bytes << ','
-        << row.sram_stats.output_queue_capacity_bytes << '\n';
+        << row.sram_stats.output_spine_capacity_bytes << '\n';
   }
   ofs.flush();
   std::cout << "[Simulation] SRAM capacity CSV written to " << csv_path << "\n";
+}
+
+void WritePerLayerSramTables(const std::string& repo_name,
+                             const std::string& model_name,
+                             const std::vector<LayerStageRecord>& rows) {
+  const auto dir_path = BuildLayerTablesDir(repo_name, model_name);
+  std::filesystem::create_directories(dir_path);
+
+  for (const auto& row : rows) {
+    const std::uint64_t total_cycles =
+        row.cycles.load_cycles + row.cycles.compute_cycles + row.cycles.store_cycles;
+    const auto layer_file =
+        dir_path / (std::string("layer_") + std::to_string(row.layer_id) + ".csv");
+    std::ofstream ofs(layer_file, std::ios::out | std::ios::trunc);
+    if (!ofs) {
+      throw std::runtime_error("RunNetwork: failed to open per-layer SRAM CSV file " +
+                               layer_file.string());
+    }
+
+    ofs << "component,access_cycles,access_cycles_over_total_cycles,capacity_bytes\n";
+
+    auto emit_row = [&](const char* name,
+                        const CoreSramStats::Component& comp,
+                        std::uint64_t capacity_bytes) {
+      const long double ratio = (total_cycles == 0)
+                                    ? 0.0L
+                                    : static_cast<long double>(comp.access_cycles) /
+                                          static_cast<long double>(total_cycles);
+      ofs << name << ','
+          << comp.access_cycles << ','
+          << std::fixed << std::setprecision(6) << ratio << ','
+          << capacity_bytes << '\n';
+    };
+
+    emit_row("input_spine_buffer", row.sram_stats.input_spine,
+             row.sram_stats.input_spine_capacity_bytes);
+    emit_row("filter_buffer", row.sram_stats.filter,
+             row.sram_stats.filter_capacity_bytes);
+    emit_row("output_spine_buffer", row.sram_stats.output_spine,
+             row.sram_stats.output_spine_capacity_bytes);
+
+    ofs.flush();
+  }
+  std::cout << "[Simulation] Per-layer SRAM tables written to " << dir_path << "\n";
 }
 
 } // namespace
@@ -356,6 +409,7 @@ void RunNetwork(const std::vector<LayerSpec>& specs,
   WriteStageCyclesCsv(repo_name, model_name, stage_rows);
   WriteSramAccessCsv(repo_name, model_name, stage_rows);
   WriteSramCapacityCsv(repo_name, model_name, stage_rows);
+  WritePerLayerSramTables(repo_name, model_name, stage_rows);
 }
 
 } // namespace sf

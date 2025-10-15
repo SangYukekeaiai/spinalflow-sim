@@ -58,10 +58,8 @@ Core::Core(SimpleDRAM* dram,
       static_cast<std::uint64_t>(kFilterRows) *
       static_cast<std::uint64_t>(kNumPE) *
       sizeof(std::int8_t) / 1024;
-  sram_stats_.output_queue_capacity_bytes =
-      static_cast<std::uint64_t>(kNumPE) *
-      static_cast<std::uint64_t>(TiledOutputBuffer::LocalFifoDepth()) *
-      5 / 1024;
+  sram_stats_.output_spine_capacity_bytes =
+      static_cast<std::uint64_t>(kOutputSpineMaxEntries) * 5 / 1024;
   ResetSramStats();
 }
 
@@ -276,7 +274,7 @@ void Core::Compute_EachTile(int tile_id)
 void Core::ResetSramStats() {
   sram_stats_.input_spine = {};
   sram_stats_.filter = {};
-  sram_stats_.output_queue = {};
+  sram_stats_.output_spine = {};
   sram_stats_.compute_load_accesses = 0;
   sram_stats_.compute_load_bytes = 0;
   sram_stats_.compute_store_accesses = 0;
@@ -356,29 +354,6 @@ bool Core::StepOnce(int tile_id) {
     sram_stats_.compute_load_bytes += bytes;
   }
 
-  const std::size_t ingested = tob_.last_ingested_entries();
-  const std::size_t emitted  = tob_.last_emitted_entries();
-  bool output_access = false;
-  if (ingested > 0) {
-    const std::uint64_t entries_u64 = static_cast<std::uint64_t>(ingested);
-    const std::uint64_t bytes = entries_u64 * sizeof(Entry);
-    sram_stats_.output_queue.accesses += entries_u64;
-    sram_stats_.output_queue.bytes += bytes;
-    sram_stats_.compute_store_accesses += entries_u64;
-    sram_stats_.compute_store_bytes += bytes;
-    output_access = true;
-  }
-  if (emitted > 0) {
-    const std::uint64_t entries_u64 = static_cast<std::uint64_t>(emitted);
-    const std::uint64_t bytes = entries_u64 * sizeof(Entry);
-    sram_stats_.output_queue.accesses += entries_u64;
-    sram_stats_.output_queue.bytes += bytes;
-    output_access = true;
-  }
-  if (output_access) {
-    sram_stats_.output_queue.access_cycles += 1;
-  }
-
   io_shadow_.OnComputeCycle(1);
   cycle_ += 1;
   cycle_stats_.compute_cycles += 1;
@@ -396,6 +371,22 @@ void Core::DrainAllTilesAndStore(int & drained_entries) {
   std::uint64_t dram_cycles = 0;
   std::uint64_t sorted_entries = 0;
   std::uint64_t drained_this_call = 0;
+  const std::uint64_t entry_bytes = sizeof(Entry);
+
+  auto record_store = [&](std::uint32_t bytes) -> std::uint64_t {
+    if (bytes == 0) {
+      return 0;
+    }
+    const std::uint64_t entries = bytes / entry_bytes;
+    const std::uint64_t cycles = ceil_div(bytes, kDrainBytesPerCycle);
+    sram_stats_.output_spine.access_cycles += 1;
+    sram_stats_.output_spine.accesses += entries;
+    sram_stats_.output_spine.bytes += bytes;
+    sram_stats_.compute_store_accesses += entries;
+    sram_stats_.compute_store_bytes += bytes;
+    drained_this_call += entries;
+    return cycles;
+  };
 
   while (true) {
     if (out_spine_.IsFull()) {
@@ -404,8 +395,7 @@ void Core::DrainAllTilesAndStore(int & drained_entries) {
       if (bytes == 0) {
         break;
       }
-      dram_cycles += ceil_div(bytes, kDrainBytesPerCycle);
-      drained_this_call += bytes / sizeof(Entry);
+      dram_cycles += record_store(bytes);
       continue;
     }
 
@@ -422,8 +412,7 @@ void Core::DrainAllTilesAndStore(int & drained_entries) {
     if (bytes == 0) {
       break;
     }
-    dram_cycles += ceil_div(bytes, kDrainBytesPerCycle);
-    drained_this_call += bytes / sizeof(Entry);
+    dram_cycles += record_store(bytes);
   }
 
   if (sorted_entries != drained_this_call) {

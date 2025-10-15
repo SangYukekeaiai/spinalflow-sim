@@ -5,7 +5,7 @@ Plot SRAM access counts across layers.
 Usage:
     python plot_sram_accesses.py --csv stats/repo__model__sram_access.csv --output sram_access.png
 
-The script draws one line per SRAM (input spine, filter, output queue) indexed by layer order.
+The script draws one line per SRAM array (input spine, filter buffer, output spine) indexed by layer order.
 """
 
 import argparse
@@ -58,7 +58,7 @@ def main():
     fig, ax = plt.subplots(figsize=(10, 4))
     ax.plot(layers, df["isb_accesses"], marker="o", label="Input Spine")
     ax.plot(layers, df["filter_accesses"], marker="o", label="Filter Buffer")
-    ax.plot(layers, df["output_accesses"], marker="o", label="Output Queue")
+    ax.plot(layers, df["output_accesses"], marker="o", label="Output Spine")
 
     ax.set_xlabel("Layer ID")
     ax.set_ylabel("Access Count")

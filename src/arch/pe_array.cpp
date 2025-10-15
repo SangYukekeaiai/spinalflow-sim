@@ -25,6 +25,11 @@ bool PEArray::run(FilterBuffer& fb) {
     if (pe_array_[pe_idx].spiked()) {
       Entry e{};
       e.ts        = pe_array_[pe_idx].last_ts();
+      if (e.ts >= 0) {
+        // Defensive: should not happen since ts=0 means "no spike"
+        std::cout << "Works well PEArray::run: Defensive warning, PE " << pe_idx
+                  << " produced spike with ts=" << static_cast<int>(e.ts) << "\n";
+      }
       e.neuron_id = pe_array_[pe_idx].output_neuron_id();
       out_spike_entries_[pe_idx] = e;          // set this PE's slot
     } else {

@@ -42,7 +42,7 @@ struct CoreSramStats {
 
   Component input_spine;
   Component filter;
-  Component output_queue;
+  Component output_spine;
 
   std::uint64_t compute_load_accesses = 0;
   std::uint64_t compute_load_bytes = 0;
@@ -51,7 +51,7 @@ struct CoreSramStats {
 
   std::uint64_t input_spine_capacity_bytes = 0;
   std::uint64_t filter_capacity_bytes = 0;
-  std::uint64_t output_queue_capacity_bytes = 0;
+  std::uint64_t output_spine_capacity_bytes = 0;
 };
 
 class Core {

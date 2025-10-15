@@ -1,0 +1,976 @@
+{
+  "version": "loas.bin.nohdr.v2.entry8",
+  "layers": [
+    {
+      "L": 0,
+      "name": "conv4",
+      "kind": "conv",
+      "threshold": 1.0,
+      "params_in": {
+        "C": 256,
+        "H": 8,
+        "W": 8
+      },
+      "params_weight": {
+        "Cin": 256,
+        "Cout": 256,
+        "Kh": 3,
+        "Kw": 3,
+        "stride": {
+          "h": 1,
+          "w": 1
+        },
+        "padding": {
+          "h": 1,
+          "w": 1
+        },
+        "dilation": {
+          "h": 1,
+          "w": 1
+        }
+      },
+      "params_out": {
+        "H": 8,
+        "W": 8,
+        "C": 256
+      },
+      "input_spines": {
+        "0": {
+          "addr": 0,
+          "size": 3104
+        },
+        "1": {
+          "addr": 3104,
+          "size": 2392
+        },
+        "2": {
+          "addr": 5496,
+          "size": 2400
+        },
+        "3": {
+          "addr": 7896,
+          "size": 2296
+        },
+        "4": {
+          "addr": 10192,
+          "size": 2176
+        },
+        "5": {
+          "addr": 12368,
+          "size": 2296
+        },
+        "6": {
+          "addr": 14664,
+          "size": 2248
+        },
+        "7": {
+          "addr": 16912,
+          "size": 3040
+        },
+        "8": {
+          "addr": 19952,
+          "size": 2232
+        },
+        "9": {
+          "addr": 22184,
+          "size": 1376
+        },
+        "10": {
+          "addr": 23560,
+          "size": 1304
+        },
+        "11": {
+          "addr": 24864,
+          "size": 1264
+        },
+        "12": {
+          "addr": 26128,
+          "size": 2040
+        },
+        "13": {
+          "addr": 28168,
+          "size": 1848
+        },
+        "14": {
+          "addr": 30016,
+          "size": 1288
+        },
+        "15": {
+          "addr": 31304,
+          "size": 2080
+        },
+        "16": {
+          "addr": 33384,
+          "size": 2136
+        },
+        "17": {
+          "addr": 35520,
+          "size": 1560
+        },
+        "18": {
+          "addr": 37080,
+          "size": 1784
+        },
+        "19": {
+          "addr": 38864,
+          "size": 1856
+        },
+        "20": {
+          "addr": 40720,
+          "size": 3464
+        },
+        "21": {
+          "addr": 44184,
+          "size": 3088
+        },
+        "22": {
+          "addr": 47272,
+          "size": 1616
+        },
+        "23": {
+          "addr": 48888,
+          "size": 2048
+        },
+        "24": {
+          "addr": 50936,
+          "size": 2496
+        },
+        "25": {
+          "addr": 53432,
+          "size": 2024
+        },
+        "26": {
+          "addr": 55456,
+          "size": 2016
+        },
+        "27": {
+          "addr": 57472,
+          "size": 1608
+        },
+        "28": {
+          "addr": 59080,
+          "size": 2344
+        },
+        "29": {
+          "addr": 61424,
+          "size": 2272
+        },
+        "30": {
+          "addr": 63696,
+          "size": 1656
+        },
+        "31": {
+          "addr": 65352,
+          "size": 1920
+        },
+        "32": {
+          "addr": 67272,
+          "size": 2304
+        },
+        "33": {
+          "addr": 69576,
+          "size": 1896
+        },
+        "34": {
+          "addr": 71472,
+          "size": 2104
+        },
+        "35": {
+          "addr": 73576,
+          "size": 1816
+        },
+        "36": {
+          "addr": 75392,
+          "size": 2064
+        },
+        "37": {
+          "addr": 77456,
+          "size": 2280
+        },
+        "38": {
+          "addr": 79736,
+          "size": 2040
+        },
+        "39": {
+          "addr": 81776,
+          "size": 2512
+        },
+        "40": {
+          "addr": 84288,
+          "size": 2824
+        },
+        "41": {
+          "addr": 87112,
+          "size": 2224
+        },
+        "42": {
+          "addr": 89336,
+          "size": 2960
+        },
+        "43": {
+          "addr": 92296,
+          "size": 2200
+        },
+        "44": {
+          "addr": 94496,
+          "size": 2048
+        },
+        "45": {
+          "addr": 96544,
+          "size": 2088
+        },
+        "46": {
+          "addr": 98632,
+          "size": 1752
+        },
+        "47": {
+          "addr": 100384,
+          "size": 2472
+        },
+        "48": {
+          "addr": 102856,
+          "size": 3064
+        },
+        "49": {
+          "addr": 105920,
+          "size": 2264
+        },
+        "50": {
+          "addr": 108184,
+          "size": 2256
+        },
+        "51": {
+          "addr": 110440,
+          "size": 1640
+        },
+        "52": {
+          "addr": 112080,
+          "size": 1512
+        },
+        "53": {
+          "addr": 113592,
+          "size": 1736
+        },
+        "54": {
+          "addr": 115328,
+          "size": 1584
+        },
+        "55": {
+          "addr": 116912,
+          "size": 2688
+        },
+        "56": {
+          "addr": 119600,
+          "size": 3472
+        },
+        "57": {
+          "addr": 123072,
+          "size": 2464
+        },
+        "58": {
+          "addr": 125536,
+          "size": 2520
+        },
+        "59": {
+          "addr": 128056,
+          "size": 2712
+        },
+        "60": {
+          "addr": 130768,
+          "size": 2896
+        },
+        "61": {
+          "addr": 133664,
+          "size": 3360
+        },
+        "62": {
+          "addr": 137024,
+          "size": 3104
+        },
+        "63": {
+          "addr": 140128,
+          "size": 3968
+        }
+      },
+      "weight_tiles": {
+        "0": {
+          "addr": 144096,
+          "size": 294912
+        },
+        "1": {
+          "addr": 439008,
+          "size": 294912
+        }
+      },
+      "output_region_begin": 0,
+      "output_region_end": 0,
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.0721687600016594,
+      "weight_float_max": 0.07216858118772507
+    },
+    {
+      "L": 1,
+      "name": "conv5",
+      "kind": "conv",
+      "threshold": 1.0,
+      "params_in": {
+        "C": 256,
+        "H": 4,
+        "W": 4
+      },
+      "params_weight": {
+        "Cin": 256,
+        "Cout": 512,
+        "Kh": 3,
+        "Kw": 3,
+        "stride": {
+          "h": 1,
+          "w": 1
+        },
+        "padding": {
+          "h": 1,
+          "w": 1
+        },
+        "dilation": {
+          "h": 1,
+          "w": 1
+        }
+      },
+      "params_out": {
+        "H": 4,
+        "W": 4,
+        "C": 512
+      },
+      "input_spines": {
+        "0": {
+          "addr": 733920,
+          "size": 0
+        },
+        "1": {
+          "addr": 733920,
+          "size": 0
+        },
+        "2": {
+          "addr": 733920,
+          "size": 0
+        },
+        "3": {
+          "addr": 733920,
+          "size": 0
+        },
+        "4": {
+          "addr": 733920,
+          "size": 0
+        },
+        "5": {
+          "addr": 733920,
+          "size": 0
+        },
+        "6": {
+          "addr": 733920,
+          "size": 0
+        },
+        "7": {
+          "addr": 733920,
+          "size": 0
+        },
+        "8": {
+          "addr": 733920,
+          "size": 0
+        },
+        "9": {
+          "addr": 733920,
+          "size": 0
+        },
+        "10": {
+          "addr": 733920,
+          "size": 0
+        },
+        "11": {
+          "addr": 733920,
+          "size": 0
+        },
+        "12": {
+          "addr": 733920,
+          "size": 0
+        },
+        "13": {
+          "addr": 733920,
+          "size": 0
+        },
+        "14": {
+          "addr": 733920,
+          "size": 0
+        },
+        "15": {
+          "addr": 733920,
+          "size": 0
+        }
+      },
+      "weight_tiles": {
+        "0": {
+          "addr": 733920,
+          "size": 294912
+        },
+        "1": {
+          "addr": 1028832,
+          "size": 294912
+        },
+        "2": {
+          "addr": 1323744,
+          "size": 294912
+        },
+        "3": {
+          "addr": 1618656,
+          "size": 294912
+        }
+      },
+      "output_region_begin": 0,
+      "output_region_end": 0,
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.058925531804561615,
+      "weight_float_max": 0.058925509452819824
+    },
+    {
+      "L": 2,
+      "name": "conv6",
+      "kind": "conv",
+      "threshold": 1.0,
+      "params_in": {
+        "C": 512,
+        "H": 4,
+        "W": 4
+      },
+      "params_weight": {
+        "Cin": 512,
+        "Cout": 512,
+        "Kh": 3,
+        "Kw": 3,
+        "stride": {
+          "h": 1,
+          "w": 1
+        },
+        "padding": {
+          "h": 1,
+          "w": 1
+        },
+        "dilation": {
+          "h": 1,
+          "w": 1
+        }
+      },
+      "params_out": {
+        "H": 4,
+        "W": 4,
+        "C": 512
+      },
+      "input_spines": {
+        "0": {
+          "addr": 1913568,
+          "size": 3272
+        },
+        "1": {
+          "addr": 1916840,
+          "size": 3584
+        },
+        "2": {
+          "addr": 1920424,
+          "size": 4616
+        },
+        "3": {
+          "addr": 1925040,
+          "size": 4176
+        },
+        "4": {
+          "addr": 1929216,
+          "size": 3160
+        },
+        "5": {
+          "addr": 1932376,
+          "size": 3824
+        },
+        "6": {
+          "addr": 1936200,
+          "size": 6096
+        },
+        "7": {
+          "addr": 1942296,
+          "size": 3480
+        },
+        "8": {
+          "addr": 1945776,
+          "size": 4728
+        },
+        "9": {
+          "addr": 1950504,
+          "size": 4584
+        },
+        "10": {
+          "addr": 1955088,
+          "size": 5448
+        },
+        "11": {
+          "addr": 1960536,
+          "size": 4104
+        },
+        "12": {
+          "addr": 1964640,
+          "size": 4936
+        },
+        "13": {
+          "addr": 1969576,
+          "size": 5048
+        },
+        "14": {
+          "addr": 1974624,
+          "size": 6136
+        },
+        "15": {
+          "addr": 1980760,
+          "size": 5528
+        }
+      },
+      "weight_tiles": {
+        "0": {
+          "addr": 1986288,
+          "size": 589824
+        },
+        "1": {
+          "addr": 2576112,
+          "size": 589824
+        },
+        "2": {
+          "addr": 3165936,
+          "size": 589824
+        },
+        "3": {
+          "addr": 3755760,
+          "size": 589824
+        }
+      },
+      "output_region_begin": 0,
+      "output_region_end": 0,
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.051030922681093216,
+      "weight_float_max": 0.0510309636592865
+    },
+    {
+      "L": 3,
+      "name": "conv7",
+      "kind": "conv",
+      "threshold": 1.0,
+      "params_in": {
+        "C": 512,
+        "H": 2,
+        "W": 2
+      },
+      "params_weight": {
+        "Cin": 512,
+        "Cout": 512,
+        "Kh": 3,
+        "Kw": 3,
+        "stride": {
+          "h": 1,
+          "w": 1
+        },
+        "padding": {
+          "h": 1,
+          "w": 1
+        },
+        "dilation": {
+          "h": 1,
+          "w": 1
+        }
+      },
+      "params_out": {
+        "H": 2,
+        "W": 2,
+        "C": 512
+      },
+      "input_spines": {
+        "0": {
+          "addr": 4345584,
+          "size": 0
+        },
+        "1": {
+          "addr": 4345584,
+          "size": 0
+        },
+        "2": {
+          "addr": 4345584,
+          "size": 0
+        },
+        "3": {
+          "addr": 4345584,
+          "size": 0
+        }
+      },
+      "weight_tiles": {
+        "0": {
+          "addr": 4345584,
+          "size": 589824
+        },
+        "1": {
+          "addr": 4935408,
+          "size": 589824
+        },
+        "2": {
+          "addr": 5525232,
+          "size": 589824
+        },
+        "3": {
+          "addr": 6115056,
+          "size": 589824
+        }
+      },
+      "output_region_begin": 0,
+      "output_region_end": 0,
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.0510309636592865,
+      "weight_float_max": 0.05103097856044769
+    },
+    {
+      "L": 4,
+      "name": "conv8",
+      "kind": "conv",
+      "threshold": 1.0,
+      "params_in": {
+        "C": 512,
+        "H": 2,
+        "W": 2
+      },
+      "params_weight": {
+        "Cin": 512,
+        "Cout": 512,
+        "Kh": 3,
+        "Kw": 3,
+        "stride": {
+          "h": 1,
+          "w": 1
+        },
+        "padding": {
+          "h": 1,
+          "w": 1
+        },
+        "dilation": {
+          "h": 1,
+          "w": 1
+        }
+      },
+      "params_out": {
+        "H": 2,
+        "W": 2,
+        "C": 512
+      },
+      "input_spines": {
+        "0": {
+          "addr": 6704880,
+          "size": 6320
+        },
+        "1": {
+          "addr": 6711200,
+          "size": 5984
+        },
+        "2": {
+          "addr": 6717184,
+          "size": 6232
+        },
+        "3": {
+          "addr": 6723416,
+          "size": 6680
+        }
+      },
+      "weight_tiles": {
+        "0": {
+          "addr": 6730096,
+          "size": 589824
+        },
+        "1": {
+          "addr": 7319920,
+          "size": 589824
+        },
+        "2": {
+          "addr": 7909744,
+          "size": 589824
+        },
+        "3": {
+          "addr": 8499568,
+          "size": 589824
+        }
+      },
+      "output_region_begin": 0,
+      "output_region_end": 0,
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.05103097856044769,
+      "weight_float_max": 0.05103102698922157
+    },
+    {
+      "L": 5,
+      "name": "fc1",
+      "kind": "fc",
+      "threshold": 1.0,
+      "params_in": {
+        "C": 512,
+        "H": 1,
+        "W": 1
+      },
+      "params_weight": {
+        "Cin": 512,
+        "Cout": 4096,
+        "Kh": 1,
+        "Kw": 1,
+        "stride": {
+          "h": 1,
+          "w": 1
+        },
+        "padding": {
+          "h": 0,
+          "w": 0
+        },
+        "dilation": {
+          "h": 1,
+          "w": 1
+        }
+      },
+      "params_out": {
+        "H": 1,
+        "W": 1,
+        "C": 4096
+      },
+      "input_spines": {
+        "0": {
+          "addr": 9089392,
+          "size": 0
+        }
+      },
+      "weight_tiles": {
+        "0": {
+          "addr": 9089392,
+          "size": 65536
+        },
+        "1": {
+          "addr": 9154928,
+          "size": 65536
+        },
+        "2": {
+          "addr": 9220464,
+          "size": 65536
+        },
+        "3": {
+          "addr": 9286000,
+          "size": 65536
+        },
+        "4": {
+          "addr": 9351536,
+          "size": 65536
+        },
+        "5": {
+          "addr": 9417072,
+          "size": 65536
+        },
+        "6": {
+          "addr": 9482608,
+          "size": 65536
+        },
+        "7": {
+          "addr": 9548144,
+          "size": 65536
+        },
+        "8": {
+          "addr": 9613680,
+          "size": 65536
+        },
+        "9": {
+          "addr": 9679216,
+          "size": 65536
+        },
+        "10": {
+          "addr": 9744752,
+          "size": 65536
+        },
+        "11": {
+          "addr": 9810288,
+          "size": 65536
+        },
+        "12": {
+          "addr": 9875824,
+          "size": 65536
+        },
+        "13": {
+          "addr": 9941360,
+          "size": 65536
+        },
+        "14": {
+          "addr": 10006896,
+          "size": 65536
+        },
+        "15": {
+          "addr": 10072432,
+          "size": 65536
+        },
+        "16": {
+          "addr": 10137968,
+          "size": 65536
+        },
+        "17": {
+          "addr": 10203504,
+          "size": 65536
+        },
+        "18": {
+          "addr": 10269040,
+          "size": 65536
+        },
+        "19": {
+          "addr": 10334576,
+          "size": 65536
+        },
+        "20": {
+          "addr": 10400112,
+          "size": 65536
+        },
+        "21": {
+          "addr": 10465648,
+          "size": 65536
+        },
+        "22": {
+          "addr": 10531184,
+          "size": 65536
+        },
+        "23": {
+          "addr": 10596720,
+          "size": 65536
+        },
+        "24": {
+          "addr": 10662256,
+          "size": 65536
+        },
+        "25": {
+          "addr": 10727792,
+          "size": 65536
+        },
+        "26": {
+          "addr": 10793328,
+          "size": 65536
+        },
+        "27": {
+          "addr": 10858864,
+          "size": 65536
+        },
+        "28": {
+          "addr": 10924400,
+          "size": 65536
+        },
+        "29": {
+          "addr": 10989936,
+          "size": 65536
+        },
+        "30": {
+          "addr": 11055472,
+          "size": 65536
+        },
+        "31": {
+          "addr": 11121008,
+          "size": 65536
+        }
+      },
+      "output_region_begin": 0,
+      "output_region_end": 0,
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.07216877490282059,
+      "weight_float_max": 0.072168730199337
+    },
+    {
+      "L": 6,
+      "name": "fc2",
+      "kind": "fc",
+      "threshold": 1.0,
+      "params_in": {
+        "C": 4096,
+        "H": 1,
+        "W": 1
+      },
+      "params_weight": {
+        "Cin": 4096,
+        "Cout": 100,
+        "Kh": 1,
+        "Kw": 1,
+        "stride": {
+          "h": 1,
+          "w": 1
+        },
+        "padding": {
+          "h": 0,
+          "w": 0
+        },
+        "dilation": {
+          "h": 1,
+          "w": 1
+        }
+      },
+      "params_out": {
+        "H": 1,
+        "W": 1,
+        "C": 100
+      },
+      "input_spines": {
+        "0": {
+          "addr": 11186544,
+          "size": 29696
+        }
+      },
+      "weight_tiles": {
+        "0": {
+          "addr": 11216240,
+          "size": 524288
+        }
+      },
+      "output_region_begin": 0,
+      "output_region_end": 0,
+      "output_write_ptr": 0,
+      "weight_q_format": {
+        "bits": 8,
+        "signed": true,
+        "frac_bits": 7
+      },
+      "weight_scale": 0.0078125,
+      "weight_float_min": -0.07562801241874695,
+      "weight_float_max": 0.07562875002622604
+    }
+  ]
+}
