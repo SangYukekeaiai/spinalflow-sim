@@ -3,3 +3,4 @@
 /build_test/
 /build_test*/
 /workloads/
+*.md
