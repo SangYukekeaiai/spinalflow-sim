@@ -66,6 +66,9 @@ CMAKE_BINARY_DIR = /home/yy/snn/spinalflow-sim/build
 all: CMakeFiles/sfs_core.dir/all
 all: CMakeFiles/spinalflow-sim.dir/all
 all: CMakeFiles/test_simple_dram_read.dir/all
+all: CMakeFiles/test_first_layer_cache.dir/all
+all: CMakeFiles/test_layer5_cache.dir/all
+all: CMakeFiles/test_layer8_cache.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -76,6 +79,9 @@ preinstall:
 clean: CMakeFiles/sfs_core.dir/clean
 clean: CMakeFiles/spinalflow-sim.dir/clean
 clean: CMakeFiles/test_simple_dram_read.dir/clean
+clean: CMakeFiles/test_first_layer_cache.dir/clean
+clean: CMakeFiles/test_layer5_cache.dir/clean
+clean: CMakeFiles/test_layer8_cache.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -85,12 +91,12 @@ clean: CMakeFiles/test_simple_dram_read.dir/clean
 CMakeFiles/sfs_core.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14 "Built target sfs_core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 "Built target sfs_core"
 .PHONY : CMakeFiles/sfs_core.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/sfs_core.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/sfs_core.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
 .PHONY : CMakeFiles/sfs_core.dir/rule
@@ -111,12 +117,12 @@ CMakeFiles/sfs_core.dir/clean:
 CMakeFiles/spinalflow-sim.dir/all: CMakeFiles/sfs_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/spinalflow-sim.dir/build.make CMakeFiles/spinalflow-sim.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/spinalflow-sim.dir/build.make CMakeFiles/spinalflow-sim.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=15,16 "Built target spinalflow-sim"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=16,17 "Built target spinalflow-sim"
 .PHONY : CMakeFiles/spinalflow-sim.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/spinalflow-sim.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 16
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 17
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/spinalflow-sim.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
 .PHONY : CMakeFiles/spinalflow-sim.dir/rule
@@ -137,12 +143,12 @@ CMakeFiles/spinalflow-sim.dir/clean:
 CMakeFiles/test_simple_dram_read.dir/all: CMakeFiles/sfs_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_dram_read.dir/build.make CMakeFiles/test_simple_dram_read.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_dram_read.dir/build.make CMakeFiles/test_simple_dram_read.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=17,18 "Built target test_simple_dram_read"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=24,25 "Built target test_simple_dram_read"
 .PHONY : CMakeFiles/test_simple_dram_read.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/test_simple_dram_read.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 16
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 17
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_simple_dram_read.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
 .PHONY : CMakeFiles/test_simple_dram_read.dir/rule
@@ -155,6 +161,84 @@ test_simple_dram_read: CMakeFiles/test_simple_dram_read.dir/rule
 CMakeFiles/test_simple_dram_read.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_dram_read.dir/build.make CMakeFiles/test_simple_dram_read.dir/clean
 .PHONY : CMakeFiles/test_simple_dram_read.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_first_layer_cache.dir
+
+# All Build rule for target.
+CMakeFiles/test_first_layer_cache.dir/all: CMakeFiles/sfs_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_first_layer_cache.dir/build.make CMakeFiles/test_first_layer_cache.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_first_layer_cache.dir/build.make CMakeFiles/test_first_layer_cache.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=18,19 "Built target test_first_layer_cache"
+.PHONY : CMakeFiles/test_first_layer_cache.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_first_layer_cache.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 17
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_first_layer_cache.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_first_layer_cache.dir/rule
+
+# Convenience name for target.
+test_first_layer_cache: CMakeFiles/test_first_layer_cache.dir/rule
+.PHONY : test_first_layer_cache
+
+# clean rule for target.
+CMakeFiles/test_first_layer_cache.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_first_layer_cache.dir/build.make CMakeFiles/test_first_layer_cache.dir/clean
+.PHONY : CMakeFiles/test_first_layer_cache.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_layer5_cache.dir
+
+# All Build rule for target.
+CMakeFiles/test_layer5_cache.dir/all: CMakeFiles/sfs_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer5_cache.dir/build.make CMakeFiles/test_layer5_cache.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer5_cache.dir/build.make CMakeFiles/test_layer5_cache.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=20,21 "Built target test_layer5_cache"
+.PHONY : CMakeFiles/test_layer5_cache.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_layer5_cache.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 17
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_layer5_cache.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_layer5_cache.dir/rule
+
+# Convenience name for target.
+test_layer5_cache: CMakeFiles/test_layer5_cache.dir/rule
+.PHONY : test_layer5_cache
+
+# clean rule for target.
+CMakeFiles/test_layer5_cache.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer5_cache.dir/build.make CMakeFiles/test_layer5_cache.dir/clean
+.PHONY : CMakeFiles/test_layer5_cache.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_layer8_cache.dir
+
+# All Build rule for target.
+CMakeFiles/test_layer8_cache.dir/all: CMakeFiles/sfs_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer8_cache.dir/build.make CMakeFiles/test_layer8_cache.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer8_cache.dir/build.make CMakeFiles/test_layer8_cache.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=22,23 "Built target test_layer8_cache"
+.PHONY : CMakeFiles/test_layer8_cache.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_layer8_cache.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 17
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_layer8_cache.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yy/snn/spinalflow-sim/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_layer8_cache.dir/rule
+
+# Convenience name for target.
+test_layer8_cache: CMakeFiles/test_layer8_cache.dir/rule
+.PHONY : test_layer8_cache
+
+# clean rule for target.
+CMakeFiles/test_layer8_cache.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer8_cache.dir/build.make CMakeFiles/test_layer8_cache.dir/clean
+.PHONY : CMakeFiles/test_layer8_cache.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

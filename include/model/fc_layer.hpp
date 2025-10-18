@@ -10,6 +10,7 @@
 
 #include "common/constants.hpp"
 #include "arch/dram/simple_dram.hpp"
+#include "arch/cache/cache.hpp"
 #include "core/core.hpp"
 
 namespace sf {
@@ -34,7 +35,8 @@ public:
                       bool w_signed,
                       int  w_frac_bits,
                       float w_scale,
-                      sf::dram::SimpleDRAM* dram);
+                      sf::dram::SimpleDRAM* dram,
+                      sf::arch::cache::CacheSim* cache = nullptr);
 
   // FC uses all H_in*W_in as a single receptive field; h_out/w_out are ignored.
   std::vector<std::vector<int>> generate_batches(int h_out, int w_out) const;
@@ -43,6 +45,7 @@ public:
   const CoreCycleStats& cycle_stats() const { return last_cycle_stats_; }
   const CoreSramStats& sram_stats() const { return last_sram_stats_; }
   int drained_entries_total() const { return drained_entries_total_; }
+  const sf::arch::cache::CacheStats& cache_stats() const { return last_cache_stats_delta_; }
 
 private:
   static int DeriveOutDim(int in, int pad, int kernel, int stride) {
@@ -82,10 +85,12 @@ private:
 
   // --- Runtime handles ---
   sf::dram::SimpleDRAM* dram_{nullptr}; // non-owning
+  sf::arch::cache::CacheSim* cache_{nullptr}; // non-owning
   std::unique_ptr<Core> core_;          // Core owns its engines as value members
   CoreCycleStats last_cycle_stats_{};
   CoreSramStats last_sram_stats_{};
   int drained_entries_total_{0};
+  sf::arch::cache::CacheStats last_cache_stats_delta_{};
 };
 
 } // namespace sf

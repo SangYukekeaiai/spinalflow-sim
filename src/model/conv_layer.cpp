@@ -16,7 +16,8 @@ void ConvLayer::ConfigureLayer(int layer_id,
                                bool w_signed,
                                int  w_frac_bits,
                                float w_scale,
-                               sf::dram::SimpleDRAM* dram)
+                               sf::dram::SimpleDRAM* dram,
+                               sf::arch::cache::CacheSim* cache)
 {
   // 1) Save static params
   layer_id_ = layer_id;
@@ -62,6 +63,7 @@ void ConvLayer::ConfigureLayer(int layer_id,
 
   // 5) Hold DRAM and construct Core (value-members architecture)
   dram_ = dram;
+  cache_ = cache;
   core_ = std::make_unique<Core>(
               dram_,
               layer_id_, C_in_, C_out_,
@@ -74,7 +76,8 @@ void ConvLayer::ConfigureLayer(int layer_id,
               w_bits_, w_signed_, w_frac_bits_, w_scale_,
               total_tiles_,
               &batches_per_hw_,
-              batch_needed_);
+              batch_needed_,
+              cache);
 }
 
 std::vector<std::vector<int>> ConvLayer::generate_batches(int h_out, int w_out) const {
@@ -119,6 +122,10 @@ void ConvLayer::run_layer() {
   if (!core_) {
     throw std::runtime_error("ConvLayer::run_layer: core not configured.");
   }
+  sf::arch::cache::CacheStats cache_before{};
+  if (cache_) {
+    cache_before = cache_->GetStats();
+  }
   core_->ResetCycleStats();
   drained_entries_total_ = 0;
   for (int h = 0; h < H_out_; ++h) {
@@ -142,11 +149,22 @@ void ConvLayer::run_layer() {
   }
   last_cycle_stats_ = core_->GetCycleStats();
   last_sram_stats_ = core_->GetSramStats();
-  const int sites = H_out_ * W_out_;
-  if (sites > 0) {
-    std::cout << "drained entries: " << drained_entries_total_ << "\n";
+  if (cache_) {
+    const auto cache_after = cache_->GetStats();
+    last_cache_stats_delta_ = cache_after - cache_before;
   } else {
-    std::cout << "drained entries: " << drained_entries_total_ << "\n";
+    last_cache_stats_delta_ = {};
+  }
+  const int sites = H_out_ * W_out_;
+  // if (sites > 0) {
+  //   std::cout << "drained entries: " << drained_entries_total_ << "\n";
+  // } else {
+  //   std::cout << "drained entries: " << drained_entries_total_ << "\n";
+  // }
+  if (cache_) {
+    std::cout << "For Layer id: " << layer_id_  << "\n";
+    sf::arch::cache::PrintCacheConfig(cache_->Config());
+    cache_->Reset();
   }
 }
 

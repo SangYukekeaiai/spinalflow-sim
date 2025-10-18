@@ -19,14 +19,16 @@ Core::Core(SimpleDRAM* dram,
            float w_scale,
            int total_tiles,
            const std::unordered_map<std::uint64_t, std::vector<std::vector<int>>>* batches_per_hw,
-           int batch_needed)
+           int batch_needed,
+           sf::arch::cache::CacheSim* cache)
   : dram_(dram),
+    cache_(cache),
     // Value members are default-constructed; wire dependencies via their constructors if available.
     isb_(dram),                 // ISB needs DRAM
     fb_(),                      // FB configured below
     mfb_(&isb_, fifos_),        // MFB sees ISB and FIFOs
     gm_(fifos_, mfb_),          // GM sees FIFOs and MFB
-    pe_array_(gm_),             // PE array uses GM
+    pe_array_(gm_, cache),      // PE array uses GM and shared cache
     tob_(pe_array_),            // TOB aggregates per-PE spikes by tile
     out_spine_(dram_, kOutputSpineMaxEntries),
     sorter_(&tob_, &out_spine_),
@@ -46,6 +48,9 @@ Core::Core(SimpleDRAM* dram,
 
   // Configure static FB params once for the layer.
   fb_.Configure(C_in, W_in, Kh, Kw, Sh, Sw, Ph, Pw, dram_);
+  if (cache_) {
+    fb_.SetUseCache(true);
+  }
 
   // Program PE weight/threshold params once.
   pe_array_.SetWeightParamsAndThres(Threshold, w_bits, w_signed, w_frac_bits, w_scale);
@@ -162,10 +167,12 @@ void Core::PrepareForTile(int tile_id)
   ResetSignal_EachTile();
   {
     const std::uint32_t bytes = LoadWeightFromDram_EachTile(tile_id);
-    const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
-    cycle_stats_.load_cycles += block;
-    ConsumeBlockingCycles(block);
-    io_shadow_.ResetCredit();
+    if (!fb_.UseCache()) {
+      const auto cost = io_shadow_.ApplyLoadBytes(bytes);
+      cycle_stats_.load_cycles += cost.block_cycles;
+      ConsumeBlockingCycles(cost.block_cycles);
+      io_shadow_.ReduceCreditBy(cost.credit_used);
+    }
   }
   LoadInputSpine_EachTile();
 }
@@ -222,10 +229,10 @@ void Core::LoadInputSpine_EachTile()
   isb_.PreloadFirstBatch(current_inputspine_batches_[0], layer_id_);
   {
     const std::uint64_t bytes = isb_.LastLoadedBytes();
-    const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
-    cycle_stats_.load_cycles += block;
-    ConsumeBlockingCycles(block);
-    io_shadow_.ResetCredit();
+    const auto cost = io_shadow_.ApplyLoadBytes(bytes);
+    cycle_stats_.load_cycles += cost.block_cycles;
+    ConsumeBlockingCycles(cost.block_cycles);
+    io_shadow_.ReduceCreditBy(cost.credit_used);
   }
   batch_cursor_ = 0;
 }
@@ -259,10 +266,10 @@ void Core::Compute_EachTile(int tile_id)
       (void)loaded;
       // Apply compute credit from current batch to the load of the next batch.
         const std::uint64_t bytes = isb_.LastLoadedBytes();
-        const std::uint64_t block = io_shadow_.ApplyLoadBytes(bytes);
-        cycle_stats_.load_cycles += block;
-        ConsumeBlockingCycles(block);
-        io_shadow_.ResetCredit();
+        const auto cost = io_shadow_.ApplyLoadBytes(bytes);
+        cycle_stats_.load_cycles += cost.block_cycles;
+        ConsumeBlockingCycles(cost.block_cycles);
+        io_shadow_.ReduceCreditBy(cost.credit_used);
       
       batch_cursor_ = next_b;
     }
@@ -295,6 +302,16 @@ bool Core::StepOnce(int tile_id) {
   // Stage 1 – PEArray
   // ---------------------------
   ran_pe_ = v_pe_ ? pe_array_.run(fb_) : false;
+
+  if (ran_pe_ && fb_.UseCache() && pe_array_.last_cache_miss()) {
+    const int cache_cycles = pe_array_.last_cache_cycles();
+    if (cache_cycles > 0) {
+      const auto cost = io_shadow_.ApplyLoadCycles(static_cast<std::uint64_t>(cache_cycles));
+      cycle_stats_.load_cycles += cost.block_cycles;
+      ConsumeBlockingCycles(cost.block_cycles);
+      io_shadow_.ReduceCreditBy(cost.credit_used);
+    }
+  }
 
   // ---------------------------
   // Stage 2 – MinFinderBatch

@@ -1,4 +1,0 @@
-component,access_cycles,access_cycles_over_total_cycles,capacity_bytes
-input_spine_buffer,280076,0.891332,160
-filter_buffer,280076,0.891332,576
-output_spine_buffer,16,0.000051,5

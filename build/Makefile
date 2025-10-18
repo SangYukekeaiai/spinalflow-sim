@@ -155,6 +155,69 @@ test_simple_dram_read/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_dram_read.dir/build.make CMakeFiles/test_simple_dram_read.dir/build
 .PHONY : test_simple_dram_read/fast
 
+#=============================================================================
+# Target rules for targets named test_first_layer_cache
+
+# Build rule for target.
+test_first_layer_cache: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_first_layer_cache
+.PHONY : test_first_layer_cache
+
+# fast build rule for target.
+test_first_layer_cache/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_first_layer_cache.dir/build.make CMakeFiles/test_first_layer_cache.dir/build
+.PHONY : test_first_layer_cache/fast
+
+#=============================================================================
+# Target rules for targets named test_layer5_cache
+
+# Build rule for target.
+test_layer5_cache: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_layer5_cache
+.PHONY : test_layer5_cache
+
+# fast build rule for target.
+test_layer5_cache/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer5_cache.dir/build.make CMakeFiles/test_layer5_cache.dir/build
+.PHONY : test_layer5_cache/fast
+
+#=============================================================================
+# Target rules for targets named test_layer8_cache
+
+# Build rule for target.
+test_layer8_cache: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_layer8_cache
+.PHONY : test_layer8_cache
+
+# fast build rule for target.
+test_layer8_cache/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer8_cache.dir/build.make CMakeFiles/test_layer8_cache.dir/build
+.PHONY : test_layer8_cache/fast
+
+src/arch/cache/cache.o: src/arch/cache/cache.cpp.o
+.PHONY : src/arch/cache/cache.o
+
+# target to build an object file
+src/arch/cache/cache.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/arch/cache/cache.cpp.o
+.PHONY : src/arch/cache/cache.cpp.o
+
+src/arch/cache/cache.i: src/arch/cache/cache.cpp.i
+.PHONY : src/arch/cache/cache.i
+
+# target to preprocess a source file
+src/arch/cache/cache.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/arch/cache/cache.cpp.i
+.PHONY : src/arch/cache/cache.cpp.i
+
+src/arch/cache/cache.s: src/arch/cache/cache.cpp.s
+.PHONY : src/arch/cache/cache.s
+
+# target to generate assembly for a file
+src/arch/cache/cache.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/arch/cache/cache.cpp.s
+.PHONY : src/arch/cache/cache.cpp.s
+
 src/arch/dram/simple_dram.o: src/arch/dram/simple_dram.cpp.o
 .PHONY : src/arch/dram/simple_dram.o
 
@@ -491,6 +554,78 @@ src/runner/simulation.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.s
 .PHONY : src/runner/simulation.cpp.s
 
+tests/test_first_layer_cache.o: tests/test_first_layer_cache.cpp.o
+.PHONY : tests/test_first_layer_cache.o
+
+# target to build an object file
+tests/test_first_layer_cache.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_first_layer_cache.dir/build.make CMakeFiles/test_first_layer_cache.dir/tests/test_first_layer_cache.cpp.o
+.PHONY : tests/test_first_layer_cache.cpp.o
+
+tests/test_first_layer_cache.i: tests/test_first_layer_cache.cpp.i
+.PHONY : tests/test_first_layer_cache.i
+
+# target to preprocess a source file
+tests/test_first_layer_cache.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_first_layer_cache.dir/build.make CMakeFiles/test_first_layer_cache.dir/tests/test_first_layer_cache.cpp.i
+.PHONY : tests/test_first_layer_cache.cpp.i
+
+tests/test_first_layer_cache.s: tests/test_first_layer_cache.cpp.s
+.PHONY : tests/test_first_layer_cache.s
+
+# target to generate assembly for a file
+tests/test_first_layer_cache.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_first_layer_cache.dir/build.make CMakeFiles/test_first_layer_cache.dir/tests/test_first_layer_cache.cpp.s
+.PHONY : tests/test_first_layer_cache.cpp.s
+
+tests/test_layer5_cache.o: tests/test_layer5_cache.cpp.o
+.PHONY : tests/test_layer5_cache.o
+
+# target to build an object file
+tests/test_layer5_cache.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer5_cache.dir/build.make CMakeFiles/test_layer5_cache.dir/tests/test_layer5_cache.cpp.o
+.PHONY : tests/test_layer5_cache.cpp.o
+
+tests/test_layer5_cache.i: tests/test_layer5_cache.cpp.i
+.PHONY : tests/test_layer5_cache.i
+
+# target to preprocess a source file
+tests/test_layer5_cache.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer5_cache.dir/build.make CMakeFiles/test_layer5_cache.dir/tests/test_layer5_cache.cpp.i
+.PHONY : tests/test_layer5_cache.cpp.i
+
+tests/test_layer5_cache.s: tests/test_layer5_cache.cpp.s
+.PHONY : tests/test_layer5_cache.s
+
+# target to generate assembly for a file
+tests/test_layer5_cache.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer5_cache.dir/build.make CMakeFiles/test_layer5_cache.dir/tests/test_layer5_cache.cpp.s
+.PHONY : tests/test_layer5_cache.cpp.s
+
+tests/test_layer8_cache.o: tests/test_layer8_cache.cpp.o
+.PHONY : tests/test_layer8_cache.o
+
+# target to build an object file
+tests/test_layer8_cache.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer8_cache.dir/build.make CMakeFiles/test_layer8_cache.dir/tests/test_layer8_cache.cpp.o
+.PHONY : tests/test_layer8_cache.cpp.o
+
+tests/test_layer8_cache.i: tests/test_layer8_cache.cpp.i
+.PHONY : tests/test_layer8_cache.i
+
+# target to preprocess a source file
+tests/test_layer8_cache.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer8_cache.dir/build.make CMakeFiles/test_layer8_cache.dir/tests/test_layer8_cache.cpp.i
+.PHONY : tests/test_layer8_cache.cpp.i
+
+tests/test_layer8_cache.s: tests/test_layer8_cache.cpp.s
+.PHONY : tests/test_layer8_cache.s
+
+# target to generate assembly for a file
+tests/test_layer8_cache.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_layer8_cache.dir/build.make CMakeFiles/test_layer8_cache.dir/tests/test_layer8_cache.cpp.s
+.PHONY : tests/test_layer8_cache.cpp.s
+
 tests/test_simple_dram_read.o: tests/test_simple_dram_read.cpp.o
 .PHONY : tests/test_simple_dram_read.o
 
@@ -525,7 +660,13 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... sfs_core"
 	@echo "... spinalflow-sim"
+	@echo "... test_first_layer_cache"
+	@echo "... test_layer5_cache"
+	@echo "... test_layer8_cache"
 	@echo "... test_simple_dram_read"
+	@echo "... src/arch/cache/cache.o"
+	@echo "... src/arch/cache/cache.i"
+	@echo "... src/arch/cache/cache.s"
 	@echo "... src/arch/dram/simple_dram.o"
 	@echo "... src/arch/dram/simple_dram.i"
 	@echo "... src/arch/dram/simple_dram.s"
@@ -568,6 +709,15 @@ help:
 	@echo "... src/runner/simulation.o"
 	@echo "... src/runner/simulation.i"
 	@echo "... src/runner/simulation.s"
+	@echo "... tests/test_first_layer_cache.o"
+	@echo "... tests/test_first_layer_cache.i"
+	@echo "... tests/test_first_layer_cache.s"
+	@echo "... tests/test_layer5_cache.o"
+	@echo "... tests/test_layer5_cache.i"
+	@echo "... tests/test_layer5_cache.s"
+	@echo "... tests/test_layer8_cache.o"
+	@echo "... tests/test_layer8_cache.i"
+	@echo "... tests/test_layer8_cache.s"
 	@echo "... tests/test_simple_dram_read.o"
 	@echo "... tests/test_simple_dram_read.i"
 	@echo "... tests/test_simple_dram_read.s"

@@ -31,15 +31,16 @@ class FilterBuffer {
 public:
   using Row = std::array<std::int8_t, kNumPE>;
 
-  struct WeightTiming {
-    // Bandwidth in bytes per cycle for weight loads.
-    uint32_t bw_bytes_per_cycle = 160; // e.g., 128-bit bus => 16B/cycle
-    // Fixed per-transaction latency in cycles (e.g., DMA setup).
-    uint32_t fixed_latency = 0;
+  struct RowLookup {
+    int row_id = -1;
+    int c_in   = -1;
+    int kh     = -1;
+    int kw     = -1;
   };
+
   FilterBuffer() = default;
 
-  void SetWeightTiming(const WeightTiming& t) { wtiming_ = t; }
+
   // Layer-wise configuration (static).
   void Configure(int C_in, int W_in,
                  int Kh, int Kw,
@@ -53,9 +54,13 @@ public:
   // Compute row id using ONLY member configuration/state.
   // Returns -1 if the tap maps outside the kernel window (padding/invalid).
   int ComputeRowId(std::uint32_t neuron_id) const;
+  std::optional<RowLookup> ResolveRow(std::uint32_t neuron_id) const;
 
   // Return a row by id (by value).
   Row GetRow(int row_id) const;
+
+  void SetUseCache(bool use_cache) { use_cache_ = use_cache; }
+  bool UseCache() const { return use_cache_; }
 
   // NEW: load as many tiles as possible starting at `tile_id`.
   // If `tile_id` is already owned, do nothing (0 cycles) and make it active.
@@ -84,6 +89,7 @@ private:
   // Per-step state (current output site)
   int h_out_cur_ = 0;
   int w_out_cur_ = 0;
+  bool use_cache_ = false;
 
   // DRAM interface (non-owning)
   sf::dram::SimpleDRAM* dram_ = nullptr;
@@ -92,7 +98,6 @@ private:
     return (a + b - 1) / b;
   }
 
-  WeightTiming wtiming_; // NEW: timing model for weights
 
   // --- Ownership & mapping of resident tiles in rows_ ---
   // All tile_ids currently resident in rows_

@@ -11,6 +11,7 @@
 #include <cmath>                    // std::ldexp
 #include "arch/global_merger.hpp"   // uses GlobalMerger::run(Entry&)
 #include "arch/filter_buffer.hpp"   // FilterBuffer::ComputeRowId/GetRow
+#include "arch/cache/cache.hpp"
 #include <iostream>
 
 namespace sf {
@@ -52,10 +53,17 @@ private:
 // =======================
 class PEArray {
 public:
-  explicit PEArray(GlobalMerger& gm) : gm_(gm) {
+  explicit PEArray(GlobalMerger& gm, sf::arch::cache::CacheSim* cache = nullptr)
+      : gm_(gm), cache_(cache) {
     // No reserve needed; we use a fixed array of optionals.
     ResetOutputSlots();
   }
+
+  void AttachCache(sf::arch::cache::CacheSim* cache) { cache_ = cache; }
+  int current_tile_idx() const { return current_tile_idx_; }
+  int last_cache_cycles() const { return last_cache_result_.demand_cycles; }
+  bool last_cache_miss() const { return last_cache_result_.demand_miss; }
+  const sf::arch::cache::AccessResult& last_cache_result() const { return last_cache_result_; }
 
   void SetWeightParamsAndThres(float threshold, int w_bits, bool w_signed, int w_frac_bits, float w_scale) {
     for (std::size_t pe_idx = 0; pe_idx < kNumPE; ++pe_idx) {
@@ -81,6 +89,7 @@ public:
       pe_array_[pe_idx].RegisterOutputId(out_id);
     }
     ResetOutputSlots(); // was: out_spike_entries_.clear();
+    current_tile_idx_ = tile_idx;
   }
 
   inline float DecodeWeightToFloat(std::int8_t wq) const noexcept {
@@ -97,9 +106,9 @@ public:
 
   // Fetch weight row using current gm_entry_.neuron_id and FilterBuffer state.
   void GetWeightRow(FilterBuffer& fb) {
-    const int row_id = fb.ComputeRowId(gm_entry_.neuron_id);
-    if (row_id >= 0) {
-      weight_row_ = fb.GetRow(row_id);
+    last_row_lookup_ = fb.ResolveRow(gm_entry_.neuron_id);
+    if (last_row_lookup_.has_value()) {
+      weight_row_ = fb.GetRow(last_row_lookup_->row_id);
     } else {
       // If padded/invalid tap, zero the row to produce no spikes this step.
       std::cout << "PEArray::GetWeightRow: Padding/invalid tap for neuron_id " << gm_entry_.neuron_id << ", zeroing weight row.\n";
@@ -130,6 +139,11 @@ private:
 
   // NEW: one optional Entry per PE for the current step.
   std::array<std::optional<Entry>, kNumPE> out_spike_entries_{};
+
+  sf::arch::cache::CacheSim* cache_ = nullptr;               // shared cache simulator
+  int current_tile_idx_ = -1;
+  std::optional<FilterBuffer::RowLookup> last_row_lookup_;
+  sf::arch::cache::AccessResult last_cache_result_{};
 
   int w_bits_ = 8;                                           // weight bit-width
   bool w_signed_ = true;                                     // weight signedness

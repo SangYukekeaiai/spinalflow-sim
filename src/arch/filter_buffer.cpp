@@ -78,6 +78,27 @@ int FilterBuffer::ComputeRowId(std::uint32_t neuron_id) const {
   return static_cast<int>(row_id_ll);
 }
 
+std::optional<FilterBuffer::RowLookup> FilterBuffer::ResolveRow(std::uint32_t neuron_id) const {
+  const int row_id = ComputeRowId(neuron_id);
+  if (row_id < 0) {
+    return std::nullopt;
+  }
+  const int per_channel = K_h_ * K_w_;
+  if (per_channel <= 0) {
+    return std::nullopt;
+  }
+  RowLookup info;
+  info.row_id = row_id;
+  info.c_in = row_id / per_channel;
+  const int rem = row_id % per_channel;
+  if (K_w_ <= 0) {
+    return std::nullopt;
+  }
+  info.kh = rem / K_w_;
+  info.kw = rem % K_w_;
+  return info;
+}
+
 FilterBuffer::Row FilterBuffer::GetRow(int row_id) const {
   const int rpt = RowsPerTile();
   if (rpt <= 0) throw std::logic_error("GetRow: invalid rows-per-tile (configure layer first).");

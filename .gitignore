@@ -1,0 +1,5 @@
+# Ignore build artifacts and workloads content
+/build/
+/build_test/
+/build_test*/
+/workloads/

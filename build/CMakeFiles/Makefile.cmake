@@ -42,4 +42,7 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/sfs_core.dir/DependInfo.cmake"
   "CMakeFiles/spinalflow-sim.dir/DependInfo.cmake"
   "CMakeFiles/test_simple_dram_read.dir/DependInfo.cmake"
+  "CMakeFiles/test_first_layer_cache.dir/DependInfo.cmake"
+  "CMakeFiles/test_layer5_cache.dir/DependInfo.cmake"
+  "CMakeFiles/test_layer8_cache.dir/DependInfo.cmake"
   )
