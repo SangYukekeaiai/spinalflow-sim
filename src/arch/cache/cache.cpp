@@ -95,14 +95,13 @@ void CacheSim::Reset() {
       way.channel_id = -1;
     }
   }
-  // Flush the last step snapshot if any before clearing
-  if (current_timestep_ >= 0) {
-    EmitStepSnapshotIfEnabled_(current_timestep_, scoreboard_curr_.Snapshot());
+  // Emit all per-timestep snapshots at the end of the layer
+  for (const auto& kv : scoreboard_by_t_) {
+    EmitStepSnapshotIfEnabled_(kv.first, kv.second.Snapshot());
   }
-  scoreboard_prev_.Clear();
-  scoreboard_curr_.Clear();
+  scoreboard_by_t_.clear();
+  scoreboard_total_.Clear();
   current_timestep_ = -1;
-  use_lru_this_step_ = true;
   tmpZeroScoreCount_ = 0;
   unique_demand_lines_seen_.clear();
   last_access_turn_.clear();
@@ -114,31 +113,13 @@ void CacheSim::Reset() {
 }
 
 void CacheSim::NotifySpike(int cin) {
-  scoreboard_curr_.Bump(cin);
+  const int t = (current_timestep_ >= 0) ? current_timestep_ : 0;
+  scoreboard_by_t_[t].Bump(cin);
+  scoreboard_total_.Bump(cin);
 }
 
 void CacheSim::BeginTimeStep(int t) {
-  // Ignore redundant calls for the same time step
-  if (current_timestep_ == t) {
-    return;
-  }
-  if (current_timestep_ < 0) {
-    // First observed time step
-    current_timestep_ = t;
-    // LRU-only eviction for t==0 while we build S[0]
-    use_lru_this_step_ = (t == 0);
-    // Ensure clean accumulators
-    scoreboard_prev_.Clear();
-    scoreboard_curr_.Clear();
-    return;
-  }
-  // Commit S[t-1] and start accumulating S[t]
-  // Emit snapshot for the completed step (current_timestep_)
-  EmitStepSnapshotIfEnabled_(current_timestep_, scoreboard_curr_.Snapshot());
-  scoreboard_prev_ = scoreboard_curr_;
-  scoreboard_curr_.Clear();
   current_timestep_ = t;
-  use_lru_this_step_ = false;
 }
 
 AccessResult CacheSim::Access(const LineAddr& la) {
@@ -260,7 +241,7 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
            << " key=" << line_key
            << " channel=" << w.channel_id
            << " lru=" << w.lru_counter
-           << " score(S[t-1])=" << scoreboard_prev_.Get(w.channel_id)
+           << " score(S[t-1])=" << ((current_timestep_ > 0) ? scoreboard_by_t_[current_timestep_ - 1].Get(w.channel_id) : 0)
            << ")";
       first = false;
     }
@@ -270,7 +251,7 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
   const int vic = PickVictim(set_idx, set, policy);
   WayEntry& victim_entry = set.ways[static_cast<std::size_t>(vic)];
   if (victim_entry.valid && victim_entry.channel_id >= 0) {
-    const int score = scoreboard_prev_.Get(victim_entry.channel_id);
+    const int score = (current_timestep_ > 0) ? scoreboard_by_t_[current_timestep_ - 1].Get(victim_entry.channel_id) : 0;
     const uint64_t prev_key = victim_entry.tag; // tag stores full key under hashed indexing
     if (TraceHasCapacity()) {
       std::ostringstream oss;
@@ -345,7 +326,7 @@ int CacheSim::PickVictim(int set_idx, Set& set, EvictionPolicy policy) {
   switch (policy) {
     case EvictionPolicy::kScoreboard:
       // At t=0 we use LRU-only eviction regardless of scoreboard
-      if (use_lru_this_step_) {
+      if (current_timestep_ <= 0) {
         return PickVictimLRU(set_idx, set);
       }
       return PickVictimScoreboard(set_idx, set);
@@ -362,7 +343,7 @@ int CacheSim::PickVictimScoreboard(int set_idx, Set& set) {
   std::vector<int> candidates; candidates.reserve(W);
   for (int i = 0; i < W; ++i) {
     const WayEntry& w = set.ways[static_cast<std::size_t>(i)];
-    const int sc = scoreboard_prev_.Get(w.channel_id);
+    const int sc = (current_timestep_ > 0) ? scoreboard_by_t_[current_timestep_ - 1].Get(w.channel_id) : 0;
     if (sc < min_score) {
       if (sc == 0) {
         tmpZeroScoreCount_++;
@@ -392,12 +373,16 @@ int CacheSim::PickVictimScoreboard(int set_idx, Set& set) {
         << " set=" << set_idx
         << " way=" << best
         << " channel=" << chosen.channel_id
-        << " score(S[t-1])=" << scoreboard_prev_.Get(chosen.channel_id)
+        << " score(S[t-1])=" << ((current_timestep_ > 0) ? scoreboard_by_t_[current_timestep_ - 1].Get(chosen.channel_id) : 0)
         << " lru=" << chosen.lru_counter
         << " min_score=" << min_score
         << " cand_count=" << candidates.size() << '\n';
     // Dump the S[t-1] scoreboard used for this decision
-    scoreboard_prev_.Dump(oss);
+    if (current_timestep_ > 0) {
+      scoreboard_by_t_[current_timestep_ - 1].Dump(oss);
+    } else {
+      oss << "[Scoreboard] empty\n";
+    }
     WriteTrace(oss.str());
   }
   return best;

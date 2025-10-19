@@ -171,9 +171,8 @@ public:
   // Optional helpers
   int NumSets() const { return num_sets_; }
   const CacheConfig& Config() const { return cfg_; }
-  // Expose a snapshot of the internal scoreboard (channel_id -> score)
-  // Snapshot reflects the current step accumulator S[t].
-  std::unordered_map<int, int> ScoreboardSnapshot() const { return scoreboard_curr_.Snapshot(); }
+  // Expose a snapshot of the cumulative scoreboard across the layer (channel_id -> score)
+  std::unordered_map<int, int> ScoreboardSnapshot() const { return scoreboard_total_.Snapshot(); }
 
 private:
   struct WayEntry {
@@ -213,13 +212,12 @@ private:
   CacheConfig      cfg_;
   int              num_sets_ = 0;
   std::vector<Set> sets_;
-  // Per-timestep scoreboard state:
-  // - scoreboard_prev_: S[t-1], used for eviction decisions.
-  // - scoreboard_curr_: S[t], accumulates during the current step.
-  Scoreboard       scoreboard_prev_;
-  Scoreboard       scoreboard_curr_;
+  // Per-timestep scoreboard aggregated over the whole layer:
+  // - scoreboard_by_t_[t] holds S[t]
+  // - scoreboard_total_ holds sum over all timesteps
+  std::unordered_map<int, Scoreboard> scoreboard_by_t_;
+  Scoreboard       scoreboard_total_;
   int              current_timestep_ = -1; // unknown
-  bool             use_lru_this_step_ = true; // LRU-only at t=0
   CacheStats       stats_{};
   std::unordered_set<uint64_t> unique_demand_lines_seen_;
   std::unordered_map<uint64_t, std::uint64_t> last_access_turn_;
