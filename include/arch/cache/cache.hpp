@@ -29,6 +29,7 @@ struct CacheConfig {
   int         miss_overhead  = 40;        // fixed per-line miss penalty (cycles)
   int         prefetch_depth = 0;         // demand for (cin) triggers prefetch for cin+1..+N
   EvictionPolicy eviction_policy = EvictionPolicy::kScoreboard;
+  bool        trace_enabled   = true;     // enable/disable any trace output
   std::string trace_output_path;          // optional path for detailed trace output
   std::size_t trace_max_lines = 0;        // max lines to emit (0 = unlimited)
 };
@@ -85,6 +86,8 @@ struct CacheStats {
   std::uint64_t reuse_distance_total = 0;
   std::uint64_t reuse_events         = 0;
   std::unordered_map<std::uint64_t, std::uint64_t> reuse_distance_histogram;
+  // Per-set unique demand lines encountered (key = set index)
+  std::unordered_map<int, std::uint64_t> per_set_unique_demand_lines;
 };
 
 inline CacheStats operator-(const CacheStats& a, const CacheStats& b) {
@@ -113,6 +116,14 @@ inline CacheStats operator-(const CacheStats& a, const CacheStats& b) {
         (it_b != b.reuse_distance_histogram.end()) ? it_b->second : 0ULL;
     if (count_a > count_b) {
       d.reuse_distance_histogram.emplace(distance, count_a - count_b);
+    }
+  }
+  for (const auto& [set_idx, count_a] : a.per_set_unique_demand_lines) {
+    const auto it_b = b.per_set_unique_demand_lines.find(set_idx);
+    const std::uint64_t count_b =
+        (it_b != b.per_set_unique_demand_lines.end()) ? it_b->second : 0ULL;
+    if (count_a > count_b) {
+      d.per_set_unique_demand_lines.emplace(set_idx, count_a - count_b);
     }
   }
   return d;
@@ -175,9 +186,9 @@ private:
   std::pair<int, uint64_t> MapToSetTag(uint64_t key) const;
   int  FindHit(Set& set, uint64_t tag) const;
   void TouchLRU(Set& set, int way);
-  int  PickVictim(Set& set, EvictionPolicy policy);
-  int  PickVictimScoreboard(Set& set);
-  int  PickVictimLRU(Set& set);
+  int  PickVictim(int set_idx, Set& set, EvictionPolicy policy);
+  int  PickVictimScoreboard(int set_idx, Set& set);
+  int  PickVictimLRU(int set_idx, Set& set);
   bool InSameTile(const LineAddr& a, const LineAddr& b) const;
   void WriteTrace(const std::string& message);
   bool TraceAvailable() const;

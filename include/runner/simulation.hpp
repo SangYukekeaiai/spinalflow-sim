@@ -56,7 +56,12 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                                 const std::vector<std::size_t>& cache_sizes_bytes,
                                 const std::vector<int>& cache_way_options,
                                 const std::vector<int>& prefetch_depth_options,
-                                const std::vector<sf::arch::cache::EvictionPolicy>& policies);
+                                const std::vector<sf::arch::cache::EvictionPolicy>& policies,
+                                bool write_stats_csv = true,
+                                bool write_reuse_distribution_csv = true,
+                                bool write_visit_count_distribution_csv = true,
+                                bool write_per_set_unique_csv = true,
+                                bool write_cache_traces = true);
 
 // Layers own their engines; RunNetwork simply configures and runs them.
 void RunNetwork(const std::vector<LayerSpec>& specs,

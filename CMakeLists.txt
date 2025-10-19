@@ -40,6 +40,9 @@ endif()
 # Remove main.cpp from the core sources
 set(SFS_CORE_SRC ${SFS_ALL_SRC})
 list(REMOVE_ITEM SFS_CORE_SRC "${SFS_MAIN}")
+# Ensure newly added helper sources are included even if CMake didn't re-glob yet.
+list(APPEND SFS_CORE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/stats_io.cpp")
+list(REMOVE_DUPLICATES SFS_CORE_SRC)
 
 # ---- Library: core (everything except main.cpp) ----
 add_library(sfs_core STATIC ${SFS_CORE_SRC})

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <filesystem>
 #include <sstream>
+#include <algorithm>
 #include <stdexcept>
 
 namespace sf::arch::cache {
@@ -24,8 +25,16 @@ void Scoreboard::Dump(std::ostream& os) const {
     os << " empty\n";
     return;
   }
+  // Collect and sort by score (ascending), then by channel id (ascending)
+  std::vector<std::pair<int,int>> items;
+  items.reserve(scores_.size());
+  for (const auto& kv : scores_) items.emplace_back(kv.first, kv.second);
+  std::sort(items.begin(), items.end(), [](const auto& a, const auto& b){
+    if (a.second != b.second) return a.second < b.second; // by score
+    return a.first < b.first; // tie-break by channel id
+  });
   bool first = true;
-  for (const auto& [channel, score] : scores_) {
+  for (const auto& [channel, score] : items) {
     os << (first ? " " : ", ");
     os << "(cin=" << channel << ", score=" << score << ")";
     first = false;
@@ -100,6 +109,10 @@ AccessResult CacheSim::AccessWithPolicy(const LineAddr& la, EvictionPolicy polic
 
   if (unique_demand_lines_seen_.insert(la.key).second) {
     stats_.unique_demand_lines++;
+    // Also attribute this unique line to its set index
+    auto [uc_set_idx, tag_unused] = MapToSetTag(la.key);
+    (void)tag_unused;
+    stats_.per_set_unique_demand_lines[uc_set_idx] += 1ULL;
   }
 
   stats_.demand_accesses++;
@@ -181,9 +194,31 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
         << " kh=" << la.kh
         << " kw=" << la.kw;
     WriteTrace(oss.str());
+
+    // Dump all valid lines currently present in this set
+    std::ostringstream voss;
+    const int W = static_cast<int>(set.ways.size());
+    voss << "[CacheSim][" << access_kind << "][SET_VALID]"
+         << " set=" << set_idx;
+    bool first = true;
+    for (int i = 0; i < W; ++i) {
+      const WayEntry& w = set.ways[static_cast<std::size_t>(i)];
+      if (!w.valid) continue;
+      const uint64_t line_key =
+          w.tag * static_cast<uint64_t>(num_sets_) +
+          static_cast<uint64_t>(set_idx);
+      voss << (first ? " lines=" : ", ");
+      voss << "(way=" << i
+           << " key=" << line_key
+           << " channel=" << w.channel_id
+           << " lru=" << w.lru_counter
+           << ")";
+      first = false;
+    }
+    WriteTrace(voss.str());
   }
 
-  const int vic = PickVictim(set, policy);
+  const int vic = PickVictim(set_idx, set, policy);
   WayEntry& victim_entry = set.ways[static_cast<std::size_t>(vic)];
   if (victim_entry.valid && victim_entry.channel_id >= 0) {
     const int score = scoreboard_.Get(victim_entry.channel_id);
@@ -250,7 +285,7 @@ void CacheSim::TouchLRU(Set& set, int way) {
   set.ways[static_cast<std::size_t>(way)].lru_counter = 0;
 }
 
-int CacheSim::PickVictim(Set& set, EvictionPolicy policy) {
+int CacheSim::PickVictim(int set_idx, Set& set, EvictionPolicy policy) {
   // Prefer an invalid way first
   const int W = static_cast<int>(set.ways.size());
   for (int i = 0; i < W; ++i) {
@@ -261,15 +296,15 @@ int CacheSim::PickVictim(Set& set, EvictionPolicy policy) {
 
   switch (policy) {
     case EvictionPolicy::kScoreboard:
-      return PickVictimScoreboard(set);
+      return PickVictimScoreboard(set_idx, set);
     case EvictionPolicy::kLRU:
-      return PickVictimLRU(set);
+      return PickVictimLRU(set_idx, set);
     default:
-      return PickVictimScoreboard(set);
+      return PickVictimScoreboard(set_idx, set);
   }
 }
 
-int CacheSim::PickVictimScoreboard(Set& set) {
+int CacheSim::PickVictimScoreboard(int set_idx, Set& set) {
   const int W = static_cast<int>(set.ways.size());
   int min_score = INT_MAX;
   std::vector<int> candidates; candidates.reserve(W);
@@ -296,10 +331,27 @@ int CacheSim::PickVictimScoreboard(Set& set) {
       best = idx;
     }
   }
+
+  // Trace the scoreboard decision in the same file as cache events
+  if (TraceHasCapacity()) {
+    const WayEntry& chosen = set.ways[static_cast<std::size_t>(best)];
+    std::ostringstream oss;
+    oss << "[CacheSim][SB][CHOOSE]"
+        << " set=" << set_idx
+        << " way=" << best
+        << " channel=" << chosen.channel_id
+        << " score=" << scoreboard_.Get(chosen.channel_id)
+        << " lru=" << chosen.lru_counter
+        << " min_score=" << min_score
+        << " cand_count=" << candidates.size() << '\n';
+    // Dump the whole scoreboard state after the choose decision
+    scoreboard_.Dump(oss);
+    WriteTrace(oss.str());
+  }
   return best;
 }
 
-int CacheSim::PickVictimLRU(Set& set) {
+int CacheSim::PickVictimLRU(int /*set_idx*/, Set& set) {
   const int W = static_cast<int>(set.ways.size());
   int best = 0;
   for (int i = 1; i < W; ++i) {
@@ -321,6 +373,9 @@ bool CacheSim::TraceAvailable() const {
 }
 
 bool CacheSim::TraceHasCapacity() const {
+  if (!cfg_.trace_enabled) {
+    return false;
+  }
   if (cfg_.trace_max_lines == 0) {
     return true;
   }
