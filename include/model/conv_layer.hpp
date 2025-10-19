@@ -40,6 +40,8 @@ public:
   const CoreSramStats& sram_stats() const { return last_sram_stats_; }
   int drained_entries_total() const { return drained_entries_total_; }
   const sf::arch::cache::CacheStats& cache_stats() const { return last_cache_stats_delta_; }
+  // Snapshot of cache scoreboard after this layer run (channel_id -> score)
+  const std::unordered_map<int, int>& cache_scoreboard_scores() const { return last_scoreboard_scores_; }
 private:
   static int DeriveOutDim(int in, int pad, int kernel, int stride) {
     const int numer = in + 2 * pad - kernel;
@@ -89,6 +91,7 @@ private:
   CoreSramStats last_sram_stats_{};
   int drained_entries_total_ = 0;
   sf::arch::cache::CacheStats last_cache_stats_delta_{};
+  std::unordered_map<int, int> last_scoreboard_scores_{};
 };
 
 } // namespace sf

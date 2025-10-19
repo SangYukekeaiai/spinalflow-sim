@@ -265,6 +265,20 @@ CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/runner/simulation.cpp -o CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.s
 
+CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o: CMakeFiles/sfs_core.dir/flags.make
+CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o: ../src/utils/stats_io.cpp
+CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o: CMakeFiles/sfs_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o -MF CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o.d -o CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o -c /home/yy/snn/spinalflow-sim/src/utils/stats_io.cpp
+
+CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/src/utils/stats_io.cpp > CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.i
+
+CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/src/utils/stats_io.cpp -o CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.s
+
 # Object files for target sfs_core
 sfs_core_OBJECTS = \
 "CMakeFiles/sfs_core.dir/src/arch/cache/cache.cpp.o" \
@@ -280,7 +294,8 @@ sfs_core_OBJECTS = \
 "CMakeFiles/sfs_core.dir/src/core/core.cpp.o" \
 "CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o" \
 "CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o" \
-"CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o"
+"CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o" \
+"CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o"
 
 # External object files for target sfs_core
 sfs_core_EXTERNAL_OBJECTS =
@@ -299,9 +314,10 @@ lib/libsfs_core.a: CMakeFiles/sfs_core.dir/src/core/core.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o
+lib/libsfs_core.a: CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/build.make
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX static library lib/libsfs_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Linking CXX static library lib/libsfs_core.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/sfs_core.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/sfs_core.dir/link.txt --verbose=$(VERBOSE)
 

@@ -59,6 +59,7 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                                 const std::vector<sf::arch::cache::EvictionPolicy>& policies,
                                 bool write_stats_csv = true,
                                 bool write_reuse_distribution_csv = true,
+                                bool write_scoreboard_csv = true,
                                 bool write_visit_count_distribution_csv = true,
                                 bool write_per_set_unique_csv = true,
                                 bool write_cache_traces = true);

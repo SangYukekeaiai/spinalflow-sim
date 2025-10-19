@@ -22,6 +22,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/yy/snn/spinalflow-sim/src/model/conv_layer.cpp" "CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/model/fc_layer.cpp" "CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/runner/simulation.cpp" "CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/src/utils/stats_io.cpp" "CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o.d"
   )
 
 # Targets to which this target links.

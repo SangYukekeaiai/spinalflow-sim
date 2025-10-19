@@ -78,6 +78,46 @@ void WriteReuseDistributionCsv(const std::filesystem::path& csv_path,
   ofs.precision(old_precision);
 }
 
+void WriteScoreboardScoresCsv(const std::filesystem::path& csv_path,
+                              const std::unordered_map<int, int>& scoreboard_scores) {
+  std::filesystem::create_directories(csv_path.parent_path());
+  std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
+  if (!ofs) {
+    throw std::runtime_error("RunNetwork: failed to open scoreboard scores CSV " + csv_path.string());
+  }
+
+  // Build map: score -> vector of channels
+  std::unordered_map<int, std::vector<int>> by_score;
+  by_score.reserve(scoreboard_scores.size());
+  for (const auto& kv : scoreboard_scores) {
+    by_score[kv.second].push_back(kv.first);
+  }
+  // Sort channels for each score
+  for (auto& kv : by_score) {
+    auto& chans = kv.second;
+    std::sort(chans.begin(), chans.end());
+  }
+  // Collect and sort scores ascending
+  std::vector<int> scores;
+  scores.reserve(by_score.size());
+  for (const auto& kv : by_score) scores.push_back(kv.first);
+  std::sort(scores.begin(), scores.end());
+
+  ofs << "score,num_channels,channel_ids\n";
+  for (int sc : scores) {
+    const auto& chans = by_score.at(sc);
+    ofs << sc << ',' << chans.size() << ',';
+    // Join channel ids as a quoted comma-separated list for readability
+    ofs << '"';
+    for (std::size_t i = 0; i < chans.size(); ++i) {
+      ofs << chans[i];
+      if (i + 1 < chans.size()) ofs << ", ";
+    }
+    ofs << '"' << '\n';
+  }
+  ofs.flush();
+}
+
 void WritePerSetUniqueDemandLinesCsv(const std::filesystem::path& csv_path,
                                      int num_sets,
                                      const std::unordered_map<int, std::uint64_t>& counts) {
@@ -282,6 +322,7 @@ void WriteCacheConfigCsvs(const std::string& repo_name,
                           const std::vector<LayerStageRecord>& stage_rows,
                           bool write_stats_csv,
                           bool write_reuse_distribution_csv,
+                          bool write_scoreboard_csv,
                           bool /*write_visit_count_distribution_csv*/,
                           bool write_per_set_unique_csv,
                           bool single_layer_run,
@@ -446,6 +487,17 @@ void WriteCacheConfigCsvs(const std::string& repo_name,
            policy_tag + ".csv");
       WriteReuseDistributionCsv(per_layer_reuse_csv_path,
                                 cs.reuse_distance_histogram);
+    }
+
+    // Emit scoreboard score distribution (only for non-LRU policy)
+    if (write_scoreboard_csv && !is_lru_policy) {
+      const auto sb_csv_path = layer_dir /
+          (std::string("scoreboard_scores_") +
+           std::to_string(cache_size_kb) + "KB_" +
+           std::to_string(cache_ways) + "_" +
+           std::to_string(prefetch_depth) + "_" +
+           policy_tag + ".csv");
+      WriteScoreboardScoresCsv(sb_csv_path, row.scoreboard_scores);
     }
 
     if (write_per_set_unique_csv) {

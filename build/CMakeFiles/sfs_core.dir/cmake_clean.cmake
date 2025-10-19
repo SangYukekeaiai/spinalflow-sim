@@ -27,6 +27,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o.d"
   "CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o"
   "CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o.d"
+  "CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o"
+  "CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o.d"
   "lib/libsfs_core.a"
   "lib/libsfs_core.pdb"
 )

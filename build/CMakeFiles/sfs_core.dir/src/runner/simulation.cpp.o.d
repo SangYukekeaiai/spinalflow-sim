@@ -265,4 +265,6 @@ CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o: \
  /home/yy/snn/spinalflow-sim/include/arch/output_spine.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp \
  /home/yy/snn/spinalflow-sim/include/core/io_shadow.hpp \
- /home/yy/snn/spinalflow-sim/include/model/fc_layer.hpp
+ /home/yy/snn/spinalflow-sim/include/model/fc_layer.hpp \
+ /home/yy/snn/spinalflow-sim/include/utils/stats_io.hpp \
+ /home/yy/snn/spinalflow-sim/include/utils/stats_types.hpp

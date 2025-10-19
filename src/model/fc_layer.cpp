@@ -142,6 +142,8 @@ void FCLayer::run_layer() {
   if (cache_) {
     const auto cache_after = cache_->GetStats();
     last_cache_stats_delta_ = cache_after - cache_before;
+    // Capture scoreboard snapshot before resetting the cache for next layer
+    last_scoreboard_scores_ = cache_->ScoreboardSnapshot();
     sf::arch::cache::PrintCacheConfig(cache_->Config());
     cache_->Reset();
   } else {

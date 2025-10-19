@@ -554,6 +554,30 @@ src/runner/simulation.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.s
 .PHONY : src/runner/simulation.cpp.s
 
+src/utils/stats_io.o: src/utils/stats_io.cpp.o
+.PHONY : src/utils/stats_io.o
+
+# target to build an object file
+src/utils/stats_io.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.o
+.PHONY : src/utils/stats_io.cpp.o
+
+src/utils/stats_io.i: src/utils/stats_io.cpp.i
+.PHONY : src/utils/stats_io.i
+
+# target to preprocess a source file
+src/utils/stats_io.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.i
+.PHONY : src/utils/stats_io.cpp.i
+
+src/utils/stats_io.s: src/utils/stats_io.cpp.s
+.PHONY : src/utils/stats_io.s
+
+# target to generate assembly for a file
+src/utils/stats_io.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.s
+.PHONY : src/utils/stats_io.cpp.s
+
 tests/test_first_layer_cache.o: tests/test_first_layer_cache.cpp.o
 .PHONY : tests/test_first_layer_cache.o
 
@@ -709,6 +733,9 @@ help:
 	@echo "... src/runner/simulation.o"
 	@echo "... src/runner/simulation.i"
 	@echo "... src/runner/simulation.s"
+	@echo "... src/utils/stats_io.o"
+	@echo "... src/utils/stats_io.i"
+	@echo "... src/utils/stats_io.s"
 	@echo "... tests/test_first_layer_cache.o"
 	@echo "... tests/test_first_layer_cache.i"
 	@echo "... tests/test_first_layer_cache.s"

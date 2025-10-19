@@ -159,6 +159,7 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                                 const std::vector<sf::arch::cache::EvictionPolicy>& policies,
                                 bool write_stats_csv,
                                 bool write_reuse_distribution_csv,
+                                bool write_scoreboard_csv,
                                 bool write_visit_count_distribution_csv,
                                 bool write_per_set_unique_csv,
                                 bool write_cache_traces) {
@@ -249,7 +250,8 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                     s.kind,
                     conv.cycle_stats(),
                     conv.sram_stats(),
-                    conv.cache_stats()
+                    conv.cache_stats(),
+                    conv.cache_scoreboard_scores()
                 });
                 break;
               }
@@ -275,7 +277,8 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                     s.kind,
                     fc.cycle_stats(),
                     fc.sram_stats(),
-                    fc.cache_stats()
+                    fc.cache_stats(),
+                    fc.cache_scoreboard_scores()
                 });
                 break;
               }
@@ -296,6 +299,7 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                                stage_rows,
                                write_stats_csv,
                                write_reuse_distribution_csv,
+                               /*write_scoreboard_csv=*/write_stats_csv, // default follow stats unless overridden upstream
                                write_visit_count_distribution_csv,
                                write_per_set_unique_csv,
                                single_layer_run,
@@ -373,6 +377,7 @@ void RunNetwork(const std::vector<LayerSpec>& specs,
                              default_policies,
                              /*write_stats_csv=*/true,
                              /*write_reuse_distribution_csv=*/true,
+                             /*write_scoreboard_csv=*/true,
                              /*write_visit_count_distribution_csv=*/false,
                              /*write_per_set_unique_csv=*/true,
                              /*write_cache_traces=*/true);

@@ -13,12 +13,14 @@ static void PrintUsage(const char* argv0) {
             << " <dram_image.bin> <config.json>"
             << " [--stats=on|off|true|false|1|0|--no-stats]"
             << " [--reuse-csv=on|off|true|false|1|0|--no-reuse-csv]"
+            << " [--scoreboard-csv=on|off|true|false|1|0|--no-scoreboard-csv]"
             << " [--setuniq-csv=on|off|true|false|1|0|--no-setuniq-csv]"
             << " [--trace=on|off|true|false|1|0|--no-trace]" << '\n'
             << "Runs the full network described by <config.json>." << '\n'
             << "  --stats=on (default) writes CSV summaries" << '\n'
             << "  --stats=off or --no-stats disables all CSVs" << '\n'
             << "  --reuse-csv=* toggles reuse-distance distribution CSVs" << '\n'
+            << "  --scoreboard-csv=* toggles scoreboard score CSVs (score -> channels)" << '\n'
             << "  --setuniq-csv=* toggles per-set unique-address CSVs" << '\n'
             << "  --trace=* enables/disables cache trace files" << '\n';
 }
@@ -37,17 +39,20 @@ int main(int argc, char** argv) {
   // Optional flags controlling CSV generation (default: ON)
   bool write_stats_csv = true;
   bool write_reuse_csv = true;
+  bool write_scoreboard_csv = true;
   bool write_setuniq_csv = true;
   bool write_cache_traces = true;
   bool reuse_csv_overridden = false;
+  bool scoreboard_csv_overridden = false;
   bool setuniq_csv_overridden = false;
   for (int i = 3; i < argc; ++i) {
     std::string arg = argv[i];
     if (arg == "--help" || arg == "-h") { PrintUsage(argv[0]); return 0; }
     if (arg == "--no-reuse-csv") { write_reuse_csv = false; reuse_csv_overridden = true; continue; }
+    if (arg == "--no-scoreboard-csv") { write_scoreboard_csv = false; scoreboard_csv_overridden = true; continue; }
     if (arg == "--no-setuniq-csv") { write_setuniq_csv = false; setuniq_csv_overridden = true; continue; }
     if (arg == "--no-trace") { write_cache_traces = false; continue; }
-    if (arg == "--no-stats") { write_stats_csv = false; if (!reuse_csv_overridden) write_reuse_csv = false; if (!setuniq_csv_overridden) write_setuniq_csv = false; continue; }
+    if (arg == "--no-stats") { write_stats_csv = false; if (!reuse_csv_overridden) write_reuse_csv = false; if (!scoreboard_csv_overridden) write_scoreboard_csv = false; if (!setuniq_csv_overridden) write_setuniq_csv = false; continue; }
     const std::string ks = "--stats=";
     if (arg.rfind(ks, 0) == 0) {
       std::string v = arg.substr(ks.size());
@@ -56,6 +61,7 @@ int main(int argc, char** argv) {
       else if (v == "on" || v == "true" || v == "1") write_stats_csv = true;
       else { std::cerr << "Unknown value for --stats: " << v << '\n'; return 2; }
       if (!reuse_csv_overridden) write_reuse_csv = write_stats_csv;
+      if (!scoreboard_csv_overridden) write_scoreboard_csv = write_stats_csv;
       if (!setuniq_csv_overridden) write_setuniq_csv = write_stats_csv;
       continue;
     }
@@ -67,6 +73,16 @@ int main(int argc, char** argv) {
       else if (v == "on" || v == "true" || v == "1") write_reuse_csv = true;
       else { std::cerr << "Unknown value for --reuse-csv: " << v << '\n'; return 2; }
       reuse_csv_overridden = true;
+      continue;
+    }
+    const std::string ksbb = "--scoreboard-csv=";
+    if (arg.rfind(ksbb, 0) == 0) {
+      std::string v = arg.substr(ksbb.size());
+      for (auto& c : v) c = static_cast<char>(::tolower(c));
+      if (v == "off" || v == "false" || v == "0") write_scoreboard_csv = false;
+      else if (v == "on" || v == "true" || v == "1") write_scoreboard_csv = true;
+      else { std::cerr << "Unknown value for --scoreboard-csv: " << v << '\n'; return 2; }
+      scoreboard_csv_overridden = true;
       continue;
     }
     const std::string ksx = "--setuniq-csv=";
@@ -134,6 +150,7 @@ int main(int argc, char** argv) {
                                    default_policies,
                                    write_stats_csv,
                                    write_reuse_csv,
+                                   write_scoreboard_csv,
                                    /*write_visit_count_distribution_csv=*/false,
                                    write_setuniq_csv,
                                    write_cache_traces);

@@ -138,6 +138,8 @@ public:
   int  Get(int channel_id) const;
   void Dump(std::ostream& os) const;
   void Clear()                         { scores_.clear(); }
+  // Snapshot of current per-channel scores (channel_id -> score)
+  std::unordered_map<int, int> Snapshot() const { return scores_; }
 private:
   std::unordered_map<int, int> scores_;
 };
@@ -164,6 +166,8 @@ public:
   // Optional helpers
   int NumSets() const { return num_sets_; }
   const CacheConfig& Config() const { return cfg_; }
+  // Expose a snapshot of the internal scoreboard (channel_id -> score)
+  std::unordered_map<int, int> ScoreboardSnapshot() const { return scoreboard_.Snapshot(); }
 
 private:
   struct WayEntry {

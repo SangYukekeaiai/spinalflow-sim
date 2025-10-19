@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "core/core.hpp"            // CoreCycleStats, CoreSramStats
 #include "arch/cache/cache.hpp"     // CacheStats
@@ -18,6 +19,8 @@ struct LayerStageRecord {
   CoreCycleStats cycles{};
   CoreSramStats sram_stats{};
   sf::arch::cache::CacheStats cache_stats{};
+  // Snapshot of scoreboard scores for this layer (channel_id -> score)
+  std::unordered_map<int, int> scoreboard_scores{};
 };
 
 // Aggregated cache totals row used for CSV emission

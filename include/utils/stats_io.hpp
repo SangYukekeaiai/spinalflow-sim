@@ -30,6 +30,10 @@ std::filesystem::path BuildLayerTablesDir(const std::string& repo_name,
 void WriteReuseDistributionCsv(const std::filesystem::path& csv_path,
                                const std::unordered_map<std::uint64_t, std::uint64_t>& histogram);
 
+// Writes scoreboard distribution per layer: rows of (score, num_channels, channel_ids)
+void WriteScoreboardScoresCsv(const std::filesystem::path& csv_path,
+                              const std::unordered_map<int, int>& scoreboard_scores);
+
 // Writes per-set unique demand line counts (0..num_sets-1)
 void WritePerSetUniqueDemandLinesCsv(const std::filesystem::path& csv_path,
                                      int num_sets,
@@ -63,6 +67,7 @@ void WriteCacheConfigCsvs(const std::string& repo_name,
                           const std::vector<LayerStageRecord>& stage_rows,
                           bool write_stats_csv,
                           bool write_reuse_distribution_csv,
+                          bool write_scoreboard_csv,
                           bool write_visit_count_distribution_csv,
                           bool write_per_set_unique_csv,
                           bool single_layer_run,
