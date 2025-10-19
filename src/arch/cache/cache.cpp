@@ -12,6 +12,25 @@
 
 namespace sf::arch::cache {
 
+namespace {
+// XOR-fold hash indexing: fold higher tag bits into the index to
+// break power-of-two/regular strides. Works for any number of sets.
+inline uint32_t mix64(uint64_t x) {
+  x ^= x >> 33; x *= 0xff51afd7ed558ccdULL;
+  x ^= x >> 33; x *= 0xc4ceb9fe1a85ec53ULL;
+  x ^= x >> 33; return static_cast<uint32_t>(x);
+}
+
+inline uint32_t index_xorfold(uint64_t line_addr, uint32_t num_sets, uint32_t channel_id) {
+  // Fold some higher bits and a per-channel salt
+  const uint64_t folded = line_addr ^ (line_addr >> 11) ^ (static_cast<uint64_t>(channel_id) * 0x9e3779b97f4a7c15ULL);
+  const uint32_t h = mix64(folded);
+  if (num_sets == 0u) return 0u;
+  // If num_sets is a power of two, use a mask; otherwise use modulo
+  return ((num_sets & (num_sets - 1u)) == 0u) ? (h & (num_sets - 1u)) : (h % num_sets);
+}
+} // anonymous namespace
+
 //-------------------------- Scoreboard ----------------------------------------
 
 int Scoreboard::Get(int channel_id) const {
@@ -110,7 +129,7 @@ AccessResult CacheSim::AccessWithPolicy(const LineAddr& la, EvictionPolicy polic
   if (unique_demand_lines_seen_.insert(la.key).second) {
     stats_.unique_demand_lines++;
     // Also attribute this unique line to its set index
-    auto [uc_set_idx, tag_unused] = MapToSetTag(la.key);
+    auto [uc_set_idx, tag_unused] = MapToSetTag(la.key, static_cast<int>(la.cin));
     (void)tag_unused;
     stats_.per_set_unique_demand_lines[uc_set_idx] += 1ULL;
   }
@@ -159,7 +178,7 @@ AccessResult CacheSim::AccessWithPolicy(const LineAddr& la, EvictionPolicy polic
 CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, EvictionPolicy policy) {
   ServeResult result{};
   // Map to set + tag
-  auto [set_idx, tag] = MapToSetTag(la.key);
+  auto [set_idx, tag] = MapToSetTag(la.key, static_cast<int>(la.cin));
   const char* access_kind = is_prefetch ? "PF" : "DM";
   Set& set = sets_[static_cast<std::size_t>(set_idx)];
 
@@ -204,14 +223,13 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
     for (int i = 0; i < W; ++i) {
       const WayEntry& w = set.ways[static_cast<std::size_t>(i)];
       if (!w.valid) continue;
-      const uint64_t line_key =
-          w.tag * static_cast<uint64_t>(num_sets_) +
-          static_cast<uint64_t>(set_idx);
+      const uint64_t line_key = w.tag; // tag stores full key under hashed indexing
       voss << (first ? " lines=" : ", ");
       voss << "(way=" << i
            << " key=" << line_key
            << " channel=" << w.channel_id
            << " lru=" << w.lru_counter
+           << " score=" << scoreboard_.Get(w.channel_id)
            << ")";
       first = false;
     }
@@ -222,9 +240,7 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
   WayEntry& victim_entry = set.ways[static_cast<std::size_t>(vic)];
   if (victim_entry.valid && victim_entry.channel_id >= 0) {
     const int score = scoreboard_.Get(victim_entry.channel_id);
-    const uint64_t prev_key =
-        victim_entry.tag * static_cast<uint64_t>(num_sets_) +
-        static_cast<uint64_t>(set_idx);
+    const uint64_t prev_key = victim_entry.tag; // tag stores full key under hashed indexing
     if (TraceHasCapacity()) {
       std::ostringstream oss;
       oss << "[CacheSim][" << access_kind << "][EVICT]"
@@ -260,10 +276,11 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
   return result;
 }
 
-std::pair<int, uint64_t> CacheSim::MapToSetTag(uint64_t key) const {
-  const uint64_t nsets = static_cast<uint64_t>(num_sets_);
-  const int set_idx = static_cast<int>(key % nsets);
-  const uint64_t tag = key / nsets;
+std::pair<int, uint64_t> CacheSim::MapToSetTag(uint64_t key, int channel_id) const {
+  const uint32_t nsets = static_cast<uint32_t>(num_sets_);
+  const int set_idx = static_cast<int>(index_xorfold(key, nsets, static_cast<uint32_t>(channel_id)));
+  // Use full key as tag to avoid dependence on index mapping.
+  const uint64_t tag = key;
   return { set_idx, tag };
 }
 

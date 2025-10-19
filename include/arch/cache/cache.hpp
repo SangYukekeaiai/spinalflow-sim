@@ -183,7 +183,7 @@ private:
   };
 
   ServeResult ServeOne(const LineAddr& la, bool is_prefetch, EvictionPolicy policy);
-  std::pair<int, uint64_t> MapToSetTag(uint64_t key) const;
+  std::pair<int, uint64_t> MapToSetTag(uint64_t key, int channel_id) const;
   int  FindHit(Set& set, uint64_t tag) const;
   void TouchLRU(Set& set, int way);
   int  PickVictim(int set_idx, Set& set, EvictionPolicy policy);
