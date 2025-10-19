@@ -154,6 +154,11 @@ public:
   void Reset();
   // Notify that a spike occurs on input channel 'cin' to bias future evictions.
   void NotifySpike(int cin);
+  // Begin a new time step t. At t=0, eviction uses LRU-only while
+  // S[0] is accumulated. For t>=1, eviction uses S[t-1] while S[t]
+  // is accumulated via NotifySpike(). Repeated calls with the same t
+  // are ignored.
+  void BeginTimeStep(int t);
 
   // Access a demand line. Returns metrics for this access (miss/hit, latency, prefetch work).
   // This may trigger sequential prefetches for cin+1..cin+prefetch_depth.
@@ -167,7 +172,8 @@ public:
   int NumSets() const { return num_sets_; }
   const CacheConfig& Config() const { return cfg_; }
   // Expose a snapshot of the internal scoreboard (channel_id -> score)
-  std::unordered_map<int, int> ScoreboardSnapshot() const { return scoreboard_.Snapshot(); }
+  // Snapshot reflects the current step accumulator S[t].
+  std::unordered_map<int, int> ScoreboardSnapshot() const { return scoreboard_curr_.Snapshot(); }
 
 private:
   struct WayEntry {
@@ -199,10 +205,21 @@ private:
   bool TraceHasCapacity() const;
 
 private:
+  // Internal helpers for per-timestep snapshot emission
+  void EmitStepSnapshotIfEnabled_(int t,
+                                  const std::unordered_map<int, int>& scores);
+  std::string BuildStepCsvPath_(int t) const;
+
   CacheConfig      cfg_;
   int              num_sets_ = 0;
   std::vector<Set> sets_;
-  Scoreboard       scoreboard_;
+  // Per-timestep scoreboard state:
+  // - scoreboard_prev_: S[t-1], used for eviction decisions.
+  // - scoreboard_curr_: S[t], accumulates during the current step.
+  Scoreboard       scoreboard_prev_;
+  Scoreboard       scoreboard_curr_;
+  int              current_timestep_ = -1; // unknown
+  bool             use_lru_this_step_ = true; // LRU-only at t=0
   CacheStats       stats_{};
   std::unordered_set<uint64_t> unique_demand_lines_seen_;
   std::unordered_map<uint64_t, std::uint64_t> last_access_turn_;

@@ -23,6 +23,8 @@ bool PEArray::run(FilterBuffer& fb) {
   if (cache_) {
     if (last_row_lookup_.has_value() && current_tile_idx_ >= 0) {
       const auto& info = last_row_lookup_.value();
+      // Inform cache of the current time step before scoring/eviction.
+      cache_->BeginTimeStep(static_cast<int>(gm_entry_.ts));
       cache_->NotifySpike(info.c_in);
       const sf::arch::cache::LineAddr addr(
           static_cast<std::uint32_t>(current_tile_idx_),

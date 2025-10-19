@@ -95,7 +95,14 @@ void CacheSim::Reset() {
       way.channel_id = -1;
     }
   }
-  scoreboard_.Clear();
+  // Flush the last step snapshot if any before clearing
+  if (current_timestep_ >= 0) {
+    EmitStepSnapshotIfEnabled_(current_timestep_, scoreboard_curr_.Snapshot());
+  }
+  scoreboard_prev_.Clear();
+  scoreboard_curr_.Clear();
+  current_timestep_ = -1;
+  use_lru_this_step_ = true;
   tmpZeroScoreCount_ = 0;
   unique_demand_lines_seen_.clear();
   last_access_turn_.clear();
@@ -107,7 +114,31 @@ void CacheSim::Reset() {
 }
 
 void CacheSim::NotifySpike(int cin) {
-  scoreboard_.Bump(cin);
+  scoreboard_curr_.Bump(cin);
+}
+
+void CacheSim::BeginTimeStep(int t) {
+  // Ignore redundant calls for the same time step
+  if (current_timestep_ == t) {
+    return;
+  }
+  if (current_timestep_ < 0) {
+    // First observed time step
+    current_timestep_ = t;
+    // LRU-only eviction for t==0 while we build S[0]
+    use_lru_this_step_ = (t == 0);
+    // Ensure clean accumulators
+    scoreboard_prev_.Clear();
+    scoreboard_curr_.Clear();
+    return;
+  }
+  // Commit S[t-1] and start accumulating S[t]
+  // Emit snapshot for the completed step (current_timestep_)
+  EmitStepSnapshotIfEnabled_(current_timestep_, scoreboard_curr_.Snapshot());
+  scoreboard_prev_ = scoreboard_curr_;
+  scoreboard_curr_.Clear();
+  current_timestep_ = t;
+  use_lru_this_step_ = false;
 }
 
 AccessResult CacheSim::Access(const LineAddr& la) {
@@ -229,7 +260,7 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
            << " key=" << line_key
            << " channel=" << w.channel_id
            << " lru=" << w.lru_counter
-           << " score=" << scoreboard_.Get(w.channel_id)
+           << " score(S[t-1])=" << scoreboard_prev_.Get(w.channel_id)
            << ")";
       first = false;
     }
@@ -239,7 +270,7 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
   const int vic = PickVictim(set_idx, set, policy);
   WayEntry& victim_entry = set.ways[static_cast<std::size_t>(vic)];
   if (victim_entry.valid && victim_entry.channel_id >= 0) {
-    const int score = scoreboard_.Get(victim_entry.channel_id);
+    const int score = scoreboard_prev_.Get(victim_entry.channel_id);
     const uint64_t prev_key = victim_entry.tag; // tag stores full key under hashed indexing
     if (TraceHasCapacity()) {
       std::ostringstream oss;
@@ -313,6 +344,10 @@ int CacheSim::PickVictim(int set_idx, Set& set, EvictionPolicy policy) {
 
   switch (policy) {
     case EvictionPolicy::kScoreboard:
+      // At t=0 we use LRU-only eviction regardless of scoreboard
+      if (use_lru_this_step_) {
+        return PickVictimLRU(set_idx, set);
+      }
       return PickVictimScoreboard(set_idx, set);
     case EvictionPolicy::kLRU:
       return PickVictimLRU(set_idx, set);
@@ -327,7 +362,7 @@ int CacheSim::PickVictimScoreboard(int set_idx, Set& set) {
   std::vector<int> candidates; candidates.reserve(W);
   for (int i = 0; i < W; ++i) {
     const WayEntry& w = set.ways[static_cast<std::size_t>(i)];
-    const int sc = scoreboard_.Get(w.channel_id);
+    const int sc = scoreboard_prev_.Get(w.channel_id);
     if (sc < min_score) {
       if (sc == 0) {
         tmpZeroScoreCount_++;
@@ -357,12 +392,12 @@ int CacheSim::PickVictimScoreboard(int set_idx, Set& set) {
         << " set=" << set_idx
         << " way=" << best
         << " channel=" << chosen.channel_id
-        << " score=" << scoreboard_.Get(chosen.channel_id)
+        << " score(S[t-1])=" << scoreboard_prev_.Get(chosen.channel_id)
         << " lru=" << chosen.lru_counter
         << " min_score=" << min_score
         << " cand_count=" << candidates.size() << '\n';
-    // Dump the whole scoreboard state after the choose decision
-    scoreboard_.Dump(oss);
+    // Dump the S[t-1] scoreboard used for this decision
+    scoreboard_prev_.Dump(oss);
     WriteTrace(oss.str());
   }
   return best;
@@ -410,6 +445,80 @@ void CacheSim::WriteTrace(const std::string& message) {
     std::cout << message << '\n';
   }
   trace_lines_written_++;
+}
+
+// -------------------- Per-step scoreboard CSV emission -----------------------
+
+void CacheSim::EmitStepSnapshotIfEnabled_(int t,
+                                          const std::unordered_map<int,int>& scores) {
+  if (!cfg_.trace_enabled || cfg_.trace_output_path.empty()) {
+    return; // respect existing trace toggle as a proxy for step snapshots
+  }
+  namespace fs = std::filesystem;
+  try {
+    const std::string csv_path_str = BuildStepCsvPath_(t);
+    if (csv_path_str.empty()) return;
+    const fs::path csv_path(csv_path_str);
+    fs::create_directories(csv_path.parent_path());
+    std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
+    if (!ofs) {
+      return; // silently skip on failure to avoid disrupting sim
+    }
+    // Build map: score -> vector of channels
+    std::unordered_map<int, std::vector<int>> by_score;
+    by_score.reserve(scores.size());
+    for (const auto& kv : scores) {
+      by_score[kv.second].push_back(kv.first);
+    }
+    for (auto& kv : by_score) {
+      auto& chans = kv.second;
+      std::sort(chans.begin(), chans.end());
+    }
+    std::vector<int> svals; svals.reserve(by_score.size());
+    for (const auto& kv : by_score) svals.push_back(kv.first);
+    std::sort(svals.begin(), svals.end());
+
+    ofs << "score,num_channels,channel_ids\n";
+    for (int sc : svals) {
+      const auto& chans = by_score.at(sc);
+      ofs << sc << ',' << chans.size() << ',';
+      ofs << '"';
+      for (std::size_t i = 0; i < chans.size(); ++i) {
+        ofs << chans[i];
+        if (i + 1 < chans.size()) ofs << ", ";
+      }
+      ofs << '"' << '\n';
+    }
+    ofs.flush();
+  } catch (...) {
+    // swallow to keep cache sim robust
+  }
+}
+
+std::string CacheSim::BuildStepCsvPath_(int t) const {
+  if (cfg_.trace_output_path.empty()) return std::string();
+  namespace fs = std::filesystem;
+  const fs::path trace_path(cfg_.trace_output_path);
+  // trace path example:
+  //   .../layer5/cache_traces/<policy>/<ways>_<prefetch>/<size>.txt
+  // Produce per-step scoreboard under:
+  //   .../layer5/scoreboard_steps/<policy>/<ways>_<prefetch>/
+  //   scoreboard_scores_<size>KB_<ways>_<prefetch>_<policy>_t<t>.csv
+  fs::path ways_prefetch_dir = trace_path.parent_path();             // <ways>_<prefetch>
+  fs::path policy_dir        = ways_prefetch_dir.parent_path();      // <policy>
+  fs::path cache_traces_dir  = policy_dir.parent_path();             // cache_traces
+  fs::path layer_dir         = cache_traces_dir.parent_path();       // layerX
+  const std::string policy_tag = policy_dir.filename().string();
+  const std::string ways_prefetch = ways_prefetch_dir.filename().string();
+
+  // Derive size_kb from capacity_bytes
+  const std::size_t size_kb = cfg_.capacity_bytes / 1024u;
+  // ways_prefetch is already e.g., "16_0"; keep consistent with existing
+  fs::path steps_dir = layer_dir / "scoreboard_steps" / policy_tag / ways_prefetch;
+  const std::string fname =
+      std::string("scoreboard_scores_") + std::to_string(size_kb) + "KB_" +
+      ways_prefetch + "_" + policy_tag + "_t" + std::to_string(t) + ".csv";
+  return (steps_dir / fname).string();
 }
 
 void PrintCacheConfig(const CacheConfig& cfg) {
