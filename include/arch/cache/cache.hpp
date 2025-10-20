@@ -32,6 +32,10 @@ struct CacheConfig {
   bool        trace_enabled   = true;     // enable/disable any trace output
   std::string trace_output_path;          // optional path for detailed trace output
   std::size_t trace_max_lines = 0;        // max lines to emit (0 = unlimited)
+  // Toggle original modulo-based set/tag mapping vs. hashed indexing.
+  // false (default): hashed index + full-key tag
+  // true:           original index (key % sets) + tag (key / sets)
+  bool use_original_maptotag = false;
 };
 
 //------------------------------------------------------------------------------
@@ -175,6 +179,18 @@ public:
   // Snapshot reflects the current step accumulator S[t].
   std::unordered_map<int, int> ScoreboardSnapshot() const { return scoreboard_curr_.Snapshot(); }
 
+  // Context hooks for per-site timestep accounting and summary.
+  // Set the current output site id (spine id = h_out * W_out + w_out).
+  void SetCurrentOutputSpine(int spine_id) { current_spine_id_ = spine_id; }
+  // Provide layer dims so we can emit a one-line summary with config.
+  void SetLayerDims(int Cin, int Hin, int Win,
+                    int Cout, int Hout, int Wout,
+                    int Kh, int Kw) {
+    layer_Cin_  = Cin;  layer_Hin_  = Hin;  layer_Win_  = Win;
+    layer_Cout_ = Cout; layer_Hout_ = Hout; layer_Wout_ = Wout;
+    layer_Kh_   = Kh;   layer_Kw_   = Kw;
+  }
+
 private:
   struct WayEntry {
     uint64_t tag       = 0;
@@ -193,7 +209,16 @@ private:
   };
 
   ServeResult ServeOne(const LineAddr& la, bool is_prefetch, EvictionPolicy policy);
+  // Original modulo-based mapping (index=key%sets, tag=key/sets)
+  std::pair<int, uint64_t> MapToSetTag(uint64_t key) const;
+  // Hashed-index mapping (index=xorfold(key, sets, channel), tag=key)
   std::pair<int, uint64_t> MapToSetTag(uint64_t key, int channel_id) const;
+  // Unified selector: choose mapping based on a boolean toggle.
+  std::pair<int, uint64_t> MapToSetTag(uint64_t key, int channel_id, bool use_original) const;
+  // Add-back: MapToTag with selector (original or hashed-tag semantics)
+  // - use_original=false: return full key as tag (hashed mapping)
+  // - use_original=true:  return key/num_sets as tag (modulo mapping)
+  uint64_t MapToTag(uint64_t key, bool use_original) const;
   int  FindHit(Set& set, uint64_t tag) const;
   void TouchLRU(Set& set, int way);
   int  PickVictim(int set_idx, Set& set, EvictionPolicy policy);
@@ -227,6 +252,24 @@ private:
   std::unique_ptr<std::ofstream> trace_stream_;
   std::size_t trace_lines_written_ = 0;
   
+  // --- Per-timestep access counting (per output site) ---
+  // Counts demand accesses per (output_spine_id, timestep).
+  // Keyed by site_id -> (timestep -> count)
+  std::unordered_map<int, std::unordered_map<int, std::uint64_t>> per_site_step_access_counts_;
+  int max_timestep_observed_ = -1;
+  int current_spine_id_ = -1;
+
+  // Emit one CSV per layer/config with rows of:
+  //   output_spine_id,t0,t1,...,tN
+  // where output_spine_id corresponds to (h_out*W_out + w_out).
+  void EmitTimestepAccessCsv_();
+  std::string BuildTimestepAccessCsvPath_() const;
+  std::string BuildTimestepSummaryCsvPath_() const;
+
+  // Layer config snapshot for summary line
+  int layer_Cin_ = 0, layer_Hin_ = 0, layer_Win_ = 0;
+  int layer_Cout_ = 0, layer_Hout_ = 0, layer_Wout_ = 0;
+  int layer_Kh_ = 0, layer_Kw_ = 0;
 };
 
 void PrintCacheConfig(const CacheConfig& cfg);

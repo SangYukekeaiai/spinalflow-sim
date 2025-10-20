@@ -107,6 +107,9 @@ void Core::UpdateOutputSpineID_Eachhw()
 {
   const int spine_id = h_out_cur_ * W_out_ + w_out_cur_;
   out_spine_.SetSpineID(spine_id);
+  if (cache_) {
+    cache_->SetCurrentOutputSpine(spine_id);
+  }
 }
 
 void Core::ClearTOB_Eachhw()

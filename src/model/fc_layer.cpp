@@ -66,6 +66,9 @@ void FCLayer::ConfigureLayer(int layer_id,
   // 5) Construct Core with all static params and the batches map.
   dram_ = dram;
   cache_ = cache;
+  if (cache_) {
+    cache_->SetLayerDims(C_in_, H_in_, W_in_, C_out_, H_out_, W_out_, Kh_, Kw_);
+  }
   core_ = std::make_unique<Core>(
               dram_,
               layer_id_, C_in_, C_out_,

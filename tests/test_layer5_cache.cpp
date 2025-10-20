@@ -121,13 +121,13 @@ int main(int argc, char** argv) {
     layer_specs.push_back(SelectLayer(specs, 5));
 
     const std::vector<std::size_t> cache_sizes_bytes = {
-        72u * 1024u,
-        144u * 1024u,
+        // 72u * 1024u,
+        // 144u * 1024u,
         288u * 1024u,
-        576u * 1024u
+        // 576u * 1024u
     };
-    const std::vector<int> cache_way_options = {4, 8, 32};
-    const std::vector<int> prefetch_depth_options = {4};
+    const std::vector<int> cache_way_options = {4};
+    const std::vector<int> prefetch_depth_options = {0};
     const std::vector<sf::arch::cache::EvictionPolicy> policies = {
         sf::arch::cache::EvictionPolicy::kScoreboard,
         // sf::arch::cache::EvictionPolicy::kLRU

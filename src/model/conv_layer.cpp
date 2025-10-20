@@ -64,6 +64,9 @@ void ConvLayer::ConfigureLayer(int layer_id,
   // 5) Hold DRAM and construct Core (value-members architecture)
   dram_ = dram;
   cache_ = cache;
+  if (cache_) {
+    cache_->SetLayerDims(C_in_, H_in_, W_in_, C_out_, H_out_, W_out_, Kh_, Kw_);
+  }
   core_ = std::make_unique<Core>(
               dram_,
               layer_id_, C_in_, C_out_,

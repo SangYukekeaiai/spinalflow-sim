@@ -9,6 +9,7 @@
 #include <sstream>
 #include <algorithm>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace sf::arch::cache {
 
@@ -99,6 +100,8 @@ void CacheSim::Reset() {
   if (current_timestep_ >= 0) {
     EmitStepSnapshotIfEnabled_(current_timestep_, scoreboard_curr_.Snapshot());
   }
+  // Emit per-site timestep access counts for the completed layer/config
+  EmitTimestepAccessCsv_();
   scoreboard_prev_.Clear();
   scoreboard_curr_.Clear();
   current_timestep_ = -1;
@@ -108,6 +111,9 @@ void CacheSim::Reset() {
   last_access_turn_.clear();
   access_sequence_counter_ = 0;
   stats_ = {};
+  per_site_step_access_counts_.clear();
+  max_timestep_observed_ = -1;
+  current_spine_id_ = -1;
   if (trace_stream_) {
     trace_stream_->flush();
   }
@@ -160,7 +166,7 @@ AccessResult CacheSim::AccessWithPolicy(const LineAddr& la, EvictionPolicy polic
   if (unique_demand_lines_seen_.insert(la.key).second) {
     stats_.unique_demand_lines++;
     // Also attribute this unique line to its set index
-    auto [uc_set_idx, tag_unused] = MapToSetTag(la.key, static_cast<int>(la.cin));
+    auto [uc_set_idx, tag_unused] = MapToSetTag(la.key, static_cast<int>(la.cin), cfg_.use_original_maptotag);
     (void)tag_unused;
     stats_.per_set_unique_demand_lines[uc_set_idx] += 1ULL;
   }
@@ -188,6 +194,18 @@ AccessResult CacheSim::AccessWithPolicy(const LineAddr& la, EvictionPolicy polic
     stats_.demand_hit_cycles += static_cast<std::uint64_t>(demand.cycles);
   }
 
+  // Count demand accesses for the current timestep per output site (spine id)
+  if (current_timestep_ < 0) {
+    // If BeginTimeStep(t) wasn't called yet, treat as t=0
+    current_timestep_ = 0;
+  }
+  if (current_spine_id_ >= 0) {
+    per_site_step_access_counts_[current_spine_id_][current_timestep_] += 1ULL;
+    if (current_timestep_ > max_timestep_observed_) {
+      max_timestep_observed_ = current_timestep_;
+    }
+  }
+
   // Sequentially issue simple next-channel prefetches up to prefetch_depth
   if (demand.miss) {
     for (int d = 1; d <= cfg_.prefetch_depth; ++d) {
@@ -209,7 +227,7 @@ AccessResult CacheSim::AccessWithPolicy(const LineAddr& la, EvictionPolicy polic
 CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, EvictionPolicy policy) {
   ServeResult result{};
   // Map to set + tag
-  auto [set_idx, tag] = MapToSetTag(la.key, static_cast<int>(la.cin));
+  auto [set_idx, tag] = MapToSetTag(la.key, static_cast<int>(la.cin), cfg_.use_original_maptotag);
   const char* access_kind = is_prefetch ? "PF" : "DM";
   Set& set = sets_[static_cast<std::size_t>(set_idx)];
 
@@ -260,7 +278,7 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
            << " key=" << line_key
            << " channel=" << w.channel_id
            << " lru=" << w.lru_counter
-           << " score(S[t-1])=" << scoreboard_prev_.Get(w.channel_id)
+           << " score=" << scoreboard_prev_.Get(w.channel_id)
            << ")";
       first = false;
     }
@@ -307,12 +325,32 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
   return result;
 }
 
+std::pair<int, uint64_t> CacheSim::MapToSetTag(uint64_t key) const {
+  const uint64_t nsets = static_cast<uint64_t>(num_sets_);
+  const int set_idx = static_cast<int>(key % nsets);
+  const uint64_t tag = key / nsets;
+  return { set_idx, tag };
+}
+
 std::pair<int, uint64_t> CacheSim::MapToSetTag(uint64_t key, int channel_id) const {
   const uint32_t nsets = static_cast<uint32_t>(num_sets_);
   const int set_idx = static_cast<int>(index_xorfold(key, nsets, static_cast<uint32_t>(channel_id)));
   // Use full key as tag to avoid dependence on index mapping.
   const uint64_t tag = key;
   return { set_idx, tag };
+}
+
+std::pair<int, uint64_t> CacheSim::MapToSetTag(uint64_t key, int channel_id, bool use_original) const {
+  return use_original ? MapToSetTag(key) : MapToSetTag(key, channel_id);
+}
+
+uint64_t CacheSim::MapToTag(uint64_t key, bool use_original) const {
+  if (use_original) {
+    const uint64_t nsets = static_cast<uint64_t>(num_sets_);
+    return (nsets == 0ULL) ? key : (key / nsets);
+  }
+  // Hashed mapping uses full key as tag
+  return key;
 }
 
 int CacheSim::FindHit(Set& set, uint64_t tag) const {
@@ -521,6 +559,168 @@ std::string CacheSim::BuildStepCsvPath_(int t) const {
   return (steps_dir / fname).string();
 }
 
+// -------------------- Per-layer timestep access CSV emission -----------------
+
+void CacheSim::EmitTimestepAccessCsv_() {
+  // Reuse the trace enable toggle as a proxy to write CSVs in the stats tree.
+  if (!cfg_.trace_enabled || cfg_.trace_output_path.empty()) {
+    return;
+  }
+  if (per_site_step_access_counts_.empty()) {
+    return; // nothing to emit
+  }
+  namespace fs = std::filesystem;
+  try {
+    const std::string csv_path_str = BuildTimestepAccessCsvPath_();
+    if (csv_path_str.empty()) return;
+    const fs::path csv_path(csv_path_str);
+    fs::create_directories(csv_path.parent_path());
+    std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
+    if (!ofs) {
+      return; // silently skip on failure to avoid disrupting sim
+    }
+
+    // Collect all timesteps observed and sort them ascending
+    std::unordered_set<int> tset;
+    for (const auto& kv : per_site_step_access_counts_) {
+      for (const auto& tv : kv.second) tset.insert(tv.first);
+    }
+    std::vector<int> tids(tset.begin(), tset.end());
+    std::sort(tids.begin(), tids.end());
+    if (tids.empty() && max_timestep_observed_ >= 0) {
+      tids.reserve(static_cast<std::size_t>(max_timestep_observed_) + 1);
+      for (int t = 0; t <= max_timestep_observed_; ++t) tids.push_back(t);
+    }
+
+    // Header
+    ofs << "output_spine_id";
+    for (int t : tids) {
+      ofs << ",t" << t;
+    }
+    ofs << '\n';
+
+    // Sorted site ids for stable rows
+    std::vector<int> site_ids;
+    site_ids.reserve(per_site_step_access_counts_.size());
+    for (const auto& kv : per_site_step_access_counts_) site_ids.push_back(kv.first);
+    std::sort(site_ids.begin(), site_ids.end());
+
+    // Emit rows per site
+    for (int site : site_ids) {
+      ofs << site;
+      const auto& tmap = per_site_step_access_counts_.at(site);
+      for (int t : tids) {
+        auto it = tmap.find(t);
+        const std::uint64_t v = (it != tmap.end()) ? it->second : 0ULL;
+        ofs << ',' << v;
+      }
+      ofs << '\n';
+    }
+
+    // Emit averages row
+    if (!site_ids.empty()) {
+      ofs << "avg";
+      const std::size_t denom = site_ids.size();
+      ofs.setf(std::ios::fixed);
+      auto old_prec = ofs.precision();
+      ofs.precision(6);
+      for (int t : tids) {
+        long double sum = 0.0L;
+        for (int site : site_ids) {
+          const auto& tmap = per_site_step_access_counts_.at(site);
+          auto it = tmap.find(t);
+          sum += static_cast<long double>((it != tmap.end()) ? it->second : 0ULL);
+        }
+        const long double avg = (denom > 0) ? (sum / static_cast<long double>(denom)) : 0.0L;
+        ofs << ',' << static_cast<double>(avg);
+      }
+      ofs << '\n';
+      ofs.precision(old_prec);
+      ofs.unsetf(std::ios::fixed);
+    }
+    ofs.flush();
+
+    // Emit one-line summary with layer config and timestep averages
+    const std::string sum_path_str = BuildTimestepSummaryCsvPath_();
+    if (!sum_path_str.empty()) {
+      std::ofstream sfs(sum_path_str, std::ios::out | std::ios::trunc);
+      if (sfs) {
+        // Header
+        sfs << "Cin,Hin,Win,Cout,Hout,Wout,Kh,Kw";
+        for (int t : tids) sfs << ",t" << t;
+        sfs << '\n';
+
+        // One line: dims + average per t (same averages as above)
+        sfs << layer_Cin_ << ',' << layer_Hin_ << ',' << layer_Win_ << ','
+            << layer_Cout_ << ',' << layer_Hout_ << ',' << layer_Wout_ << ','
+            << layer_Kh_ << ',' << layer_Kw_;
+        sfs.setf(std::ios::fixed);
+        auto oldp = sfs.precision();
+        sfs.precision(6);
+        for (int t : tids) {
+          long double sum = 0.0L;
+          for (int site : site_ids) {
+            const auto& tmap = per_site_step_access_counts_.at(site);
+            auto it = tmap.find(t);
+            sum += static_cast<long double>((it != tmap.end()) ? it->second : 0ULL);
+          }
+          const long double avg = (site_ids.empty()) ? 0.0L : (sum / static_cast<long double>(site_ids.size()));
+          sfs << ',' << static_cast<double>(avg);
+        }
+        sfs << '\n';
+        sfs.precision(oldp);
+        sfs.unsetf(std::ios::fixed);
+        sfs.flush();
+      }
+    }
+  } catch (...) {
+    // swallow to keep cache sim robust
+  }
+}
+
+std::string CacheSim::BuildTimestepAccessCsvPath_() const {
+  if (cfg_.trace_output_path.empty()) return std::string();
+  namespace fs = std::filesystem;
+  const fs::path trace_path(cfg_.trace_output_path);
+  // trace path example:
+  //   .../layer5/cache_traces/<policy>/<ways>_<prefetch>/<size>.txt
+  // Place per-layer timestep access counts under:
+  //   .../layer5/timestep_accesses/<policy>/<ways>_<prefetch>/
+  //   timestep_accesses_<size>KB_<ways>_<prefetch>_<policy>.csv
+  fs::path ways_prefetch_dir = trace_path.parent_path();             // <ways>_<prefetch>
+  fs::path policy_dir        = ways_prefetch_dir.parent_path();      // <policy>
+  fs::path cache_traces_dir  = policy_dir.parent_path();             // cache_traces
+  fs::path layer_dir         = cache_traces_dir.parent_path();       // layerX
+  const std::string policy_tag   = policy_dir.filename().string();
+  const std::string ways_prefetch = ways_prefetch_dir.filename().string();
+  const std::size_t size_kb = cfg_.capacity_bytes / 1024u;
+
+  fs::path out_dir = layer_dir / "timestep_accesses" / policy_tag / ways_prefetch;
+  const std::string fname =
+      std::string("timestep_accesses_") + std::to_string(size_kb) + "KB_" +
+      ways_prefetch + "_" + policy_tag + ".csv";
+  return (out_dir / fname).string();
+}
+
+std::string CacheSim::BuildTimestepSummaryCsvPath_() const {
+  if (cfg_.trace_output_path.empty()) return std::string();
+  namespace fs = std::filesystem;
+  const fs::path trace_path(cfg_.trace_output_path);
+  fs::path ways_prefetch_dir = trace_path.parent_path();             // <ways>_<prefetch>
+  fs::path policy_dir        = ways_prefetch_dir.parent_path();      // <policy>
+  fs::path cache_traces_dir  = policy_dir.parent_path();             // cache_traces
+  fs::path layer_dir         = cache_traces_dir.parent_path();       // layerX
+  const std::string policy_tag   = policy_dir.filename().string();
+  const std::string ways_prefetch = ways_prefetch_dir.filename().string();
+  const std::size_t size_kb = cfg_.capacity_bytes / 1024u;
+
+  fs::path out_dir = layer_dir / "timestep_accesses" / policy_tag / ways_prefetch;
+  const std::string fname =
+      std::string("timestep_accesses_summary_") + std::to_string(size_kb) + "KB_" +
+      ways_prefetch + "_" + policy_tag + ".csv";
+  return (out_dir / fname).string();
+}
+
 void PrintCacheConfig(const CacheConfig& cfg) {
   auto policy_to_string = [](EvictionPolicy policy) {
     switch (policy) {
@@ -537,6 +737,7 @@ void PrintCacheConfig(const CacheConfig& cfg) {
             << ", miss_overhead=" << cfg.miss_overhead
             << ", prefetch_depth=" << cfg.prefetch_depth
             << ", eviction_policy=" << policy_to_string(cfg.eviction_policy)
+            << ", map=" << (cfg.use_original_maptotag ? "original" : "hashed")
             << '\n';
 }
 

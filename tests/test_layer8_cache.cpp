@@ -131,35 +131,35 @@ int main(int argc, char** argv) {
     auto dram = sf::InitDram(bin_path, json_path);
 
     std::vector<sf::LayerSpec> layer_specs;
-    // layer_specs.push_back(SelectLayer(specs, 0));
-    // layer_specs.push_back(SelectLayer(specs, 1));
-    // layer_specs.push_back(SelectLayer(specs, 2));
-    // layer_specs.push_back(SelectLayer(specs, 3));
-    // layer_specs.push_back(SelectLayer(specs, 4));
+    layer_specs.push_back(SelectLayer(specs, 0));
+    layer_specs.push_back(SelectLayer(specs, 1));
+    layer_specs.push_back(SelectLayer(specs, 2));
+    layer_specs.push_back(SelectLayer(specs, 3));
+    layer_specs.push_back(SelectLayer(specs, 4));
     layer_specs.push_back(SelectLayer(specs, 5));
-    // layer_specs.push_back(SelectLayer(specs, 6));
-    // layer_specs.push_back(SelectLayer(specs, 7));
-    // layer_specs.push_back(SelectLayer(specs, 8));
-    // layer_specs.push_back(SelectLayer(specs, 9));
-    // layer_specs.push_back(SelectLayer(specs, 10));
-    // layer_specs.push_back(SelectLayer(specs, 11));
-    // layer_specs.push_back(SelectLayer(specs, 12));
+    layer_specs.push_back(SelectLayer(specs, 6));
+    layer_specs.push_back(SelectLayer(specs, 7));
+    layer_specs.push_back(SelectLayer(specs, 8));
+    layer_specs.push_back(SelectLayer(specs, 9));
+    layer_specs.push_back(SelectLayer(specs, 10));
+    layer_specs.push_back(SelectLayer(specs, 11));
+    layer_specs.push_back(SelectLayer(specs, 12));
     // layer_specs.push_back(SelectLayer(specs, 13));
     // layer_specs.push_back(SelectLayer(specs, 14));
     // layer_specs.push_back(SelectLayer(specs, 15));
 
 
     const std::vector<std::size_t> cache_sizes_bytes = {
-        // 72u * 1024u,
-        // 144u * 1024u,
+        72u * 1024u,
+        144u * 1024u,
         288u * 1024u,
-        // 576u * 1024u
+        576u * 1024u
     };
-    const std::vector<int> cache_way_options = {8};
+    const std::vector<int> cache_way_options = {4, 8, 16, 32};
     const std::vector<int> prefetch_depth_options = {0};
     const std::vector<sf::arch::cache::EvictionPolicy> policies = {
         sf::arch::cache::EvictionPolicy::kScoreboard,
-        // sf::arch::cache::EvictionPolicy::kLRU
+        sf::arch::cache::EvictionPolicy::kLRU
     };
 
     sf::RunNetworkWithCacheOptions(layer_specs,
