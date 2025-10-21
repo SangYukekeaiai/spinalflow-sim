@@ -178,55 +178,46 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
   }
 
   using CacheTotalRow = sf::CacheTotalsRow;
-  const bool single_layer_run = (specs.size() == 1);
   for (const auto policy : policies) {
     const std::string policy_tag = SanitizeName(EvictionPolicyToString(policy));
-    const bool is_lru_policy =
-        (policy == sf::arch::cache::EvictionPolicy::kLRU);
-
-    for (int cache_ways : cache_way_options) {
-      for (int prefetch_depth : prefetch_depth_options) {
-        std::vector<LayerStageRecord> final_stage_rows;
-        std::vector<CacheTotalRow> cache_total_rows;
-        cache_total_rows.reserve(cache_sizes_bytes.size());
-        // Accumulate per-layer totals across cache sizes so we can emit a
-        // cache_totals_*.csv inside each layer<N> directory.
-        std::unordered_map<int, std::vector<CacheTotalRow>> per_layer_totals_rows;
-
-        for (std::size_t cfg_idx = 0; cfg_idx < cache_sizes_bytes.size(); ++cfg_idx) {
-          sf::arch::cache::CacheConfig cache_cfg{};
-          cache_cfg.capacity_bytes = cache_sizes_bytes[cfg_idx];
-          cache_cfg.ways = cache_ways;
-          cache_cfg.prefetch_depth = prefetch_depth;
-          cache_cfg.eviction_policy = policy;
-          const std::size_t cache_size_kb_int = cache_cfg.capacity_bytes / 1024u;
+    const bool is_lru_policy = (policy == sf::arch::cache::EvictionPolicy::kLRU);
+    for (std::size_t cfg_idx = 0; cfg_idx < cache_sizes_bytes.size(); ++cfg_idx) {
+      for (int cache_ways : cache_way_options) {
+        for (int prefetch_depth : prefetch_depth_options) {
+          // Base stats directory for this model
           const std::filesystem::path stats_dir =
               std::filesystem::path("stats") / repo_name / model_name;
           std::filesystem::create_directories(stats_dir);
-          // Place cache_traces under the layer's folder when running a single layer.
-          std::filesystem::path trace_base_dir = stats_dir;
-          if (specs.size() == 1) {
-            trace_base_dir /= std::string("layer") + std::to_string(specs.front().L);
-          }
-          cache_cfg.trace_enabled = write_cache_traces;
-          if (write_cache_traces) {
-            const std::filesystem::path trace_dir =
-                trace_base_dir / "cache_traces" / policy_tag /
-                (std::to_string(cache_ways) + "_" + std::to_string(prefetch_depth));
-            std::filesystem::create_directories(trace_dir);
-            cache_cfg.trace_output_path = (trace_dir / (std::to_string(cache_size_kb_int) + ".txt")).string();
-            cache_cfg.trace_max_lines = 5000;
-          } else {
-            cache_cfg.trace_output_path.clear();
-            cache_cfg.trace_max_lines = 0;
-          }
 
-          sf::arch::cache::CacheSim shared_cache(cache_cfg);
+          // cache_size_kb_int is fixed for this configuration across layers
+          const std::size_t cache_size_kb_int = cache_sizes_bytes[cfg_idx] / 1024u;
 
           std::vector<LayerStageRecord> stage_rows;
           stage_rows.reserve(specs.size());
 
           for (const auto& s : specs) {
+            // Build a per-layer cache configuration so traces live under each layer
+            sf::arch::cache::CacheConfig cache_cfg{};
+            cache_cfg.capacity_bytes = cache_sizes_bytes[cfg_idx];
+            cache_cfg.ways = cache_ways;
+            cache_cfg.prefetch_depth = prefetch_depth;
+            cache_cfg.eviction_policy = policy;
+            cache_cfg.trace_enabled = write_cache_traces;
+            if (write_cache_traces) {
+              const std::filesystem::path trace_dir =
+                  stats_dir / (std::string("layer") + std::to_string(s.L)) /
+                  "cache_traces" / policy_tag /
+                  (std::to_string(cache_ways) + "_" + std::to_string(prefetch_depth));
+              std::filesystem::create_directories(trace_dir);
+              cache_cfg.trace_output_path = (trace_dir / (std::to_string(cache_size_kb_int) + ".txt")).string();
+              cache_cfg.trace_max_lines = 5000;
+            } else {
+              cache_cfg.trace_output_path.clear();
+              cache_cfg.trace_max_lines = 0;
+            }
+
+            // Create a fresh cache instance per layer to isolate traces
+            sf::arch::cache::CacheSim layer_cache(cache_cfg);
             switch (s.kind) {
               case LayerKind::kConv: {
                 ConvLayer conv;
@@ -242,7 +233,7 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                                     s.w_frac_bits,
                                     s.w_scale,
                                     dram,
-                                    &shared_cache);
+                                    &layer_cache);
                 conv.run_layer();
                 stage_rows.push_back(LayerStageRecord{
                     s.L,
@@ -269,7 +260,7 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                                   s.w_frac_bits,
                                   s.w_scale,
                                   dram,
-                                  &shared_cache);
+                                  &layer_cache);
                 fc.run_layer();
                 stage_rows.push_back(LayerStageRecord{
                     s.L,
@@ -302,13 +293,16 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                                /*write_scoreboard_csv=*/write_stats_csv, // default follow stats unless overridden upstream
                                write_visit_count_distribution_csv,
                                write_per_set_unique_csv,
-                               single_layer_run,
                                is_lru_policy,
                                &per_layer_rows_out,
                                &model_row_out);
+
+          // Consolidate and append totals for this single configuration
+          std::unordered_map<int, std::vector<CacheTotalRow>> per_layer_totals_rows;
           for (const auto& pr : per_layer_rows_out) {
             per_layer_totals_rows[pr.first].push_back(pr.second);
           }
+          std::vector<CacheTotalRow> cache_total_rows;
           cache_total_rows.push_back(CacheTotalRow{
               model_row_out.cache_size_kb,
               model_row_out.demand_accesses,
@@ -329,22 +323,16 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
               model_row_out.avg_reuse_distance
           });
 
-          if (cfg_idx + 1 == cache_sizes_bytes.size()) {
-            final_stage_rows = stage_rows;
-          }
+          WriteAggregatedCacheTotalsCsvs(repo_name,
+                                         model_name,
+                                         policy_tag,
+                                         cache_ways,
+                                         prefetch_depth,
+                                         is_lru_policy,
+                                         write_stats_csv,
+                                         cache_total_rows,
+                                         per_layer_totals_rows);
         }
-
-        WriteAggregatedCacheTotalsCsvs(repo_name,
-                                       model_name,
-                                       policy_tag,
-                                       cache_ways,
-                                       prefetch_depth,
-                                       is_lru_policy,
-                                       write_stats_csv,
-                                       single_layer_run,
-                                       cache_total_rows,
-                                       per_layer_totals_rows);
-
       }
     }
   }

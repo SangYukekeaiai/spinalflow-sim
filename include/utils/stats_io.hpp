@@ -55,6 +55,34 @@ void WritePerLayerSramTables(const std::string& repo_name,
                              const std::string& model_name,
                              const std::vector<LayerStageRecord>& rows);
 
+// ----------------------------------------------------------------------------
+// Cache step/timestep CSVs (moved from CacheSim)
+// These helpers keep the simulator code clean and centralize path logic.
+// They respect the cache trace toggle as a proxy: if trace is disabled or the
+// trace path is empty, nothing is written.
+
+// Emits a per-step scoreboard snapshot CSV for step t if enabled.
+// The CSV groups channels by score with columns: score,num_channels,channel_ids
+// - Output path is stats/<repo>/<model>/layer<layer_id>/scoreboard_steps/ts<t>.csv
+// - Uses 1-based timestep numbering in filenames (ts1.csv, ts2.csv, ...)
+// - Does not throw; silently returns on any failure.
+void WriteScoreboardStepCsvIfEnabled(const sf::arch::cache::CacheConfig& cfg,
+                                     int layer_id,
+                                     int t,
+                                     const std::unordered_map<int, int>& scores);
+
+// Emits per-layer timestep access CSVs if enabled:
+// - A matrix CSV with rows per output_spine_id and columns t0..tN
+// - A summary CSV with layer dims and per-timestep averages
+// - Does not throw; silently returns on any failure.
+void WriteLayerTimestepAccessCsvsIfEnabled(
+    const sf::arch::cache::CacheConfig& cfg,
+    const std::unordered_map<int, std::unordered_map<int, std::uint64_t>>& per_site_step_access_counts,
+    int max_timestep_observed,
+    int layer_Cin, int layer_Hin, int layer_Win,
+    int layer_Cout, int layer_Hout, int layer_Wout,
+    int layer_Kh, int layer_Kw);
+
 // Cache CSV helpers (extracted from simulation)
 // - Writes per-configuration CSVs (model-level + per-layer) and reuse distributions
 // - Produces aggregated rows for later summary CSVs
@@ -70,7 +98,6 @@ void WriteCacheConfigCsvs(const std::string& repo_name,
                           bool write_scoreboard_csv,
                           bool write_visit_count_distribution_csv,
                           bool write_per_set_unique_csv,
-                          bool single_layer_run,
                           bool is_lru_policy,
                           std::vector<std::pair<int, CacheTotalsRow>>* per_layer_rows_out,
                           CacheTotalsRow* model_row_out);
@@ -83,7 +110,6 @@ void WriteAggregatedCacheTotalsCsvs(const std::string& repo_name,
                                     int prefetch_depth,
                                     bool is_lru_policy,
                                     bool write_stats_csv,
-                                    bool single_layer_run,
                                     const std::vector<CacheTotalsRow>& cache_total_rows,
                                     const std::unordered_map<int, std::vector<CacheTotalsRow>>& per_layer_totals_rows);
 

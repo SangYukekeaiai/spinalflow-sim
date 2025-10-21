@@ -142,6 +142,14 @@ public:
   int  Get(int channel_id) const;
   void Dump(std::ostream& os) const;
   void Clear()                         { scores_.clear(); }
+  // Add counts from an external snapshot (channel_id -> delta_count)
+  void MergeAdd(const std::unordered_map<int, int>& other) {
+    for (const auto& kv : other) {
+      scores_[kv.first] += kv.second;
+    }
+  }
+  // Replace scores with an external snapshot (channel_id -> count)
+  void Assign(const std::unordered_map<int, int>& other) { scores_ = other; }
   // Snapshot of current per-channel scores (channel_id -> score)
   std::unordered_map<int, int> Snapshot() const { return scores_; }
 private:
@@ -175,9 +183,18 @@ public:
   // Optional helpers
   int NumSets() const { return num_sets_; }
   const CacheConfig& Config() const { return cfg_; }
-  // Expose a snapshot of the internal scoreboard (channel_id -> score)
-  // Snapshot reflects the current step accumulator S[t].
-  std::unordered_map<int, int> ScoreboardSnapshot() const { return scoreboard_curr_.Snapshot(); }
+  // Expose a snapshot of the cumulative scoreboard over the whole layer run
+  // by summing S[t] across all observed timesteps.
+  std::unordered_map<int, int> ScoreboardSnapshot() const {
+    std::unordered_map<int, int> accum;
+    for (const auto& kv : scoreboard_by_t_) {
+      const auto snap = kv.second.Snapshot();
+      for (const auto& p : snap) {
+        accum[p.first] += p.second;
+      }
+    }
+    return accum;
+  }
 
   // Context hooks for per-site timestep accounting and summary.
   // Set the current output site id (spine id = h_out * W_out + w_out).
@@ -190,6 +207,8 @@ public:
     layer_Cout_ = Cout; layer_Hout_ = Hout; layer_Wout_ = Wout;
     layer_Kh_   = Kh;   layer_Kw_   = Kw;
   }
+  // Provide current layer id for path building of scoreboard/timestep CSVs.
+  void SetLayerId(int L) { layer_id_for_paths_ = L; }
 
 private:
   struct WayEntry {
@@ -230,19 +249,14 @@ private:
   bool TraceHasCapacity() const;
 
 private:
-  // Internal helpers for per-timestep snapshot emission
-  void EmitStepSnapshotIfEnabled_(int t,
-                                  const std::unordered_map<int, int>& scores);
-  std::string BuildStepCsvPath_(int t) const;
-
   CacheConfig      cfg_;
   int              num_sets_ = 0;
   std::vector<Set> sets_;
-  // Per-timestep scoreboard state:
-  // - scoreboard_prev_: S[t-1], used for eviction decisions.
-  // - scoreboard_curr_: S[t], accumulates during the current step.
-  Scoreboard       scoreboard_prev_;
-  Scoreboard       scoreboard_curr_;
+  // Per-timestep scoreboard state, accumulated across the entire layer:
+  // S_total[t] is updated online as spikes occur at timestep t.
+  // Aggregated per-timestep scoreboards across the entire layer run.
+  // Key: timestep t -> cumulative S_total[t]
+  std::unordered_map<int, Scoreboard> scoreboard_by_t_;
   int              current_timestep_ = -1; // unknown
   bool             use_lru_this_step_ = true; // LRU-only at t=0
   CacheStats       stats_{};
@@ -259,17 +273,11 @@ private:
   int max_timestep_observed_ = -1;
   int current_spine_id_ = -1;
 
-  // Emit one CSV per layer/config with rows of:
-  //   output_spine_id,t0,t1,...,tN
-  // where output_spine_id corresponds to (h_out*W_out + w_out).
-  void EmitTimestepAccessCsv_();
-  std::string BuildTimestepAccessCsvPath_() const;
-  std::string BuildTimestepSummaryCsvPath_() const;
-
   // Layer config snapshot for summary line
   int layer_Cin_ = 0, layer_Hin_ = 0, layer_Win_ = 0;
   int layer_Cout_ = 0, layer_Hout_ = 0, layer_Wout_ = 0;
   int layer_Kh_ = 0, layer_Kw_ = 0;
+  int layer_id_for_paths_ = -1;
 };
 
 void PrintCacheConfig(const CacheConfig& cfg);

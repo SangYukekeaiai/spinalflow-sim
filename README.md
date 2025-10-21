@@ -24,9 +24,10 @@ Output Layout
   - `<sizeKB>KB_<ways>_<prefetch>_<policy>.csv`
 - Per-layer directory: `layer<L>/`
   - Per-configuration CSV for that layer: same filename as model-level CSV
-  - Optional reuse distribution CSV: `reuse_distribution_<sizeKB>KB_<ways>_<prefetch>_<policy>.csv`
   - Optional per-set unique demand lines CSV: `set_unique_demand_lines_<sizeKB>KB_<ways>_<prefetch>_<policy>.csv`
   - Optional cache traces: `cache_traces/<policy>/<ways>_<prefetch>/<sizeKB>.txt`
+-. Reuse-distance distributions (per-layer, independent of cache config):
+  - `reuse_distance_distribution/layer<L>.csv`
 - Aggregated totals (model-level):
   - `cache_totals_<ways>ways_<prefetch>prefetchs_<policy>.csv`
 - Aggregated totals (per-layer):
@@ -37,7 +38,7 @@ Single-Layer Runs
   - No model-level per-configuration CSV is emitted.
   - No model-level aggregated totals CSV is emitted.
   - Cache traces are also placed under `layer<L>/`.
-  - Reuse distributions are per-layer only.
+  - Reuse-distance distributions are written once per layer under `reuse_distance_distribution/`.
 
 Cache Trace Files
 - The simulator can emit detailed cache traces when enabled in code.
