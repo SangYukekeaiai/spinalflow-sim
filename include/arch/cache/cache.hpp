@@ -36,6 +36,12 @@ struct CacheConfig {
   // false (default): hashed index + full-key tag
   // true:           original index (key % sets) + tag (key / sets)
   bool use_original_maptotag = false;
+  // Independent toggle for ts_duration CSV emission. When true, per-layer
+  // timestep-access CSVs are written even if tracing is disabled.
+  bool        ts_duration_enabled = false;
+  // Optional absolute/relative path to the stats/<repo>/<model> directory to
+  // derive ts_duration output paths when trace_output_path is empty.
+  std::string stats_model_dir;
 };
 
 //------------------------------------------------------------------------------
@@ -162,7 +168,6 @@ private:
 class CacheSim {
 public:
   explicit CacheSim(const CacheConfig& cfg);
-  int              tmpZeroScoreCount_ = 0;
   void Reset();
   // Notify that a spike occurs on input channel 'cin' to bias future evictions.
   void NotifySpike(int cin);
@@ -234,10 +239,6 @@ private:
   std::pair<int, uint64_t> MapToSetTag(uint64_t key, int channel_id) const;
   // Unified selector: choose mapping based on a boolean toggle.
   std::pair<int, uint64_t> MapToSetTag(uint64_t key, int channel_id, bool use_original) const;
-  // Add-back: MapToTag with selector (original or hashed-tag semantics)
-  // - use_original=false: return full key as tag (hashed mapping)
-  // - use_original=true:  return key/num_sets as tag (modulo mapping)
-  uint64_t MapToTag(uint64_t key, bool use_original) const;
   int  FindHit(Set& set, uint64_t tag) const;
   void TouchLRU(Set& set, int way);
   int  PickVictim(int set_idx, Set& set, EvictionPolicy policy);
@@ -245,7 +246,6 @@ private:
   int  PickVictimLRU(int set_idx, Set& set);
   bool InSameTile(const LineAddr& a, const LineAddr& b) const;
   void WriteTrace(const std::string& message);
-  bool TraceAvailable() const;
   bool TraceHasCapacity() const;
 
 private:
@@ -262,6 +262,7 @@ private:
   CacheStats       stats_{};
   std::unordered_set<uint64_t> unique_demand_lines_seen_;
   std::unordered_map<uint64_t, std::uint64_t> last_access_turn_;
+  std::unordered_map<uint64_t, int> last_access_timestep_;
   std::uint64_t access_sequence_counter_ = 0;
   std::unique_ptr<std::ofstream> trace_stream_;
   std::size_t trace_lines_written_ = 0;

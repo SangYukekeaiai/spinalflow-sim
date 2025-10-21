@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
   const std::string bin_path = argv[1];
   const std::string json_path = argv[2];
   bool write_stats_csv = true;
-  bool write_reuse_csv = true;
+  bool write_reuse_csv = false;
   bool write_setuniq_csv = true;
   bool reuse_csv_overridden = false;
   bool setuniq_csv_overridden = false;
@@ -124,10 +124,10 @@ int main(int argc, char** argv) {
     const std::vector<std::size_t> cache_sizes_bytes = {
         // 72u * 1024u,
         144u * 1024u,
-        288u * 1024u,
+        // 288u * 1024u,
         // 576u * 1024u
     };
-    const std::vector<int> cache_way_options = {4, 8};
+    const std::vector<int> cache_way_options = {4};
     const std::vector<int> prefetch_depth_options = {0};
     const std::vector<sf::arch::cache::EvictionPolicy> policies = {
         sf::arch::cache::EvictionPolicy::kScoreboard,
@@ -144,9 +144,11 @@ int main(int argc, char** argv) {
                                    policies,
                                    write_stats_csv,
                                    write_reuse_csv,
+                                   /*write_scoreboard_csv=*/write_stats_csv,
                                    /*write_visit_count_distribution_csv=*/false,
                                    write_setuniq_csv,
-                                   write_cache_traces);
+                                   write_cache_traces,
+                                   /*write_ts_duration_csv=*/false);
 
     std::cout << "[Simulation][Test] Completed layer-5 cache sweep successfully.\n";
     return 0;

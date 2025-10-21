@@ -58,8 +58,9 @@ void WritePerLayerSramTables(const std::string& repo_name,
 // ----------------------------------------------------------------------------
 // Cache step/timestep CSVs (moved from CacheSim)
 // These helpers keep the simulator code clean and centralize path logic.
-// They respect the cache trace toggle as a proxy: if trace is disabled or the
-// trace path is empty, nothing is written.
+// Scoreboard step CSVs respect the cache trace toggle. The ts_duration CSVs
+// are controlled independently via CacheConfig::ts_duration_enabled and can be
+// written even when tracing is disabled.
 
 // Emits a per-step scoreboard snapshot CSV for step t if enabled.
 // The CSV groups channels by score with columns: score,num_channels,channel_ids
@@ -71,17 +72,18 @@ void WriteScoreboardStepCsvIfEnabled(const sf::arch::cache::CacheConfig& cfg,
                                      int t,
                                      const std::unordered_map<int, int>& scores);
 
-// Emits per-layer timestep access CSVs if enabled:
-// - A matrix CSV with rows per output_spine_id and columns t0..tN
-// - A summary CSV with layer dims and per-timestep averages
+// Emits per-layer timestep access CSV if enabled (independent of trace):
+// - Writes a single CSV under stats/<repo>/<model>/ts_duration/layer_<id>.csv
+// - Matrix format: rows per output_spine_id, columns t0..tN plus an avg row
 // - Does not throw; silently returns on any failure.
+// Also writes/updates a JSON mapping file `layer_dims.json` under the same
+// ts_duration directory with per-layer dims for default plot annotations.
 void WriteLayerTimestepAccessCsvsIfEnabled(
     const sf::arch::cache::CacheConfig& cfg,
     const std::unordered_map<int, std::unordered_map<int, std::uint64_t>>& per_site_step_access_counts,
     int max_timestep_observed,
-    int layer_Cin, int layer_Hin, int layer_Win,
-    int layer_Cout, int layer_Hout, int layer_Wout,
-    int layer_Kh, int layer_Kw);
+    int layer_id_for_paths,
+    int Cin, int Hin, int Win);
 
 // Cache CSV helpers (extracted from simulation)
 // - Writes per-configuration CSVs (model-level + per-layer) and reuse distributions

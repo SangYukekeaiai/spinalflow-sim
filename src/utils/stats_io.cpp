@@ -45,42 +45,32 @@ static std::filesystem::path BuildScoreboardStepCsvPath_(const sf::arch::cache::
   return steps_dir / fname;
 }
 
-static std::filesystem::path BuildTimestepAccessCsvPath_(const sf::arch::cache::CacheConfig& cfg) {
-  if (cfg.trace_output_path.empty()) return {};
+static std::filesystem::path BuildTimestepAccessCsvPath_(const sf::arch::cache::CacheConfig& cfg,
+                                                         int layer_id) {
   namespace fs = std::filesystem;
-  const fs::path trace_path(cfg.trace_output_path);
-  // Place per-layer timestep access counts under:
-  //   .../layerX/timestep_accesses/<policy>/<ways>_<prefetch>/
-  //   timestep_accesses_<size>KB_<ways>_<prefetch>_<policy>.csv
-  fs::path ways_prefetch_dir = trace_path.parent_path();             // <ways>_<prefetch>
-  fs::path policy_dir        = ways_prefetch_dir.parent_path();      // <policy>
-  fs::path cache_traces_dir  = policy_dir.parent_path();             // cache_traces
-  fs::path layer_dir         = cache_traces_dir.parent_path();       // layerX
-  const std::string policy_tag    = policy_dir.filename().string();
-  const std::string ways_prefetch = ways_prefetch_dir.filename().string();
-  const std::size_t size_kb = cfg.capacity_bytes / 1024u;
-
-  fs::path out_dir = layer_dir / "timestep_accesses" / policy_tag / ways_prefetch;
-  const std::string fname = std::string("timestep_accesses_") + std::to_string(size_kb) +
-                            "KB_" + ways_prefetch + "_" + policy_tag + ".csv";
-  return out_dir / fname;
-}
-
-static std::filesystem::path BuildTimestepSummaryCsvPath_(const sf::arch::cache::CacheConfig& cfg) {
-  if (cfg.trace_output_path.empty()) return {};
-  namespace fs = std::filesystem;
-  const fs::path trace_path(cfg.trace_output_path);
-  fs::path ways_prefetch_dir = trace_path.parent_path();             // <ways>_<prefetch>
-  fs::path policy_dir        = ways_prefetch_dir.parent_path();      // <policy>
-  fs::path cache_traces_dir  = policy_dir.parent_path();             // cache_traces
-  fs::path layer_dir         = cache_traces_dir.parent_path();       // layerX
-  const std::string policy_tag    = policy_dir.filename().string();
-  const std::string ways_prefetch = ways_prefetch_dir.filename().string();
-  const std::size_t size_kb = cfg.capacity_bytes / 1024u;
-
-  fs::path out_dir = layer_dir / "timestep_accesses" / policy_tag / ways_prefetch;
-  const std::string fname = std::string("timestep_accesses_summary_") + std::to_string(size_kb) +
-                            "KB_" + ways_prefetch + "_" + policy_tag + ".csv";
+  fs::path model_dir;
+  if (!cfg.trace_output_path.empty()) {
+    const fs::path trace_path(cfg.trace_output_path);
+    // Place per-layer timestep access counts under model dir:
+    //   stats/<repo>/<model>/ts_duration/layer_<id>.csv
+    fs::path ways_prefetch_dir = trace_path.parent_path();             // <ways>_<prefetch>
+    fs::path policy_dir        = ways_prefetch_dir.parent_path();      // <policy>
+    fs::path cache_traces_dir  = policy_dir.parent_path();             // cache_traces
+    fs::path layer_or_model_dir = cache_traces_dir.parent_path();      // layerX (or model dir if not per-layer)
+    // If the path already contains a layer directory, go one level up to the model dir
+    const std::string lname = layer_or_model_dir.filename().string();
+    if (!lname.empty() && lname.rfind("layer", 0) == 0) {
+      model_dir = layer_or_model_dir.parent_path();
+    } else {
+      model_dir = layer_or_model_dir;
+    }
+  } else if (!cfg.stats_model_dir.empty()) {
+    model_dir = fs::path(cfg.stats_model_dir);
+  } else {
+    return {};
+  }
+  fs::path out_dir = model_dir / "ts_duration";
+  const std::string fname = std::string("layer_") + std::to_string(layer_id) + ".csv";
   return out_dir / fname;
 }
 
@@ -398,18 +388,19 @@ void WriteScoreboardStepCsvIfEnabled(const sf::arch::cache::CacheConfig& cfg,
   }
 }
 
+#include "nlohmann/json.hpp"
+
 void WriteLayerTimestepAccessCsvsIfEnabled(
     const sf::arch::cache::CacheConfig& cfg,
     const std::unordered_map<int, std::unordered_map<int, std::uint64_t>>& per_site_step_access_counts,
     int max_timestep_observed,
-    int layer_Cin, int layer_Hin, int layer_Win,
-    int layer_Cout, int layer_Hout, int layer_Wout,
-    int layer_Kh, int layer_Kw) {
-  if (!cfg.trace_enabled || cfg.trace_output_path.empty()) return;
+    int layer_id_for_paths,
+    int Cin, int Hin, int Win) {
+  if (!cfg.ts_duration_enabled) return;
   if (per_site_step_access_counts.empty()) return;
   namespace fs = std::filesystem;
   try {
-    const auto csv_path = BuildTimestepAccessCsvPath_(cfg);
+    const auto csv_path = BuildTimestepAccessCsvPath_(cfg, layer_id_for_paths);
     if (csv_path.empty()) return;
     fs::create_directories(csv_path.parent_path());
     std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
@@ -475,41 +466,34 @@ void WriteLayerTimestepAccessCsvsIfEnabled(
     }
     ofs.flush();
 
-    // Summary CSV
-    const auto sum_path = BuildTimestepSummaryCsvPath_(cfg);
-    if (!sum_path.empty()) {
-      std::ofstream sfs(sum_path, std::ios::out | std::ios::trunc);
-      if (sfs) {
-        // Header
-        sfs << "Cin,Hin,Win,Cout,Hout,Wout,Kh,Kw";
-        for (int t : tids) sfs << ",t" << t;
-        sfs << '\n';
-
-        // One-line summary with averages
-        sfs << layer_Cin << ',' << layer_Hin << ',' << layer_Win << ','
-            << layer_Cout << ',' << layer_Hout << ',' << layer_Wout << ','
-            << layer_Kh << ',' << layer_Kw;
-        sfs.setf(std::ios::fixed);
-        auto oldp = sfs.precision();
-        sfs.precision(6);
-        for (int t : tids) {
-          long double sum = 0.0L;
-          for (int site : site_ids) {
-            const auto& tmap = per_site_step_access_counts.at(site);
-            auto it = tmap.find(t);
-            sum += static_cast<long double>((it != tmap.end()) ? it->second : 0ULL);
+    // Update dims JSON for default plotting annotations.
+    try {
+      const fs::path json_path = csv_path.parent_path() / "layer_dims.json";
+      nlohmann::json j;
+      if (fs::exists(json_path)) {
+        try {
+          std::ifstream ifs(json_path);
+          if (ifs) {
+            j = nlohmann::json::parse(ifs, /*cb*/nullptr, /*allow_exceptions*/false);
           }
-          const long double avg = (site_ids.empty())
-                                      ? 0.0L
-                                      : (sum / static_cast<long double>(site_ids.size()));
-          sfs << ',' << static_cast<double>(avg);
+        } catch (...) {
+          // ignore parse errors; will overwrite with a fresh object below
         }
-        sfs << '\n';
-        sfs.precision(oldp);
-        sfs.unsetf(std::ios::fixed);
-        sfs.flush();
       }
+      if (!j.is_object()) j = nlohmann::json::object();
+      j[std::to_string(layer_id_for_paths)] = {
+          {"Cin", Cin}, {"Hin", Hin}, {"Win", Win}
+      };
+      std::ofstream jofs(json_path, std::ios::out | std::ios::trunc);
+      if (jofs) {
+        jofs << j.dump(2) << '\n';
+        jofs.flush();
+      }
+    } catch (...) {
+      // swallow JSON write errors to keep simulation robust
     }
+
+    // No summary CSV is emitted anymore.
   } catch (...) {
     // swallow errors to keep simulation robust
   }

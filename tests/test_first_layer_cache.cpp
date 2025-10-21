@@ -133,9 +133,11 @@ int main(int argc, char** argv) {
                                    policies,
                                    write_stats_csv,
                                    write_reuse_csv,
+                                   /*write_scoreboard_csv=*/write_stats_csv,
                                    /*write_visit_count_distribution_csv=*/false,
                                    write_setuniq_csv,
-                                   write_cache_traces);
+                                   write_cache_traces,
+                                   /*write_ts_duration_csv=*/false);
 
     std::cout << "[Simulation][Test] Completed first-layer cache sweep successfully.\n";
     return 0;

@@ -3,7 +3,6 @@
 #include "arch/cache/cache.hpp"
 #include "utils/stats_io.hpp"
 
-#include <cmath>
 #include <climits>
 #include <iostream>
 #include <filesystem>
@@ -108,15 +107,14 @@ void CacheSim::Reset() {
       cfg_,
       per_site_step_access_counts_,
       max_timestep_observed_,
-      layer_Cin_, layer_Hin_, layer_Win_,
-      layer_Cout_, layer_Hout_, layer_Wout_,
-      layer_Kh_, layer_Kw_);
+      layer_id_for_paths_,
+      layer_Cin_, layer_Hin_, layer_Win_);
   scoreboard_by_t_.clear();
   current_timestep_ = -1;
   use_lru_this_step_ = true;
-  tmpZeroScoreCount_ = 0;
   unique_demand_lines_seen_.clear();
   last_access_turn_.clear();
+  last_access_timestep_.clear();
   access_sequence_counter_ = 0;
   stats_ = {};
   per_site_step_access_counts_.clear();
@@ -173,8 +171,8 @@ AccessResult CacheSim::AccessWithPolicy(const LineAddr& la, EvictionPolicy polic
   if (unique_demand_lines_seen_.insert(la.key).second) {
     stats_.unique_demand_lines++;
     // Also attribute this unique line to its set index
-    auto [uc_set_idx, tag_unused] = MapToSetTag(la.key, static_cast<int>(la.cin), cfg_.use_original_maptotag);
-    (void)tag_unused;
+    const auto mapped = MapToSetTag(la.key, static_cast<int>(la.cin), cfg_.use_original_maptotag);
+    const int uc_set_idx = mapped.first;
     stats_.per_set_unique_demand_lines[uc_set_idx] += 1ULL;
   }
 
@@ -187,14 +185,14 @@ AccessResult CacheSim::AccessWithPolicy(const LineAddr& la, EvictionPolicy polic
     stats_.reuse_distance_total += distance;
     stats_.reuse_events++;
     stats_.reuse_distance_histogram[distance]++;
-    last_it->second = current_turn;
-  } else {
-    last_it->second = current_turn;
   }
+  last_it->second = current_turn;
+  // Track the last timestep this line was accessed (for eviction duration reporting)
+  if (current_timestep_ < 0) {
+    current_timestep_ = 0;
+  }
+  last_access_timestep_[la.key] = current_timestep_;
   if (demand.miss) {
-    // std::cout << "Miss--Try to load address: " << la.key
-    //           << " (tile=" << la.tile << ", cin=" << la.cin
-    //           << ", kh=" << la.kh << ", kw=" << la.kw << ")\n";
     stats_.demand_misses++;
     stats_.demand_miss_cycles += static_cast<std::uint64_t>(demand.cycles);
   } else {
@@ -237,17 +235,30 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
   auto [set_idx, tag] = MapToSetTag(la.key, static_cast<int>(la.cin), cfg_.use_original_maptotag);
   const char* access_kind = is_prefetch ? "PF" : "DM";
   Set& set = sets_[static_cast<std::size_t>(set_idx)];
+  // Derive output location if available
+  int hout = -1, wout = -1;
+  if (layer_Wout_ > 0 && current_spine_id_ >= 0) {
+    hout = current_spine_id_ / layer_Wout_;
+    wout = current_spine_id_ % layer_Wout_;
+  }
 
   // Check hit
   const int hit_way = FindHit(set, tag);
   if (hit_way >= 0) {
     if (TraceHasCapacity()) {
       std::ostringstream oss;
-      oss << "[CacheSim][" << access_kind << "][HIT]"
+      oss << "[CacheSim][" << access_kind << "][HIT]";
+      if (!is_prefetch) {
+        oss << " acc=" << (stats_.demand_accesses + 1);
+      }
+      oss << " tile=" << la.tile;
+      if (hout >= 0) {
+        oss << " hout=" << hout << " wout=" << wout;
+      }
+      oss << " t=" << current_timestep_
           << " set=" << set_idx
           << " way=" << hit_way
           << " key=" << la.key
-          << " tile=" << la.tile
           << " cin=" << la.cin
           << " kh=" << la.kh
           << " kw=" << la.kw;
@@ -259,46 +270,33 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
     return result;
   }
 
+  // Decide the victim first so we can classify the miss
+  const int vic = PickVictim(set_idx, set, policy);
+  WayEntry& victim_entry = set.ways[static_cast<std::size_t>(vic)];
+  const bool will_evict = (victim_entry.valid && victim_entry.channel_id >= 0);
+
   if (TraceHasCapacity()) {
     std::ostringstream oss;
-    oss << "[CacheSim][" << access_kind << "][MISS]"
+    oss << "[CacheSim][" << access_kind << "][MISS]";
+    // Tag miss type: [COLD] if it will fill an empty way, [CONFLICT] if it triggers eviction
+    oss << (will_evict ? "[CONFLICT]" : "[COLD]");
+    if (!is_prefetch) {
+      oss << " acc=" << (stats_.demand_accesses + 1);
+    }
+    oss << " tile=" << la.tile;
+    if (hout >= 0) {
+      oss << " hout=" << hout << " wout=" << wout;
+    }
+    oss << " t=" << current_timestep_
         << " set=" << set_idx
         << " key=" << la.key
-        << " tile=" << la.tile
         << " cin=" << la.cin
         << " kh=" << la.kh
         << " kw=" << la.kw;
     WriteTrace(oss.str());
 
-    // Dump all valid lines currently present in this set
-    std::ostringstream voss;
-    const int W = static_cast<int>(set.ways.size());
-    voss << "[CacheSim][" << access_kind << "][SET_VALID]"
-         << " set=" << set_idx;
-    bool first = true;
-    for (int i = 0; i < W; ++i) {
-      const WayEntry& w = set.ways[static_cast<std::size_t>(i)];
-      if (!w.valid) continue;
-      const uint64_t line_key = w.tag; // tag stores full key under hashed indexing
-      int prev_score = 0;
-      if (current_timestep_ > 0) {
-        auto it_prev = scoreboard_by_t_.find(current_timestep_ - 1);
-        if (it_prev != scoreboard_by_t_.end()) prev_score = it_prev->second.Get(w.channel_id);
-      }
-      voss << (first ? " lines=" : ", ");
-      voss << "(way=" << i
-           << " key=" << line_key
-           << " channel=" << w.channel_id
-           << " lru=" << w.lru_counter
-           << " score=" << prev_score
-           << ")";
-      first = false;
-    }
-    WriteTrace(voss.str());
   }
 
-  const int vic = PickVictim(set_idx, set, policy);
-  WayEntry& victim_entry = set.ways[static_cast<std::size_t>(vic)];
   if (victim_entry.valid && victim_entry.channel_id >= 0) {
     int score = 0;
     if (current_timestep_ > 0) {
@@ -308,12 +306,38 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
     const uint64_t prev_key = victim_entry.tag; // tag stores full key under hashed indexing
     if (TraceHasCapacity()) {
       std::ostringstream oss;
-      oss << "[CacheSim][" << access_kind << "][EVICT]"
-          << " set=" << set_idx
+      oss << "[CacheSim][" << access_kind << "][EVICT]";
+      if (!is_prefetch) {
+        oss << " acc=" << (stats_.demand_accesses + 1);
+      }
+      oss << " tile=" << la.tile;
+      if (hout >= 0) {
+        oss << " hout=" << hout << " wout=" << wout;
+      }
+      oss << " t=" << current_timestep_;
+
+      // Compute durations since last access for the evicted line
+      std::uint64_t cur_turn = access_sequence_counter_ + (is_prefetch ? 0ull : 1ull);
+      long long since_turn = -1;
+      auto it_turn = last_access_turn_.find(prev_key);
+      if (it_turn != last_access_turn_.end()) {
+        since_turn = static_cast<long long>((cur_turn >= it_turn->second) ? (cur_turn - it_turn->second) : 0ull);
+      }
+      int since_ts = -1;
+      auto it_ts = last_access_timestep_.find(prev_key);
+      if (it_ts != last_access_timestep_.end() && current_timestep_ >= 0) {
+        since_ts = current_timestep_ - it_ts->second;
+      }
+
+      oss << " set=" << set_idx
           << " way=" << vic
           << " prev_key=" << prev_key
           << " prev_channel=" << victim_entry.channel_id
-          << " score=" << score;
+          << " score=" << score
+          << " since_last_acc=" << since_turn;
+      if (since_ts >= 0) {
+        oss << " since_last_t=" << since_ts;
+      }
       WriteTrace(oss.str());
     }
   }
@@ -326,15 +350,15 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
   victim_entry.channel_id = static_cast<int>(la.cin);
   TouchLRU(set, vic);
 
-  if (TraceHasCapacity()) {
-    std::ostringstream oss;
-    oss << "[CacheSim][" << access_kind << "][FILL]"
-        << " set=" << set_idx
-        << " way=" << vic
-        << " key=" << la.key
-        << " channel=" << la.cin;
-    WriteTrace(oss.str());
-  }
+  // if (TraceHasCapacity()) {
+  //   std::ostringstream oss;
+  //   oss << "[CacheSim][" << access_kind << "][FILL]"
+  //       << " set=" << set_idx
+  //       << " way=" << vic
+  //       << " key=" << la.key
+  //       << " channel=" << la.cin;
+  //   WriteTrace(oss.str());
+  // }
 
   result.cycles = is_prefetch ? 0 : cost;
   result.miss = true;
@@ -358,15 +382,6 @@ std::pair<int, uint64_t> CacheSim::MapToSetTag(uint64_t key, int channel_id) con
 
 std::pair<int, uint64_t> CacheSim::MapToSetTag(uint64_t key, int channel_id, bool use_original) const {
   return use_original ? MapToSetTag(key) : MapToSetTag(key, channel_id);
-}
-
-uint64_t CacheSim::MapToTag(uint64_t key, bool use_original) const {
-  if (use_original) {
-    const uint64_t nsets = static_cast<uint64_t>(num_sets_);
-    return (nsets == 0ULL) ? key : (key / nsets);
-  }
-  // Hashed mapping uses full key as tag
-  return key;
 }
 
 int CacheSim::FindHit(Set& set, uint64_t tag) const {
@@ -423,10 +438,7 @@ int CacheSim::PickVictimScoreboard(int set_idx, Set& set) {
     const WayEntry& w = set.ways[static_cast<std::size_t>(i)];
     const int sc = prev_sb ? prev_sb->Get(w.channel_id) : 0;
     if (sc < min_score) {
-      if (sc == 0) {
-        tmpZeroScoreCount_++;
-        stats_.zero_score_events++;
-      }
+      if (sc == 0) { stats_.zero_score_events++; }
       min_score = sc;
       candidates.clear();
       candidates.push_back(i);
@@ -443,25 +455,25 @@ int CacheSim::PickVictimScoreboard(int set_idx, Set& set) {
     }
   }
 
-  // Trace the scoreboard decision in the same file as cache events
-  if (TraceHasCapacity()) {
-    const WayEntry& chosen = set.ways[static_cast<std::size_t>(best)];
-    std::ostringstream oss;
-    oss << "[CacheSim][SB][CHOOSE]"
-        << " set=" << set_idx
-        << " way=" << best
-        << " channel=" << chosen.channel_id
-        << " score(S[t-1])=" << (prev_sb ? prev_sb->Get(chosen.channel_id) : 0)
-        << " lru=" << chosen.lru_counter
-        << " min_score=" << min_score
-        << " cand_count=" << candidates.size() << '\n';
-    // Dump the S[t-1] scoreboard used for this decision
-    if (prev_sb) prev_sb->Dump(oss); else {
-      Scoreboard empty;
-      empty.Dump(oss);
-    }
-    WriteTrace(oss.str());
-  }
+  // // Trace the scoreboard decision in the same file as cache events
+  // if (TraceHasCapacity()) {
+  //   const WayEntry& chosen = set.ways[static_cast<std::size_t>(best)];
+  //   std::ostringstream oss;
+  //   oss << "[CacheSim][SB][CHOOSE]"
+  //       << " set=" << set_idx
+  //       << " way=" << best
+  //       << " channel=" << chosen.channel_id
+  //       << " score(S[t-1])=" << (prev_sb ? prev_sb->Get(chosen.channel_id) : 0)
+  //       << " lru=" << chosen.lru_counter
+  //       << " min_score=" << min_score
+  //       << " cand_count=" << candidates.size() << '\n';
+  //   // Dump the S[t-1] scoreboard used for this decision
+  //   if (prev_sb) prev_sb->Dump(oss); else {
+  //     Scoreboard empty;
+  //     empty.Dump(oss);
+  //   }
+  //   WriteTrace(oss.str());
+  // }
   return best;
 }
 
@@ -480,10 +492,6 @@ int CacheSim::PickVictimLRU(int /*set_idx*/, Set& set) {
 bool CacheSim::InSameTile(const LineAddr& a, const LineAddr& b) const {
   // Prefetch remains within the same tile and spatial position (kh,kw).
   return (a.tile == b.tile) && (a.kh == b.kh) && (a.kw == b.kw);
-}
-
-bool CacheSim::TraceAvailable() const {
-  return static_cast<bool>(trace_stream_);
 }
 
 bool CacheSim::TraceHasCapacity() const {

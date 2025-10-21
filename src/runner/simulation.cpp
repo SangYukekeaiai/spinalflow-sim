@@ -162,7 +162,8 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                                 bool write_scoreboard_csv,
                                 bool write_visit_count_distribution_csv,
                                 bool write_per_set_unique_csv,
-                                bool write_cache_traces) {
+                                bool write_cache_traces,
+                                bool write_ts_duration_csv) {
   if (!dram) throw std::invalid_argument("RunNetwork: null DRAM pointer");
   if (cache_sizes_bytes.empty()) {
     throw std::invalid_argument("RunNetwork: cache_sizes_bytes is empty");
@@ -203,6 +204,8 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
             cache_cfg.prefetch_depth = prefetch_depth;
             cache_cfg.eviction_policy = policy;
             cache_cfg.trace_enabled = write_cache_traces;
+            cache_cfg.ts_duration_enabled = write_ts_duration_csv;
+            cache_cfg.stats_model_dir = stats_dir.string();
             if (write_cache_traces) {
               const std::filesystem::path trace_dir =
                   stats_dir / (std::string("layer") + std::to_string(s.L)) /
@@ -210,7 +213,7 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
                   (std::to_string(cache_ways) + "_" + std::to_string(prefetch_depth));
               std::filesystem::create_directories(trace_dir);
               cache_cfg.trace_output_path = (trace_dir / (std::to_string(cache_size_kb_int) + ".txt")).string();
-              cache_cfg.trace_max_lines = 5000;
+              cache_cfg.trace_max_lines = 10000;
             } else {
               cache_cfg.trace_output_path.clear();
               cache_cfg.trace_max_lines = 0;
@@ -364,11 +367,12 @@ void RunNetwork(const std::vector<LayerSpec>& specs,
                              default_prefetch_depth_options,
                              default_policies,
                              /*write_stats_csv=*/true,
-                             /*write_reuse_distribution_csv=*/true,
+                             /*write_reuse_distribution_csv=*/false,
                              /*write_scoreboard_csv=*/true,
                              /*write_visit_count_distribution_csv=*/false,
                              /*write_per_set_unique_csv=*/true,
-                             /*write_cache_traces=*/true);
+                             /*write_cache_traces=*/false,
+                             /*write_ts_duration_csv=*/false);
 }
 
 } // namespace sf
