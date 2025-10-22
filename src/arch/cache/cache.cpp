@@ -310,7 +310,35 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
         << " kh=" << la.kh
         << " kw=" << la.kw;
     WriteTrace(oss.str());
-
+    // After a conflict miss, dump the full set state for debugging
+    if (will_evict) {
+      std::ostringstream osset;
+      const int W = static_cast<int>(set.ways.size());
+      osset << "[CacheSim][" << access_kind << "][SET]"
+            << " set=" << set_idx
+            << " ways=" << W;
+      for (int i = 0; i < W; ++i) {
+        const WayEntry& w = set.ways[static_cast<std::size_t>(i)];
+        osset << " | way=" << i
+              << " " << (w.valid ? "V" : "I")
+              << " lru=" << w.lru_counter
+              << " tag=" << w.tag
+              << " cin=" << w.channel_id;
+        if (w.valid) {
+          // Derive full key depending on mapping mode
+          const std::uint64_t full_key = cfg_.use_original_maptotag
+              ? (w.tag * static_cast<std::uint64_t>(num_sets_) + static_cast<std::uint64_t>(set_idx))
+              : w.tag;
+          const std::uint32_t tile = static_cast<std::uint32_t>((full_key >> 40) & 0xFFFFFFull);
+          const std::uint32_t kh   = static_cast<std::uint32_t>((full_key >> 12) & 0xFFFull);
+          const std::uint32_t kw   = static_cast<std::uint32_t>( full_key        & 0xFFFull);
+          osset << " tile=" << tile
+                << " kh=" << kh
+                << " kw=" << kw;
+        }
+      }
+      WriteTrace(osset.str());
+    }
   }
 
   // Count DM cold/conflict misses by (tile, output site, timestep)
