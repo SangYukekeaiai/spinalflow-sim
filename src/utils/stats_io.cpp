@@ -368,6 +368,75 @@ void WritePerLayerSramTables(const std::string& repo_name,
   std::cout << "[Simulation] Per-layer SRAM tables written to " << dir_path << "\n";
 }
 
+void WriteTileHitColdConflictCsv(const sf::arch::cache::CacheConfig& cfg,
+                                 int layer_id,
+                                 int layer_Wout,
+                                 const sf::arch::cache::CacheSim::TileSiteStepMap& counts) {
+  if (cfg.trace_output_path.empty()) return;
+  try {
+    namespace fs = std::filesystem;
+    const fs::path trace_path(cfg.trace_output_path);
+    const fs::path out_dir = trace_path.parent_path();
+    if (out_dir.empty()) return;
+    fs::create_directories(out_dir);
+    const std::size_t size_kb = cfg.capacity_bytes / 1024u;
+    const std::string fname = std::to_string(size_kb) + "KB_" +
+                              std::to_string(cfg.ways) + "ways_" +
+                              std::to_string(cfg.prefetch_depth) + "prefetches.csv";
+    const fs::path csv_path = out_dir / fname;
+    std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
+    if (!ofs) return; // silently skip on failure
+
+    ofs << "output_pos(hout, wout), tile_id, timesteps, hit count, miss count, cold miss count, conflict miss count\n";
+
+    // Deterministic iteration order: sites -> tiles -> timesteps
+    // 1) Collect and sort unique site ids across all tiles
+    std::unordered_set<int> site_set;
+    for (const auto& kv_tile : counts) {
+      for (const auto& kv_site : kv_tile.second) site_set.insert(kv_site.first);
+    }
+    std::vector<int> sites_all(site_set.begin(), site_set.end());
+    std::sort(sites_all.begin(), sites_all.end());
+
+    // 2) Collect and sort tiles
+    std::vector<int> tiles; tiles.reserve(counts.size());
+    for (const auto& kv : counts) tiles.push_back(kv.first);
+    std::sort(tiles.begin(), tiles.end());
+
+    // 3) Emit rows
+    for (int site_id : sites_all) {
+      const int hout = (layer_Wout > 0 && site_id >= 0) ? (site_id / layer_Wout) : -1;
+      const int wout = (layer_Wout > 0 && site_id >= 0) ? (site_id % layer_Wout) : -1;
+      for (int tile_id_i : tiles) {
+        auto it_tile = counts.find(tile_id_i);
+        if (it_tile == counts.end()) continue;
+        const auto& site_map = it_tile->second;
+        auto it_site = site_map.find(site_id);
+        if (it_site == site_map.end()) continue;
+        const auto& tmap = it_site->second;
+        std::vector<int> tids; tids.reserve(tmap.size());
+        for (const auto& tv : tmap) tids.push_back(tv.first);
+        std::sort(tids.begin(), tids.end());
+        for (int t : tids) {
+          const auto& c = tmap.at(t);
+          const std::uint64_t misses = c.cold_misses + c.conflict_misses;
+          ofs << '(' << hout << ", " << wout << ")"
+              << ", " << tile_id_i
+              << ", " << t
+              << ", " << c.hits
+              << ", " << misses
+              << ", " << c.cold_misses
+              << ", " << c.conflict_misses
+              << '\n';
+        }
+      }
+    }
+    ofs.flush();
+  } catch (...) {
+    // Swallow errors to keep the simulation robust
+  }
+}
+
 void WriteScoreboardStepCsvIfEnabled(const sf::arch::cache::CacheConfig& cfg,
                                      int layer_id,
                                      int t,

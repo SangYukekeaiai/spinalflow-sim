@@ -215,6 +215,18 @@ public:
   // Provide current layer id for path building of scoreboard/timestep CSVs.
   void SetLayerId(int L) { layer_id_for_paths_ = L; }
 
+  // --- Hit/Cold/Conflict distribution snapshot API ---
+  struct TileSiteStepCounts {
+    std::uint64_t hits = 0;
+    std::uint64_t cold_misses = 0;
+    std::uint64_t conflict_misses = 0;
+  };
+  using TileSiteStepMap = std::unordered_map<int,
+      std::unordered_map<int,
+          std::unordered_map<int, TileSiteStepCounts>>>;
+  // Returns a copy of the accumulated per-(tile, site, timestep) distribution.
+  TileSiteStepMap TileSiteStepCountsSnapshot() const;
+
 private:
   struct WayEntry {
     uint64_t tag       = 0;
@@ -279,6 +291,9 @@ private:
   int layer_Cout_ = 0, layer_Hout_ = 0, layer_Wout_ = 0;
   int layer_Kh_ = 0, layer_Kw_ = 0;
   int layer_id_for_paths_ = -1;
+  // --- Per-(tile, output_spine_id, timestep) hit/miss breakdown ---
+  // Keyed by tile_id -> (site_id -> (timestep -> counts))
+  TileSiteStepMap per_tile_site_step_counts_;
 };
 
 void PrintCacheConfig(const CacheConfig& cfg);

@@ -209,11 +209,14 @@ void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
             if (write_cache_traces) {
               const std::filesystem::path trace_dir =
                   stats_dir / (std::string("layer") + std::to_string(s.L)) /
-                  "cache_traces" / policy_tag /
-                  (std::to_string(cache_ways) + "_" + std::to_string(prefetch_depth));
+                  "cache_traces" / policy_tag;
               std::filesystem::create_directories(trace_dir);
-              cache_cfg.trace_output_path = (trace_dir / (std::to_string(cache_size_kb_int) + ".txt")).string();
-              cache_cfg.trace_max_lines = 10000;
+              const std::string trace_name =
+                  std::to_string(cache_size_kb_int) + "KB_" +
+                  std::to_string(cache_ways) + "ways_" +
+                  std::to_string(prefetch_depth) + "prefetches.txt";
+              cache_cfg.trace_output_path = (trace_dir / trace_name).string();
+              cache_cfg.trace_max_lines = 30000;
             } else {
               cache_cfg.trace_output_path.clear();
               cache_cfg.trace_max_lines = 0;

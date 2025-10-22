@@ -85,6 +85,16 @@ void WriteLayerTimestepAccessCsvsIfEnabled(
     int layer_id_for_paths,
     int Cin, int Hin, int Win);
 
+// Writes per-(tile, output site, timestep) Hit/Cold/Conflict distribution CSV
+// next to the cache trace file for the same config. The filename format is:
+//   layer<layer_id>_<sizeKB>KB(Cache size)_<ways>(ways)_<prefetch>(prefetches).csv
+// Rows:
+//   output_pos(hout, wout), tile_id, timesteps, hit count, cold miss count, conflict miss count
+void WriteTileHitColdConflictCsv(const sf::arch::cache::CacheConfig& cfg,
+                                 int layer_id,
+                                 int layer_Wout,
+                                 const sf::arch::cache::CacheSim::TileSiteStepMap& counts);
+
 // Cache CSV helpers (extracted from simulation)
 // - Writes per-configuration CSVs (model-level + per-layer) and reuse distributions
 // - Produces aggregated rows for later summary CSVs

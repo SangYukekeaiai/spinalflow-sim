@@ -96,6 +96,16 @@ void CacheSim::Reset() {
       way.channel_id = -1;
     }
   }
+  // Emit per-(tile, output_spine, timestep) Hit/Cold/Conflict CSV next to trace
+  try {
+    sf::WriteTileHitColdConflictCsv(
+        cfg_,
+        layer_id_for_paths_,
+        layer_Wout_,
+        per_tile_site_step_counts_);
+  } catch (...) {
+    // swallow errors to keep simulation robust
+  }
   // Emit cumulative per-step scoreboard CSVs (S_total[t] for each observed t)
   for (const auto& kv : scoreboard_by_t_) {
     const int t = kv.first;
@@ -118,6 +128,7 @@ void CacheSim::Reset() {
   access_sequence_counter_ = 0;
   stats_ = {};
   per_site_step_access_counts_.clear();
+  per_tile_site_step_counts_.clear();
   max_timestep_observed_ = -1;
   current_spine_id_ = -1;
   if (trace_stream_) {
@@ -264,6 +275,11 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
           << " kw=" << la.kw;
       WriteTrace(oss.str());
     }
+    // Count DM hits by (tile, output site, timestep)
+    if (!is_prefetch && current_spine_id_ >= 0) {
+      const int t = (current_timestep_ < 0) ? 0 : current_timestep_;
+      per_tile_site_step_counts_[static_cast<int>(la.tile)][current_spine_id_][t].hits += 1ULL;
+    }
     TouchLRU(set, hit_way);
     result.cycles = is_prefetch ? 0 : cfg_.l1_hit_cycles;
     result.miss = false;
@@ -295,6 +311,13 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
         << " kw=" << la.kw;
     WriteTrace(oss.str());
 
+  }
+
+  // Count DM cold/conflict misses by (tile, output site, timestep)
+  if (!is_prefetch && current_spine_id_ >= 0) {
+    const int t = (current_timestep_ < 0) ? 0 : current_timestep_;
+    auto& c = per_tile_site_step_counts_[static_cast<int>(la.tile)][current_spine_id_][t];
+    if (will_evict) c.conflict_misses += 1ULL; else c.cold_misses += 1ULL;
   }
 
   if (victim_entry.valid && victim_entry.channel_id >= 0) {
@@ -502,6 +525,10 @@ bool CacheSim::TraceHasCapacity() const {
     return true;
   }
   return trace_lines_written_ < cfg_.trace_max_lines;
+}
+
+CacheSim::TileSiteStepMap CacheSim::TileSiteStepCountsSnapshot() const {
+  return per_tile_site_step_counts_;
 }
 
 void CacheSim::WriteTrace(const std::string& message) {

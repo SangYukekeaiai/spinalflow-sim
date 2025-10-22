@@ -130,8 +130,8 @@ int main(int argc, char** argv) {
     const std::vector<int> cache_way_options = {4};
     const std::vector<int> prefetch_depth_options = {0};
     const std::vector<sf::arch::cache::EvictionPolicy> policies = {
-        sf::arch::cache::EvictionPolicy::kScoreboard,
-        // sf::arch::cache::EvictionPolicy::kLRU
+        // sf::arch::cache::EvictionPolicy::kScoreboard,
+        sf::arch::cache::EvictionPolicy::kLRU
     };
 
     sf::RunNetworkWithCacheOptions(layer_specs,
