@@ -437,6 +437,153 @@ void WriteTileHitColdConflictCsv(const sf::arch::cache::CacheConfig& cfg,
   }
 }
 
+void WriteTileDistributionRowIfEnabled(
+    const sf::arch::cache::CacheConfig& cfg,
+    int layer_id,
+    int output_spine_id,
+    int tile_id,
+    int timestep,
+    int total_tiles,
+    const std::vector<double>& tile_rates) {
+  // Require a destination directory. Prefer the trace path's directory when available.
+  namespace fs = std::filesystem;
+  try {
+    fs::path out_dir;
+    if (!cfg.trace_output_path.empty()) {
+      out_dir = fs::path(cfg.trace_output_path).parent_path();
+    } else if (!cfg.stats_model_dir.empty()) {
+      // stats_model_dir/<layer>/cache_traces/<policy>
+      out_dir = fs::path(cfg.stats_model_dir) /
+                (std::string("layer") + std::to_string(layer_id)) /
+                "cache_traces" /
+                SanitizeName(EvictionPolicyToString(cfg.eviction_policy));
+    } else {
+      return; // nowhere to write
+    }
+
+    const std::size_t size_kb = (cfg.capacity_bytes / 1024u);
+    const std::string fname = std::string("tile_distribution_") +
+                              std::to_string(size_kb) + "KB_" +
+                              std::to_string(cfg.ways) + "ways_" +
+                              std::to_string(cfg.prefetch_depth) + "prefetches.csv";
+    const fs::path csv_path = out_dir / fname;
+    fs::create_directories(csv_path.parent_path());
+
+    // Append mode; write header if file is new/empty
+    const bool need_header = (!fs::exists(csv_path)) || (fs::file_size(csv_path) == 0);
+    std::ofstream ofs(csv_path, std::ios::out | std::ios::app);
+    if (!ofs) return;
+
+    if (need_header) {
+      ofs << "output_pos,tile_id,cur_ts";
+      for (int t = 0; t < total_tiles; ++t) {
+        ofs << ",tile_" << t << "_rate";
+      }
+      ofs << '\n';
+    }
+
+    ofs.setf(std::ios::fixed);
+    auto old_prec = ofs.precision();
+    ofs.precision(6);
+    ofs << output_spine_id << ',' << tile_id << ',' << timestep;
+    for (int i = 0; i < total_tiles; ++i) {
+      const double v = (i < static_cast<int>(tile_rates.size())) ? tile_rates[static_cast<std::size_t>(i)] : 0.0;
+      ofs << ',' << v;
+    }
+    ofs << '\n';
+    ofs.precision(old_prec);
+    ofs.unsetf(std::ios::fixed);
+    ofs.flush();
+  } catch (...) {
+    // Swallow any errors to keep simulation robust
+  }
+}
+
+void WriteEvictionQualityCsv(const sf::arch::cache::CacheConfig& cfg,
+                             int layer_id,
+                             int layer_Wout,
+                             const sf::arch::cache::CacheSim::TileSiteStepMap& counts) {
+  namespace fs = std::filesystem;
+  try {
+    fs::path out_dir;
+    if (!cfg.trace_output_path.empty()) {
+      out_dir = fs::path(cfg.trace_output_path).parent_path();
+    } else if (!cfg.stats_model_dir.empty()) {
+      out_dir = fs::path(cfg.stats_model_dir) /
+                (std::string("layer") + std::to_string(layer_id)) /
+                "cache_traces" /
+                SanitizeName(EvictionPolicyToString(cfg.eviction_policy));
+    } else {
+      return; // nowhere to write
+    }
+
+    fs::create_directories(out_dir);
+    const std::size_t size_kb = cfg.capacity_bytes / 1024u;
+    const std::string fname = std::string("eviction_quality_") +
+                              std::to_string(size_kb) + "KB_" +
+                              std::to_string(cfg.ways) + "ways_" +
+                              std::to_string(cfg.prefetch_depth) + "prefetches.csv";
+    const fs::path csv_path = out_dir / fname;
+    std::ofstream ofs(csv_path, std::ios::out | std::ios::trunc);
+    if (!ofs) return;
+
+    ofs << "output_pos(hout, wout), tile_id, timestep, evict total, evict bad, evict good, bad rate, good rate\n";
+
+    // Deterministic iteration: sites -> tiles -> timesteps
+    std::unordered_set<int> site_set;
+    for (const auto& kv_tile : counts) {
+      for (const auto& kv_site : kv_tile.second) site_set.insert(kv_site.first);
+    }
+    std::vector<int> sites_all(site_set.begin(), site_set.end());
+    std::sort(sites_all.begin(), sites_all.end());
+
+    std::vector<int> tiles; tiles.reserve(counts.size());
+    for (const auto& kv : counts) tiles.push_back(kv.first);
+    std::sort(tiles.begin(), tiles.end());
+
+    for (int site_id : sites_all) {
+      const int hout = (layer_Wout > 0 && site_id >= 0) ? (site_id / layer_Wout) : -1;
+      const int wout = (layer_Wout > 0 && site_id >= 0) ? (site_id % layer_Wout) : -1;
+      for (int tile_id_i : tiles) {
+        auto it_tile = counts.find(tile_id_i);
+        if (it_tile == counts.end()) continue;
+        const auto& site_map = it_tile->second;
+        auto it_site = site_map.find(site_id);
+        if (it_site == site_map.end()) continue;
+        const auto& tmap = it_site->second;
+        std::vector<int> tids; tids.reserve(tmap.size());
+        for (const auto& tv : tmap) tids.push_back(tv.first);
+        std::sort(tids.begin(), tids.end());
+        for (int t : tids) {
+          const auto& c = tmap.at(t);
+          const std::uint64_t ev_total = c.evict_total;
+          const std::uint64_t ev_bad = c.evict_bad;
+          const std::uint64_t ev_good = (ev_total >= ev_bad) ? (ev_total - ev_bad) : 0ull;
+          const double bad_rate = (ev_total > 0ull) ? (static_cast<double>(ev_bad) / static_cast<double>(ev_total)) : 0.0;
+          const double good_rate = (ev_total > 0ull) ? (1.0 - bad_rate) : 0.0;
+          ofs.setf(std::ios::fixed);
+          auto old_prec = ofs.precision();
+          ofs.precision(6);
+          ofs << '(' << hout << ", " << wout << ")"
+              << ", " << tile_id_i
+              << ", " << t
+              << ", " << ev_total
+              << ", " << ev_bad
+              << ", " << ev_good
+              << ", " << bad_rate
+              << ", " << good_rate
+              << '\n';
+          ofs.precision(old_prec);
+          ofs.unsetf(std::ios::fixed);
+        }
+      }
+    }
+    ofs.flush();
+  } catch (...) {
+    // Swallow any errors to keep the simulation robust
+  }
+}
+
 void WriteScoreboardStepCsvIfEnabled(const sf::arch::cache::CacheConfig& cfg,
                                      int layer_id,
                                      int t,

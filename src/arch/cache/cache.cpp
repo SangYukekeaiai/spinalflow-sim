@@ -106,6 +106,16 @@ void CacheSim::Reset() {
   } catch (...) {
     // swallow errors to keep simulation robust
   }
+  // Emit eviction-quality CSV (good/bad rates per (tile, site, timestep))
+  try {
+    sf::WriteEvictionQualityCsv(
+        cfg_,
+        layer_id_for_paths_,
+        layer_Wout_,
+        per_tile_site_step_counts_);
+  } catch (...) {
+    // swallow errors to keep simulation robust
+  }
   // Emit cumulative per-step scoreboard CSVs (S_total[t] for each observed t)
   for (const auto& kv : scoreboard_by_t_) {
     const int t = kv.first;
@@ -129,8 +139,17 @@ void CacheSim::Reset() {
   stats_ = {};
   per_site_step_access_counts_.clear();
   per_tile_site_step_counts_.clear();
+  pending_evicted_lines_.clear();
   max_timestep_observed_ = -1;
   current_spine_id_ = -1;
+  // Also flush the last timestep's tile distribution snapshot if any
+  try {
+    if (current_timestep_ >= 0) {
+      WriteTileDistributionRow_(current_timestep_);
+    }
+  } catch (...) {
+    // ignore errors
+  }
   if (trace_stream_) {
     trace_stream_->flush();
   }
@@ -153,6 +172,14 @@ void CacheSim::BeginTimeStep(int t) {
     use_lru_this_step_ = (t == 0);
     return;
   }
+  // Flush tile-distribution snapshot for the timestep that just finished
+  try {
+    WriteTileDistributionRow_(current_timestep_);
+  } catch (...) {
+    // keep simulator robust
+  }
+  // Clear pending evicted keys — classification is per timestep only
+  pending_evicted_lines_.clear();
   // Transition to a new timestep: decide eviction mode only
   if (t == 0) {
     // LRU-only eviction when time wraps/restarts at 0
@@ -279,6 +306,23 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
     if (!is_prefetch && current_spine_id_ >= 0) {
       const int t = (current_timestep_ < 0) ? 0 : current_timestep_;
       per_tile_site_step_counts_[static_cast<int>(la.tile)][current_spine_id_][t].hits += 1ULL;
+      // Consume a pending eviction if this line was previously evicted in the same group
+      auto it_site = pending_evicted_lines_.find(static_cast<int>(la.tile));
+      if (it_site != pending_evicted_lines_.end()) {
+        auto it_site2 = it_site->second.find(current_spine_id_);
+        if (it_site2 != it_site->second.end()) {
+          auto it_t = it_site2->second.find(t);
+          if (it_t != it_site2->second.end()) {
+            auto& m = it_t->second;
+            auto it_k = m.find(la.key);
+            if (it_k != m.end() && it_k->second > 0) {
+              it_k->second -= 1u;
+              per_tile_site_step_counts_[static_cast<int>(la.tile)][current_spine_id_][t].evict_bad += 1ULL;
+              if (it_k->second == 0u) m.erase(it_k);
+            }
+          }
+        }
+      }
     }
     TouchLRU(set, hit_way);
     result.cycles = is_prefetch ? 0 : cfg_.l1_hit_cycles;
@@ -391,6 +435,19 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
       }
       WriteTrace(oss.str());
     }
+    // Eviction-quality accounting: attribute this eviction to the evicted line's tile id
+    if (!is_prefetch && current_spine_id_ >= 0) {
+      const int t = (current_timestep_ < 0) ? 0 : current_timestep_;
+      // Reconstruct full key and derive its tile
+      const std::uint64_t evicted_full_key = cfg_.use_original_maptotag
+          ? (prev_key * static_cast<std::uint64_t>(num_sets_) + static_cast<std::uint64_t>(set_idx))
+          : prev_key;
+      const int evicted_tile = static_cast<int>((evicted_full_key >> 40) & 0xFFFFFFull);
+      // Increment total evictions for the evicted line's group
+      per_tile_site_step_counts_[evicted_tile][current_spine_id_][t].evict_total += 1ULL;
+      // Register this key as pending (eligible to be counted bad on later reuse)
+      pending_evicted_lines_[evicted_tile][current_spine_id_][t][evicted_full_key] += 1u;
+    }
   }
 
   const int cost = cfg_.miss_overhead;
@@ -413,6 +470,26 @@ CacheSim::ServeResult CacheSim::ServeOne(const LineAddr& la, bool is_prefetch, E
 
   result.cycles = is_prefetch ? 0 : cost;
   result.miss = true;
+  // On a DM miss, the demand line might itself be a previously evicted key in the same group
+  if (!is_prefetch && current_spine_id_ >= 0) {
+    const int t = (current_timestep_ < 0) ? 0 : current_timestep_;
+    auto it_site = pending_evicted_lines_.find(static_cast<int>(la.tile));
+    if (it_site != pending_evicted_lines_.end()) {
+      auto it_site2 = it_site->second.find(current_spine_id_);
+      if (it_site2 != it_site->second.end()) {
+        auto it_t = it_site2->second.find(t);
+        if (it_t != it_site2->second.end()) {
+          auto& m = it_t->second;
+          auto it_k = m.find(la.key);
+          if (it_k != m.end() && it_k->second > 0) {
+            it_k->second -= 1u;
+            per_tile_site_step_counts_[static_cast<int>(la.tile)][current_spine_id_][t].evict_bad += 1ULL;
+            if (it_k->second == 0u) m.erase(it_k);
+          }
+        }
+      }
+    }
+  }
   return result;
 }
 
@@ -570,6 +647,56 @@ void CacheSim::WriteTrace(const std::string& message) {
     std::cout << message << '\n';
   }
   trace_lines_written_++;
+}
+
+// Compute current occupancy distribution by tile id across all valid lines
+std::vector<double> CacheSim::ComputeTileDistributionRates_() const {
+  const int N = (total_tiles_configured_ > 0) ? total_tiles_configured_ : 0;
+  std::vector<double> rates(static_cast<std::size_t>(std::max(0, N)), 0.0);
+  if (N <= 0 || sets_.empty()) return rates;
+  std::uint64_t valid_lines = 0ULL;
+  for (std::size_t set_idx = 0; set_idx < sets_.size(); ++set_idx) {
+    const Set& set = sets_[set_idx];
+    for (std::size_t w = 0; w < set.ways.size(); ++w) {
+      const WayEntry& e = set.ways[w];
+      if (!e.valid) continue;
+      // Reconstruct full key depending on mapping mode
+      std::uint64_t full_key = 0ull;
+      if (cfg_.use_original_maptotag) {
+        // tag * num_sets + set_idx
+        full_key = e.tag * static_cast<std::uint64_t>(num_sets_) + static_cast<std::uint64_t>(set_idx);
+      } else {
+        // tag stores full key under hashed indexing
+        full_key = e.tag;
+      }
+      const std::uint32_t tile = static_cast<std::uint32_t>((full_key >> 40) & 0xFFFFFFull);
+      if (tile < static_cast<std::uint32_t>(N)) {
+        rates[static_cast<std::size_t>(tile)] += 1.0;
+      }
+      valid_lines++;
+    }
+  }
+  if (valid_lines > 0ull) {
+    const double denom = static_cast<double>(valid_lines);
+    for (double& v : rates) v = v / denom;
+  }
+  return rates;
+}
+
+void CacheSim::WriteTileDistributionRow_(int prev_t) {
+  if (total_tiles_configured_ <= 0) return;
+  // Only write when we have a destination directory (trace or stats model dir)
+  if (cfg_.trace_output_path.empty() && cfg_.stats_model_dir.empty()) return;
+  const auto rates = ComputeTileDistributionRates_();
+  // Append one row: (output_spine_id, current_tile_id, prev_t, rates...)
+  sf::WriteTileDistributionRowIfEnabled(
+      cfg_,
+      layer_id_for_paths_,
+      current_spine_id_,
+      current_tile_id_,
+      prev_t,
+      total_tiles_configured_,
+      rates);
 }
 
 

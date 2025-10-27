@@ -214,12 +214,19 @@ public:
   }
   // Provide current layer id for path building of scoreboard/timestep CSVs.
   void SetLayerId(int L) { layer_id_for_paths_ = L; }
+  // Inform cache of total tiles (for CSV header/columns)
+  void SetTotalTiles(int n) { total_tiles_configured_ = n; }
+  // Inform cache of the currently processed tile id
+  void SetCurrentTile(int tile_id) { current_tile_id_ = tile_id; }
 
   // --- Hit/Cold/Conflict distribution snapshot API ---
   struct TileSiteStepCounts {
     std::uint64_t hits = 0;
     std::uint64_t cold_misses = 0;
     std::uint64_t conflict_misses = 0;
+    // Eviction quality accounting within the same (tile, site, timestep) group
+    std::uint64_t evict_total = 0;  // number of demand-evictions attributed to this group
+    std::uint64_t evict_bad   = 0;  // number of those evictions later reused by a demand access in the same group
   };
   using TileSiteStepMap = std::unordered_map<int,
       std::unordered_map<int,
@@ -294,6 +301,20 @@ private:
   // --- Per-(tile, output_spine_id, timestep) hit/miss breakdown ---
   // Keyed by tile_id -> (site_id -> (timestep -> counts))
   TileSiteStepMap per_tile_site_step_counts_;
+  // --- Pending evictions map for classifying 'bad' evictions ---
+  // Tracks evicted line keys that are eligible to be counted as 'bad' when a
+  // later demand access to the same key occurs within the same (tile, site, t) group.
+  // Keyed by tile_id -> site_id -> timestep -> { full_key -> multiplicity }
+  std::unordered_map<int,
+      std::unordered_map<int,
+          std::unordered_map<int, std::unordered_map<uint64_t, std::size_t>>>> pending_evicted_lines_;
+  // --- Per-timestep tile-distribution snapshot support ---
+  int total_tiles_configured_ = 0;
+  int current_tile_id_ = -1;
+  // Helper: compute current cache occupancy rates per tile id [0..N-1]
+  std::vector<double> ComputeTileDistributionRates_() const;
+  // Emit one CSV row for the just-finished timestep (prev_t)
+  void WriteTileDistributionRow_(int prev_t);
 };
 
 void PrintCacheConfig(const CacheConfig& cfg);

@@ -90,6 +90,9 @@ public:
     }
     ResetOutputSlots(); // was: out_spike_entries_.clear();
     current_tile_idx_ = tile_idx;
+    if (cache_) {
+      cache_->SetCurrentTile(current_tile_idx_);
+    }
   }
 
   inline float DecodeWeightToFloat(std::int8_t wq) const noexcept {

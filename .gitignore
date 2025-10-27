@@ -3,4 +3,6 @@
 /build_test/
 /build_test*/
 /workloads/
+/achives/
+/weekly/
 *.md

@@ -118,8 +118,8 @@ int main(int argc, char** argv) {
     auto dram = sf::InitDram(bin_path, json_path);
 
     std::vector<sf::LayerSpec> layer_specs;
-    layer_specs.push_back(SelectLayer(specs, 5));
-    layer_specs.push_back(SelectLayer(specs, 6));
+    layer_specs.push_back(SelectLayer(specs, 8));
+    // layer_specs.push_back(SelectLayer(specs, 6));
 
     const std::vector<std::size_t> cache_sizes_bytes = {
         // 72u * 1024u,

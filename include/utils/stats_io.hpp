@@ -95,6 +95,31 @@ void WriteTileHitColdConflictCsv(const sf::arch::cache::CacheConfig& cfg,
                                  int layer_Wout,
                                  const sf::arch::cache::CacheSim::TileSiteStepMap& counts);
 
+// Writes per-(tile, site, timestep) eviction quality CSV next to the cache trace
+// file for the same configuration. The filename format is:
+//   eviction_quality_<sizeKB>KB_<ways>ways_<prefetches>prefetches.csv
+// Columns:
+//   output_pos(hout, wout), tile_id, timestep, evict total, evict bad, evict good, bad rate, good rate
+void WriteEvictionQualityCsv(const sf::arch::cache::CacheConfig& cfg,
+                             int layer_id,
+                             int layer_Wout,
+                             const sf::arch::cache::CacheSim::TileSiteStepMap& counts);
+
+// Appends one row to a per-timestep tile-distribution CSV located next to the
+// cache trace file for the same (size, ways, prefetches, policy) configuration.
+// - The CSV filename is: tile_distribution_<sizeKB>KB_<ways>ways_<prefetches>prefetches.csv
+// - The directory mirrors the trace path: stats/<repo>/<model>/layer<id>/cache_traces/<policy>
+// - The header is written on first append: output_pos,tile_id,cur_ts,tile_0_rate,...,tile_(N-1)_rate
+// - Silently returns on any failure (keeps simulation robust)
+void WriteTileDistributionRowIfEnabled(
+    const sf::arch::cache::CacheConfig& cfg,
+    int layer_id,
+    int output_spine_id,
+    int tile_id,
+    int timestep,
+    int total_tiles,
+    const std::vector<double>& tile_rates);
+
 // Cache CSV helpers (extracted from simulation)
 // - Writes per-configuration CSVs (model-level + per-layer) and reuse distributions
 // - Produces aggregated rows for later summary CSVs

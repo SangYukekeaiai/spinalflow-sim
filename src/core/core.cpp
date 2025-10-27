@@ -50,6 +50,8 @@ Core::Core(SimpleDRAM* dram,
   fb_.Configure(C_in, W_in, Kh, Kw, Sh, Sw, Ph, Pw, dram_);
   if (cache_) {
     fb_.SetUseCache(true);
+    // Provide cache with total tiles for CSV headers
+    cache_->SetTotalTiles(total_tiles_);
   }
 
   // Program PE weight/threshold params once.
