@@ -24,7 +24,6 @@
 
 // DRAM fwd-decl
 namespace sf { namespace dram { class SimpleDRAM; } }
-namespace sf { namespace arch { namespace cache { class CacheSim; } } }
 
 namespace sf {
 
@@ -72,8 +71,7 @@ public:
                 float w_scale,
                 int total_tiles,
                 const std::unordered_map<std::uint64_t, std::vector<std::vector<int>>>* batches_per_hw,
-                int batch_needed,
-                sf::arch::cache::CacheSim* cache = nullptr);
+                int batch_needed);
 
 
   void SetBatchesTable(const std::unordered_map<std::uint64_t,
@@ -134,7 +132,6 @@ private:
 private:
   // ---- Wiring ----
   sf::dram::SimpleDRAM* dram_ = nullptr;
-  sf::arch::cache::CacheSim* cache_ = nullptr;
 
   // ---- Per-layer params ----
   int layer_id_ = 0;

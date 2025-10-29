@@ -4,14 +4,13 @@
 #include <array>
 #include <cstdint>
 #include <vector>
-#include <optional>               // NEW
+#include <optional>
 
 #include "common/constants.hpp"
 #include "common/entry.hpp"
-#include <cmath>                    // std::ldexp
-#include "arch/global_merger.hpp"   // uses GlobalMerger::run(Entry&)
-#include "arch/filter_buffer.hpp"   // FilterBuffer::ComputeRowId/GetRow
-#include "arch/cache/cache.hpp"
+#include <cmath>                  // std::ldexp
+#include "arch/global_merger.hpp" // uses GlobalMerger::run(Entry&)
+#include "arch/filter_buffer.hpp" // FilterBuffer::ComputeRowId/GetRow
 #include <iostream>
 
 namespace sf {
@@ -53,17 +52,13 @@ private:
 // =======================
 class PEArray {
 public:
-  explicit PEArray(GlobalMerger& gm, sf::arch::cache::CacheSim* cache = nullptr)
-      : gm_(gm), cache_(cache) {
+  explicit PEArray(GlobalMerger& gm)
+      : gm_(gm) {
     // No reserve needed; we use a fixed array of optionals.
     ResetOutputSlots();
   }
 
-  void AttachCache(sf::arch::cache::CacheSim* cache) { cache_ = cache; }
   int current_tile_idx() const { return current_tile_idx_; }
-  int last_cache_cycles() const { return last_cache_result_.demand_cycles; }
-  bool last_cache_miss() const { return last_cache_result_.demand_miss; }
-  const sf::arch::cache::AccessResult& last_cache_result() const { return last_cache_result_; }
 
   void SetWeightParamsAndThres(float threshold, int w_bits, bool w_signed, int w_frac_bits, float w_scale) {
     for (std::size_t pe_idx = 0; pe_idx < kNumPE; ++pe_idx) {
@@ -90,9 +85,6 @@ public:
     }
     ResetOutputSlots(); // was: out_spike_entries_.clear();
     current_tile_idx_ = tile_idx;
-    if (cache_) {
-      cache_->SetCurrentTile(current_tile_idx_);
-    }
   }
 
   inline float DecodeWeightToFloat(std::int8_t wq) const noexcept {
@@ -143,10 +135,8 @@ private:
   // NEW: one optional Entry per PE for the current step.
   std::array<std::optional<Entry>, kNumPE> out_spike_entries_{};
 
-  sf::arch::cache::CacheSim* cache_ = nullptr;               // shared cache simulator
   int current_tile_idx_ = -1;
   std::optional<FilterBuffer::RowLookup> last_row_lookup_;
-  sf::arch::cache::AccessResult last_cache_result_{};
 
   int w_bits_ = 8;                                           // weight bit-width
   bool w_signed_ = true;                                     // weight signedness

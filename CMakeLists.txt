@@ -27,7 +27,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 # ---- Sources ----
 # Recursively collect all .cpp under src/
-file(GLOB_RECURSE SFS_ALL_SRC
+# Use CONFIGURE_DEPENDS so the glob is refreshed when sources are added/removed.
+file(GLOB_RECURSE SFS_ALL_SRC CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
@@ -40,6 +41,9 @@ endif()
 # Remove main.cpp from the core sources
 set(SFS_CORE_SRC ${SFS_ALL_SRC})
 list(REMOVE_ITEM SFS_CORE_SRC "${SFS_MAIN}")
+# In case of stale build directories referencing removed files, force-exclude
+# legacy sources that no longer exist (older refactor).
+list(REMOVE_ITEM SFS_CORE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/arch/cache/cache.cpp")
 # Ensure newly added helper sources are included even if CMake didn't re-glob yet.
 list(APPEND SFS_CORE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/stats_io.cpp")
 list(REMOVE_DUPLICATES SFS_CORE_SRC)
@@ -92,33 +96,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_simple_dram_read.cpp")
   sfs_apply_warnings(test_simple_dram_read)
 else()
   message(STATUS "tests/test_simple_dram_read.cpp not found; skipping test target.")
-endif()
-
-set(SFS_TEST_FIRST_LAYER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_first_layer_cache.cpp")
-if(EXISTS "${SFS_TEST_FIRST_LAYER}")
-  add_executable(test_first_layer_cache "${SFS_TEST_FIRST_LAYER}")
-  target_link_libraries(test_first_layer_cache PRIVATE sfs_core)
-  sfs_apply_warnings(test_first_layer_cache)
-else()
-  message(STATUS "tests/test_first_layer_cache.cpp not found; skipping first-layer cache sweep test.")
-endif()
-
-set(SFS_TEST_LAYER5 "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_layer5_cache.cpp")
-if(EXISTS "${SFS_TEST_LAYER5}")
-  add_executable(test_layer5_cache "${SFS_TEST_LAYER5}")
-  target_link_libraries(test_layer5_cache PRIVATE sfs_core)
-  sfs_apply_warnings(test_layer5_cache)
-else()
-  message(STATUS "tests/test_layer5_cache.cpp not found; skipping layer-5 cache sweep test.")
-endif()
-
-set(SFS_TEST_LAYER8 "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_layer8_cache.cpp")
-if(EXISTS "${SFS_TEST_LAYER8}")
-  add_executable(test_layer8_cache "${SFS_TEST_LAYER8}")
-  target_link_libraries(test_layer8_cache PRIVATE sfs_core)
-  sfs_apply_warnings(test_layer8_cache)
-else()
-  message(STATUS "tests/test_layer8_cache.cpp not found; skipping layer-8 cache sweep test.")
 endif()
 
 # ---- Optional: Threads example (uncomment if needed) ----

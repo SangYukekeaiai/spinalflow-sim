@@ -1,6 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/sfs_core.dir/src/arch/cache/cache.cpp.o"
-  "CMakeFiles/sfs_core.dir/src/arch/cache/cache.cpp.o.d"
   "CMakeFiles/sfs_core.dir/src/arch/dram/simple_dram.cpp.o"
   "CMakeFiles/sfs_core.dir/src/arch/dram/simple_dram.cpp.o.d"
   "CMakeFiles/sfs_core.dir/src/arch/filter_buffer.cpp.o"

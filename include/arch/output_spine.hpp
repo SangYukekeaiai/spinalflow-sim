@@ -41,6 +41,7 @@ public:
     if (!dram_) {
       throw std::runtime_error("OutputSpine::StoreOutputSpineToDRAM: DRAM pointer is null.");
     }
+    (void)layer_id;
 
     // Calculate wire bytes and cycles BEFORE clearing.
     const std::size_t entries_available = buf_.size();

@@ -6,7 +6,7 @@ namespace sf {
 using sf::dram::SimpleDRAM;
 
 Core::Core(SimpleDRAM* dram,
-           int layer_id, int C_in, int C_out,
+           int layer_id, int C_in, int /*C_out*/,
            int H_in, int W_in,
            int H_out, int W_out,
            int Kh, int Kw,
@@ -19,28 +19,25 @@ Core::Core(SimpleDRAM* dram,
            float w_scale,
            int total_tiles,
            const std::unordered_map<std::uint64_t, std::vector<std::vector<int>>>* batches_per_hw,
-           int batch_needed,
-           sf::arch::cache::CacheSim* cache)
+           int batch_needed)
   : dram_(dram),
-    cache_(cache),
-    // Value members are default-constructed; wire dependencies via their constructors if available.
-    isb_(dram),                 // ISB needs DRAM
-    fb_(),                      // FB configured below
-    mfb_(&isb_, fifos_),        // MFB sees ISB and FIFOs
-    gm_(fifos_, mfb_),          // GM sees FIFOs and MFB
-    pe_array_(gm_, cache),      // PE array uses GM and shared cache
-    tob_(pe_array_),            // TOB aggregates per-PE spikes by tile
-    out_spine_(dram_, kOutputSpineMaxEntries),
-    sorter_(&tob_, &out_spine_),
     layer_id_(layer_id),
     H_in_(H_in), W_in_(W_in),
     H_out_(H_out), W_out_(W_out),
     Kh_(Kh), Kw_(Kw),
     Sh_(Sh), Sw_(Sw),
     Ph_(Ph), Pw_(Pw),
-    batches_per_hw_(batches_per_hw),   // FIX: was a typo "batcches_per_hw_"
-    total_tiles_(total_tiles),
-    total_batches_needed_(batch_needed)
+    batches_per_hw_(batches_per_hw),
+    isb_(dram),
+    fb_(),
+    mfb_(&isb_, fifos_),
+    gm_(fifos_, mfb_),
+    pe_array_(gm_),
+    tob_(pe_array_),
+    out_spine_(dram_, kOutputSpineMaxEntries),
+    sorter_(&tob_, &out_spine_),
+    total_batches_needed_(batch_needed),
+    total_tiles_(total_tiles)
 {
   if (!dram_) {
     throw std::invalid_argument("Core: dram pointer must not be null.");
@@ -48,11 +45,6 @@ Core::Core(SimpleDRAM* dram,
 
   // Configure static FB params once for the layer.
   fb_.Configure(C_in, W_in, Kh, Kw, Sh, Sw, Ph, Pw, dram_);
-  if (cache_) {
-    fb_.SetUseCache(true);
-    // Provide cache with total tiles for CSV headers
-    cache_->SetTotalTiles(total_tiles_);
-  }
 
   // Program PE weight/threshold params once.
   pe_array_.SetWeightParamsAndThres(Threshold, w_bits, w_signed, w_frac_bits, w_scale);
@@ -109,9 +101,6 @@ void Core::UpdateOutputSpineID_Eachhw()
 {
   const int spine_id = h_out_cur_ * W_out_ + w_out_cur_;
   out_spine_.SetSpineID(spine_id);
-  if (cache_) {
-    cache_->SetCurrentOutputSpine(spine_id);
-  }
 }
 
 void Core::ClearTOB_Eachhw()
@@ -172,12 +161,10 @@ void Core::PrepareForTile(int tile_id)
   ResetSignal_EachTile();
   {
     const std::uint32_t bytes = LoadWeightFromDram_EachTile(tile_id);
-    if (!fb_.UseCache()) {
-      const auto cost = io_shadow_.ApplyLoadBytes(bytes);
-      cycle_stats_.load_cycles += cost.block_cycles;
-      ConsumeBlockingCycles(cost.block_cycles);
-      io_shadow_.ReduceCreditBy(cost.credit_used);
-    }
+    const auto cost = io_shadow_.ApplyLoadBytes(bytes);
+    cycle_stats_.load_cycles += cost.block_cycles;
+    ConsumeBlockingCycles(cost.block_cycles);
+    io_shadow_.ReduceCreditBy(cost.credit_used);
   }
   LoadInputSpine_EachTile();
 }
@@ -307,16 +294,6 @@ bool Core::StepOnce(int tile_id) {
   // Stage 1 – PEArray
   // ---------------------------
   ran_pe_ = v_pe_ ? pe_array_.run(fb_) : false;
-
-  if (ran_pe_ && fb_.UseCache() && pe_array_.last_cache_miss()) {
-    const int cache_cycles = pe_array_.last_cache_cycles();
-    if (cache_cycles > 0) {
-      const auto cost = io_shadow_.ApplyLoadCycles(static_cast<std::uint64_t>(cache_cycles));
-      cycle_stats_.load_cycles += cost.block_cycles;
-      ConsumeBlockingCycles(cost.block_cycles);
-      io_shadow_.ReduceCreditBy(cost.credit_used);
-    }
-  }
 
   // ---------------------------
   // Stage 2 – MinFinderBatch

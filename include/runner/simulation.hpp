@@ -7,7 +7,6 @@
 
 #include <nlohmann/json.hpp>
 #include "arch/dram/simple_dram.hpp"
-#include "arch/cache/cache.hpp"
 #include "model/conv_layer.hpp"
 #include "model/fc_layer.hpp"
 
@@ -49,26 +48,10 @@ struct LayerSpec {
 std::vector<LayerSpec> ParseConfig(const std::string& json_path);
 sf::dram::SimpleDRAM InitDram(const std::string& bin_path, const std::string& json_path);
 
-void RunNetworkWithCacheOptions(const std::vector<LayerSpec>& specs,
-                                sf::dram::SimpleDRAM* dram,
-                                const std::string& repo_name,
-                                const std::string& model_name,
-                                const std::vector<std::size_t>& cache_sizes_bytes,
-                                const std::vector<int>& cache_way_options,
-                                const std::vector<int>& prefetch_depth_options,
-                                const std::vector<sf::arch::cache::EvictionPolicy>& policies,
-                                bool write_stats_csv = true,
-                                bool write_reuse_distribution_csv = false,
-                                bool write_scoreboard_csv = true,
-                                bool write_visit_count_distribution_csv = true,
-                                bool write_per_set_unique_csv = true,
-                                bool write_cache_traces = false,
-                                bool write_ts_duration_csv = false);
-
-// Layers own their engines; RunNetwork simply configures and runs them.
 void RunNetwork(const std::vector<LayerSpec>& specs,
                 sf::dram::SimpleDRAM* dram,
                 const std::string& repo_name,
-                const std::string& model_name);
+                const std::string& model_name,
+                bool write_stats_csv);
 
 } // namespace sf

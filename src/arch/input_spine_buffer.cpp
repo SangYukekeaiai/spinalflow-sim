@@ -42,7 +42,7 @@ bool InputSpineBuffer::PreloadFirstBatch(const std::vector<int>& logical_spine_i
     throw std::invalid_argument("PreloadFirstBatch: more logical spines than physical buffers");
   }
   // Load into physical buffers and mark metadata.
-  const uint64_t cycles = LoadBatchIntoBuffers_(logical_spine_ids_first_batch, layer_id);
+  LoadBatchIntoBuffers_(logical_spine_ids_first_batch, layer_id);
   return true;
 }
 
@@ -63,7 +63,7 @@ bool InputSpineBuffer::run(const std::vector<int>& logical_spine_ids_current_bat
     throw std::invalid_argument("run(): more logical spines than physical buffers");
   }
   // Perform the load.
-  const uint64_t cycles = LoadBatchIntoBuffers_(logical_spine_ids_current_batch, layer_id);
+  LoadBatchIntoBuffers_(logical_spine_ids_current_batch, layer_id);
   return true;
 }
 

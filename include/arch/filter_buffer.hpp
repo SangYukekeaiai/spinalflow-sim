@@ -59,9 +59,6 @@ public:
   // Return a row by id (by value).
   Row GetRow(int row_id) const;
 
-  void SetUseCache(bool use_cache) { use_cache_ = use_cache; }
-  bool UseCache() const { return use_cache_; }
-
   // NEW: load as many tiles as possible starting at `tile_id`.
   // If `tile_id` is already owned, do nothing (0 cycles) and make it active.
   // Returns the total bytes pulled from DRAM in this call.
@@ -89,7 +86,6 @@ private:
   // Per-step state (current output site)
   int h_out_cur_ = 0;
   int w_out_cur_ = 0;
-  bool use_cache_ = false;
 
   // DRAM interface (non-owning)
   sf::dram::SimpleDRAM* dram_ = nullptr;

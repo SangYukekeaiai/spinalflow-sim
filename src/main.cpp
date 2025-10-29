@@ -1,35 +1,54 @@
 // All comments are in English.
-#include <filesystem>
-#include <string>
-#include <vector>
-#include <exception>
-#include <iostream>
 #include <cctype>
+#include <exception>
+#include <filesystem>
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #include "runner/simulation.hpp"
 
-static void PrintUsage(const char* argv0) {
+namespace {
+
+void PrintUsage(const char* argv0) {
   std::cerr << "Usage: " << argv0
             << " <dram_image.bin> <config.json>"
-            << " [--stats=on|off|true|false|1|0|--no-stats]"
-            << " [--reuse-csv=on|off|true|false|1|0|--no-reuse-csv]"
-            << " [--scoreboard-csv=on|off|true|false|1|0|--no-scoreboard-csv]"
-            << " [--setuniq-csv=on|off|true|false|1|0|--no-setuniq-csv]"
-            << " [--ts-duration-csv=on|off|true|false|1|0|--no-ts-duration-csv]"
-            << " [--trace=on|off|true|false|1|0|--no-trace]" << '\n'
-            << "Runs the full network described by <config.json>." << '\n'
-            << "  --stats=on (default) writes CSV summaries" << '\n'
-            << "  --stats=off or --no-stats disables all CSVs" << '\n'
-            << "  --reuse-csv=* toggles reuse-distance distribution CSVs" << '\n'
-            << "  --ts-duration-csv=* toggles per-layer timestep CSVs (ts_duration)" << '\n'
-            << "  --scoreboard-csv=* toggles scoreboard score CSVs (score -> channels)" << '\n'
-            << "  --setuniq-csv=* toggles per-set unique-address CSVs" << '\n'
-            << "  --trace=* enables/disables cache trace files" << '\n';
+            << " [--timing-csv=on|off|true|false|1|0|--timing-csv|--no-timing-csv]\n"
+            << "Runs the full network described by <config.json>. CSV emission is opt-in via --timing-csv.\n";
 }
 
+bool ParseTimingCsvFlag(const std::string& arg, bool& write_stage_csv) {
+  if (arg == "--timing-csv") {
+    write_stage_csv = true;
+    return true;
+  }
+  if (arg == "--no-timing-csv") {
+    write_stage_csv = false;
+    return true;
+  }
+  constexpr std::string_view prefix{"--timing-csv="};
+  if (arg.rfind(prefix.data(), 0) == 0) {
+    std::string value = arg.substr(prefix.size());
+    for (auto& ch : value) {
+      ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+    if (value == "off" || value == "false" || value == "0") {
+      write_stage_csv = false;
+    } else if (value == "on" || value == "true" || value == "1") {
+      write_stage_csv = true;
+    } else {
+      std::cerr << "Unknown value for --timing-csv: " << value << "\n";
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+} // namespace
+
 int main(int argc, char** argv) {
-  // std::cout << "Entry size is " << sizeof(sf::Entry) << " bytes\n";
-  // Usage: ./sim <bin_path> <json_path>
   if (argc < 3) {
     PrintUsage(argv[0]);
     return 1;
@@ -38,101 +57,23 @@ int main(int argc, char** argv) {
   const std::string bin_path  = argv[1];
   const std::string json_path = argv[2];
 
-  // Optional flags controlling CSV generation
-  // Defaults: stats ON; reuse-distance CSV OFF; ts_duration/trace OFF
-  bool write_stats_csv = true;
-  bool write_reuse_csv = false;
-  bool write_scoreboard_csv = true;
-  bool write_setuniq_csv = true;
-  bool write_cache_traces = false;
-  bool write_ts_duration_csv = false;
-  bool reuse_csv_overridden = false;
-  bool scoreboard_csv_overridden = false;
-  bool setuniq_csv_overridden = false;
-  bool ts_duration_csv_overridden = false;
+  bool write_stage_csv = false;
   for (int i = 3; i < argc; ++i) {
-    std::string arg = argv[i];
-    if (arg == "--help" || arg == "-h") { PrintUsage(argv[0]); return 0; }
-    if (arg == "--no-reuse-csv") { write_reuse_csv = false; reuse_csv_overridden = true; continue; }
-    if (arg == "--no-scoreboard-csv") { write_scoreboard_csv = false; scoreboard_csv_overridden = true; continue; }
-    if (arg == "--no-setuniq-csv") { write_setuniq_csv = false; setuniq_csv_overridden = true; continue; }
-    if (arg == "--no-ts-duration-csv") { write_ts_duration_csv = false; ts_duration_csv_overridden = true; continue; }
-    if (arg == "--no-trace") { write_cache_traces = false; continue; }
-    if (arg == "--no-stats") {
-      write_stats_csv = false;
-      if (!reuse_csv_overridden) write_reuse_csv = false;
-      if (!scoreboard_csv_overridden) write_scoreboard_csv = false;
-      if (!setuniq_csv_overridden) write_setuniq_csv = false;
-      if (!ts_duration_csv_overridden) write_ts_duration_csv = false;
-      continue;
+    const std::string arg = argv[i];
+    if (arg == "--help" || arg == "-h") {
+      PrintUsage(argv[0]);
+      return 0;
     }
-    const std::string ks = "--stats=";
-    if (arg.rfind(ks, 0) == 0) {
-      std::string v = arg.substr(ks.size());
-      for (auto& c : v) c = static_cast<char>(::tolower(c));
-      if (v == "off" || v == "false" || v == "0") write_stats_csv = false;
-      else if (v == "on" || v == "true" || v == "1") write_stats_csv = true;
-      else { std::cerr << "Unknown value for --stats: " << v << '\n'; return 2; }
-      if (!reuse_csv_overridden) write_reuse_csv = write_stats_csv;
-      if (!scoreboard_csv_overridden) write_scoreboard_csv = write_stats_csv;
-      if (!setuniq_csv_overridden) write_setuniq_csv = write_stats_csv;
-      if (!ts_duration_csv_overridden) write_ts_duration_csv = write_stats_csv;
-      continue;
-    }
-    const std::string k = "--reuse-csv=";
-    if (arg.rfind(k, 0) == 0) {
-      std::string v = arg.substr(k.size());
-      for (auto& c : v) c = static_cast<char>(::tolower(c));
-      if (v == "off" || v == "false" || v == "0") write_reuse_csv = false;
-      else if (v == "on" || v == "true" || v == "1") write_reuse_csv = true;
-      else { std::cerr << "Unknown value for --reuse-csv: " << v << '\n'; return 2; }
-      reuse_csv_overridden = true;
-      continue;
-    }
-    const std::string kts = "--ts-duration-csv=";
-    if (arg.rfind(kts, 0) == 0) {
-      std::string v = arg.substr(kts.size());
-      for (auto& c : v) c = static_cast<char>(::tolower(c));
-      if (v == "off" || v == "false" || v == "0") write_ts_duration_csv = false;
-      else if (v == "on" || v == "true" || v == "1") write_ts_duration_csv = true;
-      else { std::cerr << "Unknown value for --ts-duration-csv: " << v << '\n'; return 2; }
-      ts_duration_csv_overridden = true;
-      continue;
-    }
-    const std::string ksbb = "--scoreboard-csv=";
-    if (arg.rfind(ksbb, 0) == 0) {
-      std::string v = arg.substr(ksbb.size());
-      for (auto& c : v) c = static_cast<char>(::tolower(c));
-      if (v == "off" || v == "false" || v == "0") write_scoreboard_csv = false;
-      else if (v == "on" || v == "true" || v == "1") write_scoreboard_csv = true;
-      else { std::cerr << "Unknown value for --scoreboard-csv: " << v << '\n'; return 2; }
-      scoreboard_csv_overridden = true;
-      continue;
-    }
-    const std::string ksx = "--setuniq-csv=";
-    if (arg.rfind(ksx, 0) == 0) {
-      std::string v = arg.substr(ksx.size());
-      for (auto& c : v) c = static_cast<char>(::tolower(c));
-      if (v == "off" || v == "false" || v == "0") write_setuniq_csv = false;
-      else if (v == "on" || v == "true" || v == "1") write_setuniq_csv = true;
-      else { std::cerr << "Unknown value for --setuniq-csv: " << v << '\n'; return 2; }
-      setuniq_csv_overridden = true;
-      continue;
-    }
-    const std::string kt = "--trace=";
-    if (arg.rfind(kt, 0) == 0) {
-      std::string v = arg.substr(kt.size());
-      for (auto& c : v) c = static_cast<char>(::tolower(c));
-      if (v == "off" || v == "false" || v == "0") write_cache_traces = false;
-      else if (v == "on" || v == "true" || v == "1") write_cache_traces = true;
-      else { std::cerr << "Unknown value for --trace: " << v << '\n'; return 2; }
-      continue;
+    if (!ParseTimingCsvFlag(arg, write_stage_csv)) {
+      std::cerr << "Unrecognized argument: " << arg << "\n";
+      PrintUsage(argv[0]);
+      return 2;
     }
   }
 
   try {
-    // (1) Parse config → vector<LayerSpec>
     auto specs = sf::ParseConfig(json_path);
+
     namespace fs = std::filesystem;
     const fs::path json_fs = fs::absolute(fs::path(json_path));
     std::string model_name = json_fs.parent_path().filename().string();
@@ -147,38 +88,8 @@ int main(int argc, char** argv) {
       }
     }
 
-    // (2) Init DRAM (load bin + build per-layer metadata)
     auto dram = sf::InitDram(bin_path, json_path);
-
-    // (3) Run all layers in order with default cache sweeps
-    const std::vector<std::size_t> default_cache_sizes_bytes = {
-        72u * 1024u,
-        144u * 1024u,
-        288u * 1024u,
-        576u * 1024u
-    };
-    const std::vector<int> default_cache_way_options = {4, 8, 16};
-    const std::vector<int> default_prefetch_depth_options = {1, 2, 3, 4};
-    const std::vector<sf::arch::cache::EvictionPolicy> default_policies = {
-        sf::arch::cache::EvictionPolicy::kScoreboard,
-        sf::arch::cache::EvictionPolicy::kLRU
-    };
-
-    sf::RunNetworkWithCacheOptions(specs,
-                                   &dram,
-                                   repo_name,
-                                   model_name,
-                                   default_cache_sizes_bytes,
-                                   default_cache_way_options,
-                                   default_prefetch_depth_options,
-                                   default_policies,
-                                   write_stats_csv,
-                                   write_reuse_csv,
-                                   write_scoreboard_csv,
-                                   /*write_visit_count_distribution_csv=*/false,
-                                   write_setuniq_csv,
-                                   write_cache_traces,
-                                   write_ts_duration_csv);
+    sf::RunNetwork(specs, &dram, repo_name, model_name, write_stage_csv);
 
     std::cout << "[Simulation] Completed successfully.\n";
     return 0;
