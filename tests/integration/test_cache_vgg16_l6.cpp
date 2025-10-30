@@ -1,7 +1,9 @@
 // All comments are in English.
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <set>
 #include <vector>
 
 #include "cache/cache_config.h"
@@ -17,7 +19,7 @@ struct SweepPoint {
 };
 
 std::vector<SweepPoint> BuildSweep() {
-  std::vector<int> capacities = {576};
+  std::vector<int> capacities = {288};
   std::vector<int> ways = {32};
   std::vector<SweepPoint> sweep;
   sweep.reserve(capacities.size() * ways.size());
@@ -31,7 +33,7 @@ std::vector<SweepPoint> BuildSweep() {
 
 } // namespace
 
-int main() {
+int main(int argc, char** argv) {
   const std::string repo = "repo4";
   const std::string model = "vgg16";
   const std::filesystem::path repo_root = std::filesystem::current_path().parent_path();
@@ -40,18 +42,33 @@ int main() {
   const std::filesystem::path bin_path  = base / "dram_image.bin";
 
   auto specs = sf::ParseConfig(json_path.string());
-  auto it = std::find_if(specs.begin(), specs.end(), [](const sf::LayerSpec& s) { return s.L == 6; });
-  if (it == specs.end()) {
-    std::cerr << "Layer 6 not found in configuration." << std::endl;
-    return 1;
+  std::set<int> requested_layers;
+  for (int i = 1; i < argc; ++i) {
+    requested_layers.insert(std::atoi(argv[i]));
   }
-  const sf::LayerSpec& spec = *it;
 
   const auto sweep = BuildSweep();
 
-  std::cout << "capacity_kb,ways,num_sets,latency_cycles,demand_hits,demand_miss_alloc,demand_miss_noalloc,prefetch_hits\n";
+  std::cout << "layer,capacity_kb,ways,num_sets,latency_cycles,demand_hits,demand_miss_alloc,demand_miss_noalloc,prefetch_hits,hit_rate\n";
 
-  for (const auto& point : sweep) {
+  const std::filesystem::path csv_root = std::filesystem::path("stats") / repo / model;
+  std::filesystem::create_directories(csv_root);
+  const std::filesystem::path csv_path = csv_root / "cache_stats.csv";
+  const bool csv_exists = std::filesystem::exists(csv_path);
+  std::ofstream csv_ofs(csv_path, std::ios::out | std::ios::app);
+  if (!csv_ofs) {
+    std::cerr << "Failed to open " << csv_path << " for writing.\n";
+    return 3;
+  }
+  if (!csv_exists) {
+    csv_ofs << "layer,capacity_kb,ways,num_sets,latency_cycles,demand_hits,demand_miss_alloc,demand_miss_noalloc,prefetch_hits,hit_rate\n";
+  }
+
+  for (const auto& spec : specs) {
+    if (spec.kind != sf::LayerKind::kConv) continue;
+    if (!requested_layers.empty() && !requested_layers.count(spec.L)) continue;
+
+    for (const auto& point : sweep) {
     const std::uint64_t bytes = static_cast<std::uint64_t>(point.capacity_kb) * 1024ULL;
     const std::uint64_t line_size = 128ULL;
     if (bytes % line_size != 0) {
@@ -94,6 +111,7 @@ int main() {
     cache_cfg.timing.hit_latency_cycles = 1;
     cache_cfg.timing.miss_latency_cycles = 40;
     cache_cfg.A1 = 31;
+    cache_cfg.replacement_kind = sf::cache::ReplacementKind::TemporalAware;
     cache_cfg.Cin = spec.Cin_in;
     cache_cfg.KH = spec.Kh;
     cache_cfg.KW = spec.Kw;
@@ -108,14 +126,38 @@ int main() {
       return 2;
     }
 
-    std::cout << point.capacity_kb << ','
+    const std::uint64_t total_demand =
+        cache_stats->demand_hits +
+        cache_stats->demand_misses_allocated +
+        cache_stats->demand_misses_noalloc;
+    const double hit_rate =
+        (total_demand == 0)
+            ? 0.0
+            : static_cast<double>(cache_stats->demand_hits) /
+                  static_cast<double>(total_demand);
+
+    std::cout << spec.L << ','
+              << point.capacity_kb << ','
               << point.ways << ','
               << num_sets << ','
               << cache_stats->latency_cycles << ','
               << cache_stats->demand_hits << ','
               << cache_stats->demand_misses_allocated << ','
               << cache_stats->demand_misses_noalloc << ','
-              << cache_stats->prefetch_hits << '\n';
+              << cache_stats->prefetch_hits << ','
+              << hit_rate << '\n';
+
+    csv_ofs << spec.L << ','
+            << point.capacity_kb << ','
+            << point.ways << ','
+            << num_sets << ','
+            << cache_stats->latency_cycles << ','
+            << cache_stats->demand_hits << ','
+            << cache_stats->demand_misses_allocated << ','
+            << cache_stats->demand_misses_noalloc << ','
+            << cache_stats->prefetch_hits << ','
+            << hit_rate << '\n';
+  }
   }
 
   return 0;

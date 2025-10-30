@@ -20,5 +20,6 @@ struct CacheModules {
 
 CacheModules MakeDefaultModules(const CacheConfig& cfg);
 
-} // namespace sf::cache
+std::unique_ptr<IReplacement> MakeTemporalAwareReplacement(const CacheConfig& cfg);
 
+} // namespace sf::cache

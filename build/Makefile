@@ -398,6 +398,30 @@ cache/src/replacement/repl_random.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.s
 .PHONY : cache/src/replacement/repl_random.cpp.s
 
+cache/src/replacement/repl_temporal.o: cache/src/replacement/repl_temporal.cpp.o
+.PHONY : cache/src/replacement/repl_temporal.o
+
+# target to build an object file
+cache/src/replacement/repl_temporal.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.o
+.PHONY : cache/src/replacement/repl_temporal.cpp.o
+
+cache/src/replacement/repl_temporal.i: cache/src/replacement/repl_temporal.cpp.i
+.PHONY : cache/src/replacement/repl_temporal.i
+
+# target to preprocess a source file
+cache/src/replacement/repl_temporal.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.i
+.PHONY : cache/src/replacement/repl_temporal.cpp.i
+
+cache/src/replacement/repl_temporal.s: cache/src/replacement/repl_temporal.cpp.s
+.PHONY : cache/src/replacement/repl_temporal.s
+
+# target to generate assembly for a file
+cache/src/replacement/repl_temporal.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.s
+.PHONY : cache/src/replacement/repl_temporal.cpp.s
+
 cache/src/replacement/repl_two_tier_slru.o: cache/src/replacement/repl_two_tier_slru.cpp.o
 .PHONY : cache/src/replacement/repl_two_tier_slru.o
 
@@ -942,6 +966,9 @@ help:
 	@echo "... cache/src/replacement/repl_random.o"
 	@echo "... cache/src/replacement/repl_random.i"
 	@echo "... cache/src/replacement/repl_random.s"
+	@echo "... cache/src/replacement/repl_temporal.o"
+	@echo "... cache/src/replacement/repl_temporal.i"
+	@echo "... cache/src/replacement/repl_temporal.s"
 	@echo "... cache/src/replacement/repl_two_tier_slru.o"
 	@echo "... cache/src/replacement/repl_two_tier_slru.i"
 	@echo "... cache/src/replacement/repl_two_tier_slru.s"

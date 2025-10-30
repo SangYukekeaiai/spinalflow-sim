@@ -17,6 +17,13 @@ struct CacheTiming {
   std::uint64_t miss_latency_cycles = 40;
 };
 
+enum class ReplacementKind {
+  TwoTierSlru = 0,
+  Lru,
+  Random,
+  TemporalAware
+};
+
 struct CacheConfig {
   CacheGeometry geometry{};
   CacheTiming timing{};
@@ -24,6 +31,7 @@ struct CacheConfig {
   int KH = 0;
   int KW = 0;
   int A1 = 1; // affine permutation multiplier
+  ReplacementKind replacement_kind = ReplacementKind::TemporalAware;
 
   void Validate() const {
     if (Cin <= 0 || KH <= 0 || KW <= 0) {

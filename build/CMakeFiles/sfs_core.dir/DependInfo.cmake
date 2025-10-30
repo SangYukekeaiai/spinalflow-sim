@@ -17,6 +17,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/yy/snn/spinalflow-sim/cache/src/registry.cpp" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_lru.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_random.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_temporal.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_two_tier_slru.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/window/win_three_tile.cpp" "CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/window/win_two_tile.cpp" "CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o.d"

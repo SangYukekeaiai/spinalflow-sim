@@ -17,6 +17,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o.d"
   "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o"
   "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o.d"
+  "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.o"
+  "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.o.d"
   "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.o"
   "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.o.d"
   "CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o"
