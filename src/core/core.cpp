@@ -45,6 +45,20 @@ Core::Core(SimpleDRAM* dram,
 
   // Configure static FB params once for the layer.
   fb_.Configure(C_in, W_in, Kh, Kw, Sh, Sw, Ph, Pw, dram_);
+  {
+    sf::cache::CacheConfig cache_cfg;
+    cache_cfg.Cin = C_in;
+    cache_cfg.KH = Kh;
+    cache_cfg.KW = Kw;
+    cache_cfg.geometry.num_sets = kWeightCacheDefaultSets;
+    cache_cfg.geometry.ways = kWeightCacheDefaultWays;
+    cache_cfg.geometry.line_size_bytes = kWeightCacheDefaultLineBytes;
+    cache_cfg.timing.hit_latency_cycles = kWeightCacheHitLatencyCycles;
+    cache_cfg.timing.miss_latency_cycles = kWeightCacheFillLatencyCycles;
+    cache_cfg.A1 = kWeightCacheDefaultA1;
+    cache_cfg.Validate();
+    fb_.EnableWeightCache(cache_cfg);
+  }
 
   // Program PE weight/threshold params once.
   pe_array_.SetWeightParamsAndThres(Threshold, w_bits, w_signed, w_frac_bits, w_scale);
@@ -76,6 +90,23 @@ void Core::SetTotalTiles(int total_tiles)
     throw std::invalid_argument("Core::SetTotalTiles: total_tiles must be > 0.");
   }
   total_tiles_ = total_tiles;
+}
+
+void Core::OverrideWeightCache(const cache::CacheConfig& cfg)
+{
+  cache::CacheConfig adjusted = cfg;
+  adjusted.Validate();
+  fb_.EnableWeightCache(adjusted);
+}
+
+const cache::CacheStats* Core::GetWeightCacheStats() const
+{
+  return fb_.weight_cache_stats();
+}
+
+std::uint64_t Core::GetWeightCacheLatencyCycles() const
+{
+  return fb_.weight_cache_latency_cycles();
 }
 
 void Core::PrepareForSpine(int h_out, int w_out)

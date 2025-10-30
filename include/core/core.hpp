@@ -9,6 +9,8 @@
 // Common
 #include "common/constants.hpp"
 #include "common/entry.hpp"
+#include "cache/cache_config.h"
+#include "cache/cache_iface.h"
 
 // Subsystems
 #include "arch/filter_buffer.hpp"
@@ -75,8 +77,11 @@ public:
 
 
   void SetBatchesTable(const std::unordered_map<std::uint64_t,
-                        std::vector<std::vector<int>>>* batches_per_hw);
+                       std::vector<std::vector<int>>>* batches_per_hw);
   void SetTotalTiles(int total_tiles);
+  void OverrideWeightCache(const cache::CacheConfig& cfg);
+  const cache::CacheStats* GetWeightCacheStats() const;
+  std::uint64_t GetWeightCacheLatencyCycles() const;
 
   // ---- Per-(h,w) prep ----
   void PrepareForSpine(int h_out, int w_out);

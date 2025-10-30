@@ -144,4 +144,20 @@ void ConvLayer::run_layer() {
 }
 
 
+void ConvLayer::OverrideWeightCache(const cache::CacheConfig& cfg) {
+  if (!core_) {
+    throw std::runtime_error("ConvLayer::OverrideWeightCache: core not configured.");
+  }
+  core_->OverrideWeightCache(cfg);
+}
+
+const cache::CacheStats* ConvLayer::weight_cache_stats() const {
+  return core_ ? core_->GetWeightCacheStats() : nullptr;
+}
+
+std::uint64_t ConvLayer::weight_cache_latency_cycles() const {
+  return core_ ? core_->GetWeightCacheLatencyCycles() : 0;
+}
+
+
 } // namespace sf

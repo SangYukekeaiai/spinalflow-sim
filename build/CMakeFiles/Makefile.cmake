@@ -101,4 +101,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/sfs_core.dir/DependInfo.cmake"
   "CMakeFiles/spinalflow-sim.dir/DependInfo.cmake"
   "CMakeFiles/test_simple_dram_read.dir/DependInfo.cmake"
+  "CMakeFiles/test_weight_cache_latency.dir/DependInfo.cmake"
+  "CMakeFiles/test_cache_vgg16_l6.dir/DependInfo.cmake"
   )

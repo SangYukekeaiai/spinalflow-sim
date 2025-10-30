@@ -5,6 +5,22 @@
 
 namespace sf {
 
+void FilterBuffer::EnableWeightCache(const cache::CacheConfig& cfg) {
+  cache::CacheConfig materialized = cfg;
+  materialized.Cin = C_in_;
+  materialized.KH = K_h_;
+  materialized.KW = K_w_;
+  if (materialized.Cin <= 0 || materialized.KH <= 0 || materialized.KW <= 0) {
+    throw std::logic_error("FilterBuffer::EnableWeightCache: configure the layer before enabling the cache.");
+  }
+  weight_cache_cfg_ = materialized;
+  auto modules = cache::MakeDefaultModules(materialized);
+  weight_cache_ = cache::BuildCache(materialized, std::move(modules));
+  cache_latency_cycles_ = 0;
+  cache_bytes_loaded_ = 0;
+  last_cache_access_.reset();
+}
+
 void FilterBuffer::Configure(int C_in, int W_in,
                              int Kh, int Kw,
                              int Sh, int Sw,
@@ -27,6 +43,19 @@ void FilterBuffer::Configure(int C_in, int W_in,
 
   // Optional: zero the storage (not strictly required)
   for (auto& r : rows_) r.fill(0);
+
+  cache_latency_cycles_ = 0;
+  cache_bytes_loaded_ = 0;
+  last_cache_access_.reset();
+  if (weight_cache_cfg_) {
+    cache::CacheConfig refreshed = *weight_cache_cfg_;
+    refreshed.Cin = C_in_;
+    refreshed.KH = K_h_;
+    refreshed.KW = K_w_;
+    auto modules = cache::MakeDefaultModules(refreshed);
+    weight_cache_ = cache::BuildCache(refreshed, std::move(modules));
+    weight_cache_cfg_ = refreshed;
+  }
 }
 
 void FilterBuffer::Update(int h_out, int w_out) {
@@ -99,6 +128,25 @@ std::optional<FilterBuffer::RowLookup> FilterBuffer::ResolveRow(std::uint32_t ne
   return info;
 }
 
+void FilterBuffer::NotifyWeightAccess(const RowLookup& lookup) {
+  if (!weight_cache_) {
+    return;
+  }
+  if (!active_tile_id_.has_value()) {
+    return;
+  }
+  const int tile_id = static_cast<int>(active_tile_id_.value());
+  cache::AccessRequest request;
+  request.tile_id = tile_id;
+  request.cin = lookup.c_in;
+  request.kh = lookup.kh;
+  request.kw = lookup.kw;
+  const auto access = weight_cache_->OnDemandAccess(request);
+  cache_latency_cycles_ += access.latency_cycles;
+  cache_bytes_loaded_ += access.bytes_fetched;
+  last_cache_access_ = access;
+}
+
 FilterBuffer::Row FilterBuffer::GetRow(int row_id) const {
   const int rpt = RowsPerTile();
   if (rpt <= 0) throw std::logic_error("GetRow: invalid rows-per-tile (configure layer first).");
@@ -122,6 +170,11 @@ std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
   // If already resident: make it active and return.
   if (owned_tile_id_.count(tile_id)) {
     active_tile_id_ = tile_id; // just switch active tile
+    if (weight_cache_) {
+      const int cur = static_cast<int>(tile_id);
+      const int next = (tile_id + 1 < total_tiles) ? static_cast<int>(tile_id + 1) : -1;
+      weight_cache_->SetWindow(cur, next);
+    }
     return 0;                  // no DRAM access
   }
 
@@ -141,6 +194,11 @@ std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
   // Clear existing residency (we will refill from the requested tile forward).
   ClearAllOwnership();
   for (auto& r : rows_) r.fill(0); // optional but keeps debugging clean
+  if (weight_cache_) {
+    const int cur = static_cast<int>(tile_id);
+    const int next = (tile_id + 1 < total_tiles) ? static_cast<int>(tile_id + 1) : -1;
+    weight_cache_->SetWindow(cur, next);
+  }
 
   // Byte math per tile and per-transaction timing
   const uint32_t bytes_per_tile = static_cast<uint32_t>(rows_per_tile) * kNumPE * sizeof(std::int8_t);
@@ -173,4 +231,9 @@ std::uint32_t FilterBuffer::LoadWeightFromDram(std::uint32_t total_tiles,
 
   return total_bytes_loaded;
 }
+
+const cache::CacheStats* FilterBuffer::weight_cache_stats() const {
+  return weight_cache_ ? &weight_cache_->Stats() : nullptr;
+}
+
 }

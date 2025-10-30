@@ -164,20 +164,38 @@ CMakeFiles/sfs_core.dir/src/core/core.cpp.o: \
  /home/yy/snn/spinalflow-sim/include/common/constants.hpp \
  /usr/include/c++/11/cstddef \
  /home/yy/snn/spinalflow-sim/include/common/entry.hpp \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/cache_config.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/cache_iface.h \
+ /usr/include/c++/11/memory /usr/include/c++/11/bits/stl_tempbuf.h \
+ /usr/include/c++/11/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/11/bits/align.h /usr/include/c++/11/bit \
+ /usr/include/c++/11/bits/unique_ptr.h \
+ /usr/include/c++/11/bits/shared_ptr.h \
+ /usr/include/c++/11/bits/shared_ptr_base.h \
+ /usr/include/c++/11/bits/allocated_ptr.h \
+ /usr/include/c++/11/bits/refwrap.h /usr/include/c++/11/ext/concurrence.h \
+ /usr/include/c++/11/bits/shared_ptr_atomic.h \
+ /usr/include/c++/11/bits/atomic_base.h \
+ /usr/include/c++/11/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/11/backward/auto_ptr.h \
+ /usr/include/c++/11/pstl/glue_memory_defs.h \
+ /usr/include/c++/11/pstl/execution_defs.h /usr/include/c++/11/optional \
  /home/yy/snn/spinalflow-sim/include/arch/filter_buffer.hpp \
  /usr/include/c++/11/unordered_set \
- /usr/include/c++/11/bits/unordered_set.h /usr/include/c++/11/optional \
- /usr/include/c++/11/algorithm /usr/include/c++/11/bits/stl_algo.h \
+ /usr/include/c++/11/bits/unordered_set.h /usr/include/c++/11/algorithm \
+ /usr/include/c++/11/bits/stl_algo.h \
  /usr/include/c++/11/bits/algorithmfwd.h \
  /usr/include/c++/11/bits/stl_heap.h \
- /usr/include/c++/11/bits/stl_tempbuf.h \
  /usr/include/c++/11/bits/uniform_int_dist.h \
  /usr/include/c++/11/pstl/glue_algorithm_defs.h \
- /usr/include/c++/11/functional /usr/include/c++/11/bits/refwrap.h \
- /usr/include/c++/11/bits/std_function.h \
- /usr/include/c++/11/pstl/execution_defs.h \
+ /usr/include/c++/11/functional /usr/include/c++/11/bits/std_function.h \
  /home/yy/snn/spinalflow-sim/include/arch/dram/simple_dram.hpp \
  /usr/include/c++/11/cstring /usr/include/string.h /usr/include/strings.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/registry.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/mapper_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/replacement_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/prefetch_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/window_iface.h \
  /home/yy/snn/spinalflow-sim/include/arch/input_spine_buffer.hpp \
  /usr/include/c++/11/limits \
  /home/yy/snn/spinalflow-sim/include/arch/intermediate_fifo.hpp \

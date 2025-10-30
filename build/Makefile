@@ -156,6 +156,320 @@ test_simple_dram_read/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_dram_read.dir/build.make CMakeFiles/test_simple_dram_read.dir/build
 .PHONY : test_simple_dram_read/fast
 
+#=============================================================================
+# Target rules for targets named test_weight_cache_latency
+
+# Build rule for target.
+test_weight_cache_latency: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_weight_cache_latency
+.PHONY : test_weight_cache_latency
+
+# fast build rule for target.
+test_weight_cache_latency/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_cache_latency.dir/build.make CMakeFiles/test_weight_cache_latency.dir/build
+.PHONY : test_weight_cache_latency/fast
+
+#=============================================================================
+# Target rules for targets named test_cache_vgg16_l6
+
+# Build rule for target.
+test_cache_vgg16_l6: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_cache_vgg16_l6
+.PHONY : test_cache_vgg16_l6
+
+# fast build rule for target.
+test_cache_vgg16_l6/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_cache_vgg16_l6.dir/build.make CMakeFiles/test_cache_vgg16_l6.dir/build
+.PHONY : test_cache_vgg16_l6/fast
+
+cache/src/cache_core.o: cache/src/cache_core.cpp.o
+.PHONY : cache/src/cache_core.o
+
+# target to build an object file
+cache/src/cache_core.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/cache_core.cpp.o
+.PHONY : cache/src/cache_core.cpp.o
+
+cache/src/cache_core.i: cache/src/cache_core.cpp.i
+.PHONY : cache/src/cache_core.i
+
+# target to preprocess a source file
+cache/src/cache_core.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/cache_core.cpp.i
+.PHONY : cache/src/cache_core.cpp.i
+
+cache/src/cache_core.s: cache/src/cache_core.cpp.s
+.PHONY : cache/src/cache_core.s
+
+# target to generate assembly for a file
+cache/src/cache_core.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/cache_core.cpp.s
+.PHONY : cache/src/cache_core.cpp.s
+
+cache/src/config_loader.o: cache/src/config_loader.cpp.o
+.PHONY : cache/src/config_loader.o
+
+# target to build an object file
+cache/src/config_loader.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/config_loader.cpp.o
+.PHONY : cache/src/config_loader.cpp.o
+
+cache/src/config_loader.i: cache/src/config_loader.cpp.i
+.PHONY : cache/src/config_loader.i
+
+# target to preprocess a source file
+cache/src/config_loader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/config_loader.cpp.i
+.PHONY : cache/src/config_loader.cpp.i
+
+cache/src/config_loader.s: cache/src/config_loader.cpp.s
+.PHONY : cache/src/config_loader.s
+
+# target to generate assembly for a file
+cache/src/config_loader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/config_loader.cpp.s
+.PHONY : cache/src/config_loader.cpp.s
+
+cache/src/mappers/mapper_affine_colorpin.o: cache/src/mappers/mapper_affine_colorpin.cpp.o
+.PHONY : cache/src/mappers/mapper_affine_colorpin.o
+
+# target to build an object file
+cache/src/mappers/mapper_affine_colorpin.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_affine_colorpin.cpp.o
+.PHONY : cache/src/mappers/mapper_affine_colorpin.cpp.o
+
+cache/src/mappers/mapper_affine_colorpin.i: cache/src/mappers/mapper_affine_colorpin.cpp.i
+.PHONY : cache/src/mappers/mapper_affine_colorpin.i
+
+# target to preprocess a source file
+cache/src/mappers/mapper_affine_colorpin.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_affine_colorpin.cpp.i
+.PHONY : cache/src/mappers/mapper_affine_colorpin.cpp.i
+
+cache/src/mappers/mapper_affine_colorpin.s: cache/src/mappers/mapper_affine_colorpin.cpp.s
+.PHONY : cache/src/mappers/mapper_affine_colorpin.s
+
+# target to generate assembly for a file
+cache/src/mappers/mapper_affine_colorpin.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_affine_colorpin.cpp.s
+.PHONY : cache/src/mappers/mapper_affine_colorpin.cpp.s
+
+cache/src/mappers/mapper_direct_mod.o: cache/src/mappers/mapper_direct_mod.cpp.o
+.PHONY : cache/src/mappers/mapper_direct_mod.o
+
+# target to build an object file
+cache/src/mappers/mapper_direct_mod.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_direct_mod.cpp.o
+.PHONY : cache/src/mappers/mapper_direct_mod.cpp.o
+
+cache/src/mappers/mapper_direct_mod.i: cache/src/mappers/mapper_direct_mod.cpp.i
+.PHONY : cache/src/mappers/mapper_direct_mod.i
+
+# target to preprocess a source file
+cache/src/mappers/mapper_direct_mod.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_direct_mod.cpp.i
+.PHONY : cache/src/mappers/mapper_direct_mod.cpp.i
+
+cache/src/mappers/mapper_direct_mod.s: cache/src/mappers/mapper_direct_mod.cpp.s
+.PHONY : cache/src/mappers/mapper_direct_mod.s
+
+# target to generate assembly for a file
+cache/src/mappers/mapper_direct_mod.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_direct_mod.cpp.s
+.PHONY : cache/src/mappers/mapper_direct_mod.cpp.s
+
+cache/src/prefetch/pf_none.o: cache/src/prefetch/pf_none.cpp.o
+.PHONY : cache/src/prefetch/pf_none.o
+
+# target to build an object file
+cache/src/prefetch/pf_none.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o
+.PHONY : cache/src/prefetch/pf_none.cpp.o
+
+cache/src/prefetch/pf_none.i: cache/src/prefetch/pf_none.cpp.i
+.PHONY : cache/src/prefetch/pf_none.i
+
+# target to preprocess a source file
+cache/src/prefetch/pf_none.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.i
+.PHONY : cache/src/prefetch/pf_none.cpp.i
+
+cache/src/prefetch/pf_none.s: cache/src/prefetch/pf_none.cpp.s
+.PHONY : cache/src/prefetch/pf_none.s
+
+# target to generate assembly for a file
+cache/src/prefetch/pf_none.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.s
+.PHONY : cache/src/prefetch/pf_none.cpp.s
+
+cache/src/prefetch/pf_zero_latency_next_tile.o: cache/src/prefetch/pf_zero_latency_next_tile.cpp.o
+.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.o
+
+# target to build an object file
+cache/src/prefetch/pf_zero_latency_next_tile.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_zero_latency_next_tile.cpp.o
+.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.cpp.o
+
+cache/src/prefetch/pf_zero_latency_next_tile.i: cache/src/prefetch/pf_zero_latency_next_tile.cpp.i
+.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.i
+
+# target to preprocess a source file
+cache/src/prefetch/pf_zero_latency_next_tile.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_zero_latency_next_tile.cpp.i
+.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.cpp.i
+
+cache/src/prefetch/pf_zero_latency_next_tile.s: cache/src/prefetch/pf_zero_latency_next_tile.cpp.s
+.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.s
+
+# target to generate assembly for a file
+cache/src/prefetch/pf_zero_latency_next_tile.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_zero_latency_next_tile.cpp.s
+.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.cpp.s
+
+cache/src/registry.o: cache/src/registry.cpp.o
+.PHONY : cache/src/registry.o
+
+# target to build an object file
+cache/src/registry.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o
+.PHONY : cache/src/registry.cpp.o
+
+cache/src/registry.i: cache/src/registry.cpp.i
+.PHONY : cache/src/registry.i
+
+# target to preprocess a source file
+cache/src/registry.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/registry.cpp.i
+.PHONY : cache/src/registry.cpp.i
+
+cache/src/registry.s: cache/src/registry.cpp.s
+.PHONY : cache/src/registry.s
+
+# target to generate assembly for a file
+cache/src/registry.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/registry.cpp.s
+.PHONY : cache/src/registry.cpp.s
+
+cache/src/replacement/repl_lru.o: cache/src/replacement/repl_lru.cpp.o
+.PHONY : cache/src/replacement/repl_lru.o
+
+# target to build an object file
+cache/src/replacement/repl_lru.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o
+.PHONY : cache/src/replacement/repl_lru.cpp.o
+
+cache/src/replacement/repl_lru.i: cache/src/replacement/repl_lru.cpp.i
+.PHONY : cache/src/replacement/repl_lru.i
+
+# target to preprocess a source file
+cache/src/replacement/repl_lru.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.i
+.PHONY : cache/src/replacement/repl_lru.cpp.i
+
+cache/src/replacement/repl_lru.s: cache/src/replacement/repl_lru.cpp.s
+.PHONY : cache/src/replacement/repl_lru.s
+
+# target to generate assembly for a file
+cache/src/replacement/repl_lru.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.s
+.PHONY : cache/src/replacement/repl_lru.cpp.s
+
+cache/src/replacement/repl_random.o: cache/src/replacement/repl_random.cpp.o
+.PHONY : cache/src/replacement/repl_random.o
+
+# target to build an object file
+cache/src/replacement/repl_random.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o
+.PHONY : cache/src/replacement/repl_random.cpp.o
+
+cache/src/replacement/repl_random.i: cache/src/replacement/repl_random.cpp.i
+.PHONY : cache/src/replacement/repl_random.i
+
+# target to preprocess a source file
+cache/src/replacement/repl_random.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.i
+.PHONY : cache/src/replacement/repl_random.cpp.i
+
+cache/src/replacement/repl_random.s: cache/src/replacement/repl_random.cpp.s
+.PHONY : cache/src/replacement/repl_random.s
+
+# target to generate assembly for a file
+cache/src/replacement/repl_random.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.s
+.PHONY : cache/src/replacement/repl_random.cpp.s
+
+cache/src/replacement/repl_two_tier_slru.o: cache/src/replacement/repl_two_tier_slru.cpp.o
+.PHONY : cache/src/replacement/repl_two_tier_slru.o
+
+# target to build an object file
+cache/src/replacement/repl_two_tier_slru.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.o
+.PHONY : cache/src/replacement/repl_two_tier_slru.cpp.o
+
+cache/src/replacement/repl_two_tier_slru.i: cache/src/replacement/repl_two_tier_slru.cpp.i
+.PHONY : cache/src/replacement/repl_two_tier_slru.i
+
+# target to preprocess a source file
+cache/src/replacement/repl_two_tier_slru.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.i
+.PHONY : cache/src/replacement/repl_two_tier_slru.cpp.i
+
+cache/src/replacement/repl_two_tier_slru.s: cache/src/replacement/repl_two_tier_slru.cpp.s
+.PHONY : cache/src/replacement/repl_two_tier_slru.s
+
+# target to generate assembly for a file
+cache/src/replacement/repl_two_tier_slru.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.s
+.PHONY : cache/src/replacement/repl_two_tier_slru.cpp.s
+
+cache/src/window/win_three_tile.o: cache/src/window/win_three_tile.cpp.o
+.PHONY : cache/src/window/win_three_tile.o
+
+# target to build an object file
+cache/src/window/win_three_tile.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o
+.PHONY : cache/src/window/win_three_tile.cpp.o
+
+cache/src/window/win_three_tile.i: cache/src/window/win_three_tile.cpp.i
+.PHONY : cache/src/window/win_three_tile.i
+
+# target to preprocess a source file
+cache/src/window/win_three_tile.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.i
+.PHONY : cache/src/window/win_three_tile.cpp.i
+
+cache/src/window/win_three_tile.s: cache/src/window/win_three_tile.cpp.s
+.PHONY : cache/src/window/win_three_tile.s
+
+# target to generate assembly for a file
+cache/src/window/win_three_tile.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.s
+.PHONY : cache/src/window/win_three_tile.cpp.s
+
+cache/src/window/win_two_tile.o: cache/src/window/win_two_tile.cpp.o
+.PHONY : cache/src/window/win_two_tile.o
+
+# target to build an object file
+cache/src/window/win_two_tile.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o
+.PHONY : cache/src/window/win_two_tile.cpp.o
+
+cache/src/window/win_two_tile.i: cache/src/window/win_two_tile.cpp.i
+.PHONY : cache/src/window/win_two_tile.i
+
+# target to preprocess a source file
+cache/src/window/win_two_tile.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.i
+.PHONY : cache/src/window/win_two_tile.cpp.i
+
+cache/src/window/win_two_tile.s: cache/src/window/win_two_tile.cpp.s
+.PHONY : cache/src/window/win_two_tile.s
+
+# target to generate assembly for a file
+cache/src/window/win_two_tile.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.s
+.PHONY : cache/src/window/win_two_tile.cpp.s
+
 src/arch/dram/simple_dram.o: src/arch/dram/simple_dram.cpp.o
 .PHONY : src/arch/dram/simple_dram.o
 
@@ -516,6 +830,30 @@ src/utils/stats_io.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/utils/stats_io.cpp.s
 .PHONY : src/utils/stats_io.cpp.s
 
+tests/integration/test_cache_vgg16_l6.o: tests/integration/test_cache_vgg16_l6.cpp.o
+.PHONY : tests/integration/test_cache_vgg16_l6.o
+
+# target to build an object file
+tests/integration/test_cache_vgg16_l6.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_cache_vgg16_l6.dir/build.make CMakeFiles/test_cache_vgg16_l6.dir/tests/integration/test_cache_vgg16_l6.cpp.o
+.PHONY : tests/integration/test_cache_vgg16_l6.cpp.o
+
+tests/integration/test_cache_vgg16_l6.i: tests/integration/test_cache_vgg16_l6.cpp.i
+.PHONY : tests/integration/test_cache_vgg16_l6.i
+
+# target to preprocess a source file
+tests/integration/test_cache_vgg16_l6.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_cache_vgg16_l6.dir/build.make CMakeFiles/test_cache_vgg16_l6.dir/tests/integration/test_cache_vgg16_l6.cpp.i
+.PHONY : tests/integration/test_cache_vgg16_l6.cpp.i
+
+tests/integration/test_cache_vgg16_l6.s: tests/integration/test_cache_vgg16_l6.cpp.s
+.PHONY : tests/integration/test_cache_vgg16_l6.s
+
+# target to generate assembly for a file
+tests/integration/test_cache_vgg16_l6.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_cache_vgg16_l6.dir/build.make CMakeFiles/test_cache_vgg16_l6.dir/tests/integration/test_cache_vgg16_l6.cpp.s
+.PHONY : tests/integration/test_cache_vgg16_l6.cpp.s
+
 tests/test_simple_dram_read.o: tests/test_simple_dram_read.cpp.o
 .PHONY : tests/test_simple_dram_read.o
 
@@ -540,6 +878,30 @@ tests/test_simple_dram_read.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_dram_read.dir/build.make CMakeFiles/test_simple_dram_read.dir/tests/test_simple_dram_read.cpp.s
 .PHONY : tests/test_simple_dram_read.cpp.s
 
+tests/test_weight_cache_latency.o: tests/test_weight_cache_latency.cpp.o
+.PHONY : tests/test_weight_cache_latency.o
+
+# target to build an object file
+tests/test_weight_cache_latency.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_cache_latency.dir/build.make CMakeFiles/test_weight_cache_latency.dir/tests/test_weight_cache_latency.cpp.o
+.PHONY : tests/test_weight_cache_latency.cpp.o
+
+tests/test_weight_cache_latency.i: tests/test_weight_cache_latency.cpp.i
+.PHONY : tests/test_weight_cache_latency.i
+
+# target to preprocess a source file
+tests/test_weight_cache_latency.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_cache_latency.dir/build.make CMakeFiles/test_weight_cache_latency.dir/tests/test_weight_cache_latency.cpp.i
+.PHONY : tests/test_weight_cache_latency.cpp.i
+
+tests/test_weight_cache_latency.s: tests/test_weight_cache_latency.cpp.s
+.PHONY : tests/test_weight_cache_latency.s
+
+# target to generate assembly for a file
+tests/test_weight_cache_latency.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_weight_cache_latency.dir/build.make CMakeFiles/test_weight_cache_latency.dir/tests/test_weight_cache_latency.cpp.s
+.PHONY : tests/test_weight_cache_latency.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -550,7 +912,45 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... sfs_core"
 	@echo "... spinalflow-sim"
+	@echo "... test_cache_vgg16_l6"
 	@echo "... test_simple_dram_read"
+	@echo "... test_weight_cache_latency"
+	@echo "... cache/src/cache_core.o"
+	@echo "... cache/src/cache_core.i"
+	@echo "... cache/src/cache_core.s"
+	@echo "... cache/src/config_loader.o"
+	@echo "... cache/src/config_loader.i"
+	@echo "... cache/src/config_loader.s"
+	@echo "... cache/src/mappers/mapper_affine_colorpin.o"
+	@echo "... cache/src/mappers/mapper_affine_colorpin.i"
+	@echo "... cache/src/mappers/mapper_affine_colorpin.s"
+	@echo "... cache/src/mappers/mapper_direct_mod.o"
+	@echo "... cache/src/mappers/mapper_direct_mod.i"
+	@echo "... cache/src/mappers/mapper_direct_mod.s"
+	@echo "... cache/src/prefetch/pf_none.o"
+	@echo "... cache/src/prefetch/pf_none.i"
+	@echo "... cache/src/prefetch/pf_none.s"
+	@echo "... cache/src/prefetch/pf_zero_latency_next_tile.o"
+	@echo "... cache/src/prefetch/pf_zero_latency_next_tile.i"
+	@echo "... cache/src/prefetch/pf_zero_latency_next_tile.s"
+	@echo "... cache/src/registry.o"
+	@echo "... cache/src/registry.i"
+	@echo "... cache/src/registry.s"
+	@echo "... cache/src/replacement/repl_lru.o"
+	@echo "... cache/src/replacement/repl_lru.i"
+	@echo "... cache/src/replacement/repl_lru.s"
+	@echo "... cache/src/replacement/repl_random.o"
+	@echo "... cache/src/replacement/repl_random.i"
+	@echo "... cache/src/replacement/repl_random.s"
+	@echo "... cache/src/replacement/repl_two_tier_slru.o"
+	@echo "... cache/src/replacement/repl_two_tier_slru.i"
+	@echo "... cache/src/replacement/repl_two_tier_slru.s"
+	@echo "... cache/src/window/win_three_tile.o"
+	@echo "... cache/src/window/win_three_tile.i"
+	@echo "... cache/src/window/win_three_tile.s"
+	@echo "... cache/src/window/win_two_tile.o"
+	@echo "... cache/src/window/win_two_tile.i"
+	@echo "... cache/src/window/win_two_tile.s"
 	@echo "... src/arch/dram/simple_dram.o"
 	@echo "... src/arch/dram/simple_dram.i"
 	@echo "... src/arch/dram/simple_dram.s"
@@ -596,9 +996,15 @@ help:
 	@echo "... src/utils/stats_io.o"
 	@echo "... src/utils/stats_io.i"
 	@echo "... src/utils/stats_io.s"
+	@echo "... tests/integration/test_cache_vgg16_l6.o"
+	@echo "... tests/integration/test_cache_vgg16_l6.i"
+	@echo "... tests/integration/test_cache_vgg16_l6.s"
 	@echo "... tests/test_simple_dram_read.o"
 	@echo "... tests/test_simple_dram_read.i"
 	@echo "... tests/test_simple_dram_read.s"
+	@echo "... tests/test_weight_cache_latency.o"
+	@echo "... tests/test_weight_cache_latency.i"
+	@echo "... tests/test_weight_cache_latency.s"
 .PHONY : help
 
 

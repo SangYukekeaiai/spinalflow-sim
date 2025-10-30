@@ -31,6 +31,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 file(GLOB_RECURSE SFS_ALL_SRC CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
+file(GLOB_RECURSE SFS_CACHE_SRC CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_SOURCE_DIR}/cache/src/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cache/src/*/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cache/src/*/*/*.cpp"
+)
 
 # Sanity: require main.cpp to exist
 set(SFS_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
@@ -45,6 +50,7 @@ list(REMOVE_ITEM SFS_CORE_SRC "${SFS_MAIN}")
 # legacy sources that no longer exist (older refactor).
 list(REMOVE_ITEM SFS_CORE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/arch/cache/cache.cpp")
 # Ensure newly added helper sources are included even if CMake didn't re-glob yet.
+list(APPEND SFS_CORE_SRC ${SFS_CACHE_SRC})
 list(APPEND SFS_CORE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/stats_io.cpp")
 list(REMOVE_DUPLICATES SFS_CORE_SRC)
 
@@ -55,6 +61,7 @@ add_library(sfs_core STATIC ${SFS_CORE_SRC})
 target_include_directories(sfs_core
   PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cache/include"
 )
 
 # ---- Warnings setup (applied to targets) ----
@@ -96,6 +103,26 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_simple_dram_read.cpp")
   sfs_apply_warnings(test_simple_dram_read)
 else()
   message(STATUS "tests/test_simple_dram_read.cpp not found; skipping test target.")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_weight_cache_latency.cpp")
+  add_executable(test_weight_cache_latency
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_weight_cache_latency.cpp"
+  )
+  target_link_libraries(test_weight_cache_latency PRIVATE sfs_core)
+  sfs_apply_warnings(test_weight_cache_latency)
+else()
+  message(STATUS "tests/test_weight_cache_latency.cpp not found; skipping weight cache test target.")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/integration/test_cache_vgg16_l6.cpp")
+  add_executable(test_cache_vgg16_l6
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/integration/test_cache_vgg16_l6.cpp"
+  )
+  target_link_libraries(test_cache_vgg16_l6 PRIVATE sfs_core)
+  sfs_apply_warnings(test_cache_vgg16_l6)
+else()
+  message(STATUS "tests/integration/test_cache_vgg16_l6.cpp not found; skipping cache sweep test target.")
 endif()
 
 # ---- Optional: Threads example (uncomment if needed) ----

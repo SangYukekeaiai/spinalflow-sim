@@ -190,9 +190,17 @@ CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o: \
  /usr/include/c++/11/bits/istream.tcc \
  /home/yy/snn/spinalflow-sim/include/core/core.hpp \
  /home/yy/snn/spinalflow-sim/include/common/entry.hpp \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/cache_config.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/cache_iface.h \
+ /usr/include/c++/11/optional \
  /home/yy/snn/spinalflow-sim/include/arch/filter_buffer.hpp \
  /usr/include/c++/11/unordered_set \
- /usr/include/c++/11/bits/unordered_set.h /usr/include/c++/11/optional \
+ /usr/include/c++/11/bits/unordered_set.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/registry.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/mapper_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/replacement_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/prefetch_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/window_iface.h \
  /home/yy/snn/spinalflow-sim/include/arch/input_spine_buffer.hpp \
  /usr/include/c++/11/limits \
  /home/yy/snn/spinalflow-sim/include/arch/intermediate_fifo.hpp \

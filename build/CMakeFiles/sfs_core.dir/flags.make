@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/yy/snn/spinalflow-sim/include
+CXX_INCLUDES = -I/home/yy/snn/spinalflow-sim/include -I/home/yy/snn/spinalflow-sim/cache/include
 
 CXX_FLAGS = -g -Wall -Wextra -Wpedantic -O0 -g -std=c++17
 

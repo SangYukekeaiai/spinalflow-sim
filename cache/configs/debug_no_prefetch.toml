@@ -1,0 +1,4 @@
+# All comments are in English.
+# Disable prefetching for debugging.
+[prefetch]
+kind = "none"

@@ -8,6 +8,18 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/yy/snn/spinalflow-sim/cache/src/cache_core.cpp" "CMakeFiles/sfs_core.dir/cache/src/cache_core.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/cache_core.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/config_loader.cpp" "CMakeFiles/sfs_core.dir/cache/src/config_loader.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/config_loader.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/mappers/mapper_affine_colorpin.cpp" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_affine_colorpin.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_affine_colorpin.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/mappers/mapper_direct_mod.cpp" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_direct_mod.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_direct_mod.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/prefetch/pf_none.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/prefetch/pf_zero_latency_next_tile.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_zero_latency_next_tile.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_zero_latency_next_tile.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/registry.cpp" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_lru.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_random.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_two_tier_slru.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/window/win_three_tile.cpp" "CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/window/win_two_tile.cpp" "CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/arch/dram/simple_dram.cpp" "CMakeFiles/sfs_core.dir/src/arch/dram/simple_dram.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/arch/dram/simple_dram.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/arch/filter_buffer.cpp" "CMakeFiles/sfs_core.dir/src/arch/filter_buffer.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/arch/filter_buffer.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/arch/global_merger.cpp" "CMakeFiles/sfs_core.dir/src/arch/global_merger.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/arch/global_merger.cpp.o.d"

@@ -3,13 +3,17 @@
 
 #include <array>
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 #include <unordered_set>   
-#include <unordered_map>   
-#include <optional>        
-#include <algorithm>       
+#include <unordered_map>
+#include <optional>
+#include <algorithm>
 #include "common/constants.hpp"
 #include "arch/dram/simple_dram.hpp"
+#include "cache/cache_iface.h"
+#include "cache/cache_config.h"
+#include "cache/registry.h"
 namespace sf { namespace dram {
   // Forward-declare SimpleDRAM to avoid forcing include path here.
   class SimpleDRAM;
@@ -40,6 +44,7 @@ public:
 
   FilterBuffer() = default;
 
+  void EnableWeightCache(const cache::CacheConfig& cfg);
 
   // Layer-wise configuration (static).
   void Configure(int C_in, int W_in,
@@ -55,6 +60,7 @@ public:
   // Returns -1 if the tap maps outside the kernel window (padding/invalid).
   int ComputeRowId(std::uint32_t neuron_id) const;
   std::optional<RowLookup> ResolveRow(std::uint32_t neuron_id) const;
+  void NotifyWeightAccess(const RowLookup& lookup);
 
   // Return a row by id (by value).
   Row GetRow(int row_id) const;
@@ -68,6 +74,10 @@ public:
 
   // Optional helper.
   std::size_t NumRows() const { return kFilterRows; }
+
+  const cache::CacheStats* weight_cache_stats() const;
+  std::uint64_t weight_cache_latency_cycles() const { return cache_latency_cycles_; }
+  std::optional<cache::AccessResult> last_cache_access() const { return last_cache_access_; }
 
 private:
   // Fixed-capacity storage: 4068 rows × 128 weights
@@ -102,6 +112,12 @@ private:
   std::unordered_map<std::uint32_t, std::uint32_t> tile_base_row_; // NEW
   // The currently active tile
   std::optional<std::uint32_t> active_tile_id_;                // NEW
+
+  std::optional<cache::CacheConfig> weight_cache_cfg_;
+  std::unique_ptr<cache::ICache> weight_cache_;
+  std::uint64_t cache_latency_cycles_ = 0;
+  std::uint64_t cache_bytes_loaded_ = 0;
+  std::optional<cache::AccessResult> last_cache_access_;
 
   // Helpers
   inline void ClearAllOwnership() {
