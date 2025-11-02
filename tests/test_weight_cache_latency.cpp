@@ -39,28 +39,23 @@ int main() {
   cache->SetWindow(0, 1);
   access_tile(0);
 
-  const auto& stats_after_first = cache->Stats();
+  const auto& stats_after_tile0 = cache->Stats();
   const int total_lines = cfg.Cin * cfg.KH * cfg.KW;
-  assert(stats_after_first.demand_misses_allocated == static_cast<std::uint64_t>(total_lines));
-  assert(stats_after_first.demand_hits == 0);
-  assert(stats_after_first.prefetch_inserts == 0);
-  assert(stats_after_first.prefetch_hits == 0);
-  assert(stats_after_first.latency_cycles ==
-         static_cast<std::uint64_t>(total_lines) * cfg.timing.miss_latency_cycles);
+  assert(stats_after_tile0.demand_misses_allocated == static_cast<std::uint64_t>(total_lines));
+  assert(stats_after_tile0.demand_hits == 0);
+  assert(stats_after_tile0.prefetch_inserts == static_cast<std::uint64_t>(total_lines));
+  assert(stats_after_tile0.prefetch_hits == 0);
 
-  cache->SetWindow(0, 1);
-  access_tile(0);
+  cache->SetWindow(1, 0);
+  access_tile(1);
 
   const auto& stats = cache->Stats();
-  assert(stats.demand_hits > 0);
-  assert(stats.demand_misses_allocated >= stats_after_first.demand_misses_allocated);
-  assert(stats.demand_hits + stats.demand_misses_allocated ==
-         static_cast<std::uint64_t>(total_lines) * 2);
-  assert(stats.prefetch_inserts == 0);
-  assert(stats.prefetch_hits == 0);
+  assert(stats.demand_hits == static_cast<std::uint64_t>(total_lines));
+  assert(stats.demand_misses_allocated == static_cast<std::uint64_t>(total_lines));
+  assert(stats.prefetch_inserts == static_cast<std::uint64_t>(total_lines));
+  assert(stats.prefetch_hits == static_cast<std::uint64_t>(total_lines));
   const auto expected_latency =
-      stats.demand_hits * cfg.timing.hit_latency_cycles +
-      stats.demand_misses_allocated * cfg.timing.miss_latency_cycles;
+      static_cast<std::uint64_t>(total_lines) * (cfg.timing.miss_latency_cycles + cfg.timing.hit_latency_cycles);
   assert(stats.latency_cycles == expected_latency);
   std::cout << "Weight cache total latency cycles: " << stats.latency_cycles << "\n";
   std::cout << "Demand bytes loaded: " << stats.demand_bytes_loaded << "\n";

@@ -114,12 +114,18 @@ public:
       input.map = map;
       input.request = request;
       PrefetchPlan plan = prefetch_->Plan(input);
-      if (plan.do_prefetch &&
-          plan.tile_id >= 0 &&
-          plan.target_map.set_idx >= 0 &&
-          plan.target_map.set_idx < cfg_.geometry.num_sets) {
-        SetState& prefetch_set = sets_[static_cast<std::size_t>(plan.target_map.set_idx)];
-        const int prefetch_way = replacement_->FindWay(prefetch_set, plan.target_map.tag);
+      if (plan.do_prefetch && plan.request.tile_id >= 0) {
+        MapInput target_input;
+        target_input.tile_id = plan.request.tile_id;
+        target_input.cin = plan.request.cin;
+        target_input.kh = plan.request.kh;
+        target_input.kw = plan.request.kw;
+        MapOutput target_map = mapper_->Map(target_input);
+        if (target_map.set_idx < 0 || target_map.set_idx >= cfg_.geometry.num_sets) {
+          throw std::runtime_error("CacheCore::OnDemandAccess: prefetch set index out of range.");
+        }
+        SetState& prefetch_set = sets_[static_cast<std::size_t>(target_map.set_idx)];
+        const int prefetch_way = replacement_->FindWay(prefetch_set, target_map.tag);
         if (prefetch_way >= 0) {
           stats_.prefetch_hits += 1;
           replacement_->OnPrefetchTouch(prefetch_set, prefetch_way);
@@ -131,7 +137,7 @@ public:
           if (victim.was_valid) {
             stats_.evictions_total += 1;
           }
-          replacement_->Install(prefetch_set, victim.way, plan.target_map.tag, plan.tile_id);
+          replacement_->Install(prefetch_set, victim.way, target_map.tag, plan.request.tile_id);
           stats_.prefetch_inserts += 1;
           stats_.prefetch_bytes_loaded += static_cast<std::uint64_t>(cfg_.geometry.line_size_bytes);
         }

@@ -9,6 +9,7 @@ std::unique_ptr<IMapper> MakeXorFoldMapper(const CacheConfig& cfg);
 std::unique_ptr<IMapper> MakeDirectModMapper(const CacheConfig& cfg);
 std::unique_ptr<IReplacement> MakeLruReplacement();
 std::unique_ptr<IReplacement> MakeRandomReplacement();
+std::unique_ptr<IPrefetch> MakeFirstTouchPrefetch(const CacheConfig& cfg);
 std::unique_ptr<IPrefetch> MakeNoPrefetch();
 std::unique_ptr<IWindow> MakeTwoTileWindow();
 std::unique_ptr<IWindow> MakeThreeTileWindow();
@@ -24,7 +25,7 @@ CacheModules MakeDefaultModules(const CacheConfig& cfg) {
       modules.replacement = MakeLruReplacement();
       break;
   }
-  modules.prefetch = MakeNoPrefetch();
+  modules.prefetch = MakeFirstTouchPrefetch(cfg);
   modules.window = MakeTwoTileWindow();
   return modules;
 }

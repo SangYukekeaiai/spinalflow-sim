@@ -18,8 +18,7 @@ struct PrefetchInput {
 
 struct PrefetchPlan {
   bool do_prefetch = false;
-  MapOutput target_map{};
-  int tile_id = -1;
+  AccessRequest request{};
 };
 
 class IPrefetch {
@@ -29,4 +28,3 @@ public:
 };
 
 } // namespace sf::cache
-

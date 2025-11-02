@@ -20,4 +20,6 @@ struct CacheModules {
 
 CacheModules MakeDefaultModules(const CacheConfig& cfg);
 
+std::unique_ptr<IPrefetch> MakeFirstTouchPrefetch(const CacheConfig& cfg);
+
 } // namespace sf::cache
