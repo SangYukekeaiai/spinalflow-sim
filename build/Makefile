@@ -230,30 +230,6 @@ cache/src/config_loader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/config_loader.cpp.s
 .PHONY : cache/src/config_loader.cpp.s
 
-cache/src/mappers/mapper_affine_colorpin.o: cache/src/mappers/mapper_affine_colorpin.cpp.o
-.PHONY : cache/src/mappers/mapper_affine_colorpin.o
-
-# target to build an object file
-cache/src/mappers/mapper_affine_colorpin.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_affine_colorpin.cpp.o
-.PHONY : cache/src/mappers/mapper_affine_colorpin.cpp.o
-
-cache/src/mappers/mapper_affine_colorpin.i: cache/src/mappers/mapper_affine_colorpin.cpp.i
-.PHONY : cache/src/mappers/mapper_affine_colorpin.i
-
-# target to preprocess a source file
-cache/src/mappers/mapper_affine_colorpin.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_affine_colorpin.cpp.i
-.PHONY : cache/src/mappers/mapper_affine_colorpin.cpp.i
-
-cache/src/mappers/mapper_affine_colorpin.s: cache/src/mappers/mapper_affine_colorpin.cpp.s
-.PHONY : cache/src/mappers/mapper_affine_colorpin.s
-
-# target to generate assembly for a file
-cache/src/mappers/mapper_affine_colorpin.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_affine_colorpin.cpp.s
-.PHONY : cache/src/mappers/mapper_affine_colorpin.cpp.s
-
 cache/src/mappers/mapper_direct_mod.o: cache/src/mappers/mapper_direct_mod.cpp.o
 .PHONY : cache/src/mappers/mapper_direct_mod.o
 
@@ -278,6 +254,30 @@ cache/src/mappers/mapper_direct_mod.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_direct_mod.cpp.s
 .PHONY : cache/src/mappers/mapper_direct_mod.cpp.s
 
+cache/src/mappers/mapper_xorfold.o: cache/src/mappers/mapper_xorfold.cpp.o
+.PHONY : cache/src/mappers/mapper_xorfold.o
+
+# target to build an object file
+cache/src/mappers/mapper_xorfold.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_xorfold.cpp.o
+.PHONY : cache/src/mappers/mapper_xorfold.cpp.o
+
+cache/src/mappers/mapper_xorfold.i: cache/src/mappers/mapper_xorfold.cpp.i
+.PHONY : cache/src/mappers/mapper_xorfold.i
+
+# target to preprocess a source file
+cache/src/mappers/mapper_xorfold.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_xorfold.cpp.i
+.PHONY : cache/src/mappers/mapper_xorfold.cpp.i
+
+cache/src/mappers/mapper_xorfold.s: cache/src/mappers/mapper_xorfold.cpp.s
+.PHONY : cache/src/mappers/mapper_xorfold.s
+
+# target to generate assembly for a file
+cache/src/mappers/mapper_xorfold.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_xorfold.cpp.s
+.PHONY : cache/src/mappers/mapper_xorfold.cpp.s
+
 cache/src/prefetch/pf_none.o: cache/src/prefetch/pf_none.cpp.o
 .PHONY : cache/src/prefetch/pf_none.o
 
@@ -301,30 +301,6 @@ cache/src/prefetch/pf_none.s: cache/src/prefetch/pf_none.cpp.s
 cache/src/prefetch/pf_none.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.s
 .PHONY : cache/src/prefetch/pf_none.cpp.s
-
-cache/src/prefetch/pf_zero_latency_next_tile.o: cache/src/prefetch/pf_zero_latency_next_tile.cpp.o
-.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.o
-
-# target to build an object file
-cache/src/prefetch/pf_zero_latency_next_tile.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_zero_latency_next_tile.cpp.o
-.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.cpp.o
-
-cache/src/prefetch/pf_zero_latency_next_tile.i: cache/src/prefetch/pf_zero_latency_next_tile.cpp.i
-.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.i
-
-# target to preprocess a source file
-cache/src/prefetch/pf_zero_latency_next_tile.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_zero_latency_next_tile.cpp.i
-.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.cpp.i
-
-cache/src/prefetch/pf_zero_latency_next_tile.s: cache/src/prefetch/pf_zero_latency_next_tile.cpp.s
-.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.s
-
-# target to generate assembly for a file
-cache/src/prefetch/pf_zero_latency_next_tile.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_zero_latency_next_tile.cpp.s
-.PHONY : cache/src/prefetch/pf_zero_latency_next_tile.cpp.s
 
 cache/src/registry.o: cache/src/registry.cpp.o
 .PHONY : cache/src/registry.o
@@ -397,54 +373,6 @@ cache/src/replacement/repl_random.s: cache/src/replacement/repl_random.cpp.s
 cache/src/replacement/repl_random.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.s
 .PHONY : cache/src/replacement/repl_random.cpp.s
-
-cache/src/replacement/repl_temporal.o: cache/src/replacement/repl_temporal.cpp.o
-.PHONY : cache/src/replacement/repl_temporal.o
-
-# target to build an object file
-cache/src/replacement/repl_temporal.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.o
-.PHONY : cache/src/replacement/repl_temporal.cpp.o
-
-cache/src/replacement/repl_temporal.i: cache/src/replacement/repl_temporal.cpp.i
-.PHONY : cache/src/replacement/repl_temporal.i
-
-# target to preprocess a source file
-cache/src/replacement/repl_temporal.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.i
-.PHONY : cache/src/replacement/repl_temporal.cpp.i
-
-cache/src/replacement/repl_temporal.s: cache/src/replacement/repl_temporal.cpp.s
-.PHONY : cache/src/replacement/repl_temporal.s
-
-# target to generate assembly for a file
-cache/src/replacement/repl_temporal.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_temporal.cpp.s
-.PHONY : cache/src/replacement/repl_temporal.cpp.s
-
-cache/src/replacement/repl_two_tier_slru.o: cache/src/replacement/repl_two_tier_slru.cpp.o
-.PHONY : cache/src/replacement/repl_two_tier_slru.o
-
-# target to build an object file
-cache/src/replacement/repl_two_tier_slru.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.o
-.PHONY : cache/src/replacement/repl_two_tier_slru.cpp.o
-
-cache/src/replacement/repl_two_tier_slru.i: cache/src/replacement/repl_two_tier_slru.cpp.i
-.PHONY : cache/src/replacement/repl_two_tier_slru.i
-
-# target to preprocess a source file
-cache/src/replacement/repl_two_tier_slru.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.i
-.PHONY : cache/src/replacement/repl_two_tier_slru.cpp.i
-
-cache/src/replacement/repl_two_tier_slru.s: cache/src/replacement/repl_two_tier_slru.cpp.s
-.PHONY : cache/src/replacement/repl_two_tier_slru.s
-
-# target to generate assembly for a file
-cache/src/replacement/repl_two_tier_slru.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_two_tier_slru.cpp.s
-.PHONY : cache/src/replacement/repl_two_tier_slru.cpp.s
 
 cache/src/window/win_three_tile.o: cache/src/window/win_three_tile.cpp.o
 .PHONY : cache/src/window/win_three_tile.o
@@ -945,18 +873,15 @@ help:
 	@echo "... cache/src/config_loader.o"
 	@echo "... cache/src/config_loader.i"
 	@echo "... cache/src/config_loader.s"
-	@echo "... cache/src/mappers/mapper_affine_colorpin.o"
-	@echo "... cache/src/mappers/mapper_affine_colorpin.i"
-	@echo "... cache/src/mappers/mapper_affine_colorpin.s"
 	@echo "... cache/src/mappers/mapper_direct_mod.o"
 	@echo "... cache/src/mappers/mapper_direct_mod.i"
 	@echo "... cache/src/mappers/mapper_direct_mod.s"
+	@echo "... cache/src/mappers/mapper_xorfold.o"
+	@echo "... cache/src/mappers/mapper_xorfold.i"
+	@echo "... cache/src/mappers/mapper_xorfold.s"
 	@echo "... cache/src/prefetch/pf_none.o"
 	@echo "... cache/src/prefetch/pf_none.i"
 	@echo "... cache/src/prefetch/pf_none.s"
-	@echo "... cache/src/prefetch/pf_zero_latency_next_tile.o"
-	@echo "... cache/src/prefetch/pf_zero_latency_next_tile.i"
-	@echo "... cache/src/prefetch/pf_zero_latency_next_tile.s"
 	@echo "... cache/src/registry.o"
 	@echo "... cache/src/registry.i"
 	@echo "... cache/src/registry.s"
@@ -966,12 +891,6 @@ help:
 	@echo "... cache/src/replacement/repl_random.o"
 	@echo "... cache/src/replacement/repl_random.i"
 	@echo "... cache/src/replacement/repl_random.s"
-	@echo "... cache/src/replacement/repl_temporal.o"
-	@echo "... cache/src/replacement/repl_temporal.i"
-	@echo "... cache/src/replacement/repl_temporal.s"
-	@echo "... cache/src/replacement/repl_two_tier_slru.o"
-	@echo "... cache/src/replacement/repl_two_tier_slru.i"
-	@echo "... cache/src/replacement/repl_two_tier_slru.s"
 	@echo "... cache/src/window/win_three_tile.o"
 	@echo "... cache/src/window/win_three_tile.i"
 	@echo "... cache/src/window/win_three_tile.s"

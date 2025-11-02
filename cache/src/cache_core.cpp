@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <numeric>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -11,7 +10,6 @@
 #include "cache/mapper_iface.h"
 #include "cache/prefetch_iface.h"
 #include "cache/replacement_iface.h"
-#include "cache/replacement/temporal_iface.h"
 #include "cache/window_iface.h"
 #include "cache/registry.h"
 
@@ -36,15 +34,10 @@ public:
     if (tile_prod <= 0 || tile_prod > std::numeric_limits<int>::max()) {
       throw std::invalid_argument("CacheCore: Cin * KH * KW overflow.");
     }
-    const int N_color = cfg_.geometry.num_sets / 2;
-    if (std::gcd(cfg_.A1, N_color) != 1) {
-      throw std::invalid_argument("CacheCore: gcd(A1, num_sets/2) must be 1.");
-    }
     sets_.resize(static_cast<std::size_t>(cfg_.geometry.num_sets));
     for (auto& set : sets_) {
       replacement_->InitSet(set, cfg_.geometry.ways);
     }
-    temporal_policy_ = dynamic_cast<ITemporalReplacement*>(replacement_.get());
     Reset();
   }
 
@@ -56,17 +49,10 @@ public:
     window_->Set(-1, -1);
     last_access_.reset();
     last_tile_ = -1;
-    if (temporal_policy_) {
-      temporal_policy_->OnTileStart(-1, -1);
-    }
   }
 
   void SetWindow(int cur_tile, int next_tile) override {
-    const int prev_tile = last_tile_;
     window_->Set(cur_tile, next_tile);
-    if (temporal_policy_) {
-      temporal_policy_->OnTileStart(cur_tile, prev_tile);
-    }
     last_tile_ = cur_tile;
   }
 
@@ -89,31 +75,13 @@ public:
     const int way = replacement_->FindWay(set, map.tag);
     result.way = way;
 
-    bool handled = false;
-
     if (way >= 0) {
       result.hit = true;
       result.latency_cycles = cfg_.timing.hit_latency_cycles;
       stats_.demand_hits += 1;
       stats_.latency_cycles += cfg_.timing.hit_latency_cycles;
       replacement_->OnHit(set, way);
-      handled = true;
-    } else if (temporal_policy_) {
-      if (temporal_policy_->TryTemporalHit(request, map, result)) {
-        stats_.demand_hits += 1;
-        stats_.latency_cycles += cfg_.timing.hit_latency_cycles;
-        handled = true;
-      } else if (request.tile_id == window_->Cur()) {
-        if (temporal_policy_->HandleCurTileMiss(set, request, map, result)) {
-          stats_.demand_misses_allocated += 1;
-          stats_.demand_bytes_loaded += static_cast<std::uint64_t>(cfg_.geometry.line_size_bytes);
-          stats_.latency_cycles += cfg_.timing.miss_latency_cycles;
-          handled = true;
-        }
-      }
-    }
-
-    if (!handled) {
+    } else {
       const bool window_ok = window_->Allows(request.tile_id);
       result.window_admitted = window_ok;
       result.latency_cycles = cfg_.timing.miss_latency_cycles;
@@ -181,7 +149,6 @@ private:
   CacheConfig cfg_;
   std::unique_ptr<IMapper> mapper_;
   std::unique_ptr<IReplacement> replacement_;
-  ITemporalReplacement* temporal_policy_ = nullptr;
   std::unique_ptr<IPrefetch> prefetch_;
   std::unique_ptr<IWindow> window_;
 

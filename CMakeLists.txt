@@ -36,6 +36,12 @@ file(GLOB_RECURSE SFS_CACHE_SRC CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/cache/src/*/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/cache/src/*/*/*.cpp"
 )
+# Exclude legacy cache modules removed during policy cleanup.
+list(REMOVE_ITEM SFS_CACHE_SRC
+  "${CMAKE_CURRENT_SOURCE_DIR}/cache/src/prefetch/pf_zero_latency_next_tile.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cache/src/replacement/repl_temporal.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cache/src/replacement/repl_two_tier_slru.cpp"
+)
 
 # Sanity: require main.cpp to exist
 set(SFS_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")

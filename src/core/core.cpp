@@ -55,8 +55,7 @@ Core::Core(SimpleDRAM* dram,
     cache_cfg.geometry.line_size_bytes = kWeightCacheDefaultLineBytes;
     cache_cfg.timing.hit_latency_cycles = kWeightCacheHitLatencyCycles;
     cache_cfg.timing.miss_latency_cycles = kWeightCacheFillLatencyCycles;
-    cache_cfg.A1 = kWeightCacheDefaultA1;
-    cache_cfg.replacement_kind = sf::cache::ReplacementKind::TemporalAware;
+    cache_cfg.replacement_kind = sf::cache::ReplacementKind::Lru;
     cache_cfg.Validate();
     fb_.EnableWeightCache(cache_cfg);
   }

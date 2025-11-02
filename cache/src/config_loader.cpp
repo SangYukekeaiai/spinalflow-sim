@@ -12,11 +12,9 @@ CacheConfig MakeDefaultConfig(int Cin, int KH, int KW) {
   cfg.geometry.ways = 4;
   cfg.geometry.line_size_bytes = 128;
   cfg.timing.hit_latency_cycles = 1;
-  cfg.timing.miss_latency_cycles = 128;
-  cfg.A1 = 1;
+  cfg.timing.miss_latency_cycles = 40;
   cfg.Validate();
   return cfg;
 }
 
 } // namespace sf::cache
-

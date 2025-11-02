@@ -26,7 +26,6 @@ inline constexpr std::size_t kNumPE      = 128;   // weights per row / PEs per a
 inline constexpr std::size_t kFilterRows = 4608;  // total rows stored in FilterBuffer
 inline constexpr int kWeightCacheDefaultSets = 128;
 inline constexpr int kWeightCacheDefaultWays = 4;
-inline constexpr int kWeightCacheDefaultA1 = 1;
 inline constexpr int kWeightCacheDefaultLineBytes = 128;
 inline constexpr std::uint64_t kWeightCacheHitLatencyCycles = 1;
 inline constexpr std::uint64_t kWeightCacheFillLatencyCycles = 128;
@@ -54,8 +53,8 @@ static_assert(kNumPE > 0,                  "kNumPE must be positive");
 static_assert(kFilterRows > 0,             "kFilterRows must be positive");
 static_assert(kTilesPerSpine > 0,          "kTilesPerSpine must be positive");
 static_assert(kOutputSpineMaxEntries > 0,  "kOutputSpineMaxEntries must be positive");
-static_assert(kWeightCacheDefaultSets > 0 && (kWeightCacheDefaultSets % 2) == 0,
-              "kWeightCacheDefaultSets must be positive and even");
+static_assert(kWeightCacheDefaultSets > 0,
+              "kWeightCacheDefaultSets must be positive");
 static_assert(kWeightCacheDefaultWays > 0, "kWeightCacheDefaultWays must be positive");
 static_assert(kWeightCacheDefaultLineBytes > 0, "kWeightCacheDefaultLineBytes must be positive");
 

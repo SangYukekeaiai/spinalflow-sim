@@ -10,8 +10,6 @@ class RandomReplacement final : public IReplacement {
 public:
   void InitSet(SetState& set, int ways) override {
     set.lines.resize(static_cast<std::size_t>(ways));
-    set.probation_order.clear();
-    set.protected_order.clear();
   }
 
   void ResetSet(SetState& set) override {
@@ -34,12 +32,12 @@ public:
     for (int way = 0; way < static_cast<int>(set.lines.size()); ++way) {
       LineMeta& line = set.lines[static_cast<std::size_t>(way)];
       if (!line.valid) {
-        return VictimInfo{way, false, Residency::Invalid};
+        return VictimInfo{way, false};
       }
     }
     const int victim = std::rand() % static_cast<int>(set.lines.size());
     LineMeta& line = set.lines[static_cast<std::size_t>(victim)];
-    return VictimInfo{victim, line.valid, line.residency};
+    return VictimInfo{victim, line.valid};
   }
 
   void Install(SetState& set, int way, std::uint64_t tag, int tile_id) override {
@@ -47,8 +45,6 @@ public:
     line.valid = true;
     line.tag = tag;
     line.tile_id = tile_id;
-    line.touches = 1;
-    line.residency = Residency::Probation;
   }
 
   void OnHit(SetState&, int) override {}
@@ -60,4 +56,3 @@ std::unique_ptr<IReplacement> MakeRandomReplacement() {
 }
 
 } // namespace sf::cache
-

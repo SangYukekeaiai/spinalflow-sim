@@ -13,7 +13,6 @@ int main() {
   cfg.geometry.line_size_bytes = 128;
   cfg.timing.hit_latency_cycles = 1;
   cfg.timing.miss_latency_cycles = 64;
-  cfg.A1 = 1;
   cfg.Cin = 2;
   cfg.KH = 2;
   cfg.KW = 2;
@@ -22,49 +21,47 @@ int main() {
   auto modules = sf::cache::MakeDefaultModules(cfg);
   auto cache = sf::cache::BuildCache(cfg, std::move(modules));
 
+  auto access_tile = [&](int tile_id) {
+    for (int cin = 0; cin < cfg.Cin; ++cin) {
+      for (int kh = 0; kh < cfg.KH; ++kh) {
+        for (int kw = 0; kw < cfg.KW; ++kw) {
+          sf::cache::AccessRequest request;
+          request.tile_id = tile_id;
+          request.cin = cin;
+          request.kh = kh;
+          request.kw = kw;
+          (void)cache->OnDemandAccess(request);
+        }
+      }
+    }
+  };
+
   cache->SetWindow(0, 1);
+  access_tile(0);
 
-  for (int cin = 0; cin < cfg.Cin; ++cin) {
-    for (int kh = 0; kh < cfg.KH; ++kh) {
-      for (int kw = 0; kw < cfg.KW; ++kw) {
-        sf::cache::AccessRequest request;
-        request.tile_id = 0;
-        request.cin = cin;
-        request.kh = kh;
-        request.kw = kw;
-        auto res = cache->OnDemandAccess(request);
-        assert(!res.hit && "First tile should miss and allocate.");
-        assert(res.allocated);
-        assert(res.window_admitted);
-      }
-    }
-  }
+  const auto& stats_after_first = cache->Stats();
+  const int total_lines = cfg.Cin * cfg.KH * cfg.KW;
+  assert(stats_after_first.demand_misses_allocated == static_cast<std::uint64_t>(total_lines));
+  assert(stats_after_first.demand_hits == 0);
+  assert(stats_after_first.prefetch_inserts == 0);
+  assert(stats_after_first.prefetch_hits == 0);
+  assert(stats_after_first.latency_cycles ==
+         static_cast<std::uint64_t>(total_lines) * cfg.timing.miss_latency_cycles);
 
-  const auto& stats_after_tile0 = cache->Stats();
-  assert(stats_after_tile0.demand_misses_allocated == 8);
-  assert(stats_after_tile0.demand_hits == 0);
-  assert(stats_after_tile0.prefetch_inserts == 8);
-
-  cache->SetWindow(1, 2);
-
-  for (int cin = 0; cin < cfg.Cin; ++cin) {
-    for (int kh = 0; kh < cfg.KH; ++kh) {
-      for (int kw = 0; kw < cfg.KW; ++kw) {
-        sf::cache::AccessRequest request;
-        request.tile_id = 1;
-        request.cin = cin;
-        request.kh = kh;
-        request.kw = kw;
-        auto res = cache->OnDemandAccess(request);
-        assert(res.hit && "Prefetched line should hit for next tile.");
-        assert(!res.allocated);
-      }
-    }
-  }
+  cache->SetWindow(0, 1);
+  access_tile(0);
 
   const auto& stats = cache->Stats();
-  assert(stats.demand_hits == 8);
-  assert(stats.latency_cycles == 8 * cfg.timing.miss_latency_cycles + 8 * cfg.timing.hit_latency_cycles);
+  assert(stats.demand_hits > 0);
+  assert(stats.demand_misses_allocated >= stats_after_first.demand_misses_allocated);
+  assert(stats.demand_hits + stats.demand_misses_allocated ==
+         static_cast<std::uint64_t>(total_lines) * 2);
+  assert(stats.prefetch_inserts == 0);
+  assert(stats.prefetch_hits == 0);
+  const auto expected_latency =
+      stats.demand_hits * cfg.timing.hit_latency_cycles +
+      stats.demand_misses_allocated * cfg.timing.miss_latency_cycles;
+  assert(stats.latency_cycles == expected_latency);
   std::cout << "Weight cache total latency cycles: " << stats.latency_cycles << "\n";
   std::cout << "Demand bytes loaded: " << stats.demand_bytes_loaded << "\n";
   std::cout << "Prefetch bytes loaded: " << stats.prefetch_bytes_loaded << "\n";

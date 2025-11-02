@@ -6,30 +6,19 @@
 
 namespace sf::cache {
 
-enum class Residency : std::uint8_t {
-  Invalid = 0,
-  Probation,
-  Protected
-};
-
 struct LineMeta {
   bool valid = false;
   std::uint64_t tag = 0;
-  int touches = 0;
   int tile_id = -1;
-  Residency residency = Residency::Invalid;
 };
 
 struct SetState {
   std::vector<LineMeta> lines;
-  std::vector<int> probation_order; // MRU at index 0
-  std::vector<int> protected_order; // MRU at index 0
 };
 
 struct VictimInfo {
   int way = -1;
   bool was_valid = false;
-  Residency residency = Residency::Invalid;
 };
 
 class IReplacement {
@@ -45,4 +34,3 @@ public:
 };
 
 } // namespace sf::cache
-

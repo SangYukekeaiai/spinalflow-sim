@@ -110,8 +110,7 @@ int main(int argc, char** argv) {
     cache_cfg.geometry.line_size_bytes = static_cast<int>(line_size);
     cache_cfg.timing.hit_latency_cycles = 1;
     cache_cfg.timing.miss_latency_cycles = 40;
-    cache_cfg.A1 = 31;
-    cache_cfg.replacement_kind = sf::cache::ReplacementKind::TemporalAware;
+    cache_cfg.replacement_kind = sf::cache::ReplacementKind::Lru;
     cache_cfg.Cin = spec.Cin_in;
     cache_cfg.KH = spec.Kh;
     cache_cfg.KW = spec.Kw;
@@ -146,7 +145,6 @@ int main(int argc, char** argv) {
               << cache_stats->demand_misses_noalloc << ','
               << cache_stats->prefetch_hits << ','
               << hit_rate << '\n';
-
     csv_ofs << spec.L << ','
             << point.capacity_kb << ','
             << point.ways << ','

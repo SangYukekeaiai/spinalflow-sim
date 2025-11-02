@@ -7,7 +7,7 @@
 namespace sf::cache {
 
 struct CacheGeometry {
-  int num_sets = 0;          // must be positive and even
+  int num_sets = 0;          // total cache sets
   int ways = 0;              // associativity per set
   int line_size_bytes = 128; // bytes per line
 };
@@ -18,10 +18,8 @@ struct CacheTiming {
 };
 
 enum class ReplacementKind {
-  TwoTierSlru = 0,
-  Lru,
-  Random,
-  TemporalAware
+  Lru = 0,
+  Random
 };
 
 struct CacheConfig {
@@ -30,24 +28,20 @@ struct CacheConfig {
   int Cin = 0;
   int KH = 0;
   int KW = 0;
-  int A1 = 1; // affine permutation multiplier
-  ReplacementKind replacement_kind = ReplacementKind::TemporalAware;
+  ReplacementKind replacement_kind = ReplacementKind::Lru;
 
   void Validate() const {
     if (Cin <= 0 || KH <= 0 || KW <= 0) {
       throw std::invalid_argument("CacheConfig: Cin, KH, and KW must be positive.");
     }
-    if (geometry.num_sets <= 0 || (geometry.num_sets % 2) != 0) {
-      throw std::invalid_argument("CacheConfig: num_sets must be positive and even.");
+    if (geometry.num_sets <= 0) {
+      throw std::invalid_argument("CacheConfig: num_sets must be positive.");
     }
     if (geometry.ways <= 0) {
       throw std::invalid_argument("CacheConfig: ways must be positive.");
     }
     if (geometry.line_size_bytes <= 0) {
       throw std::invalid_argument("CacheConfig: line_size_bytes must be positive.");
-    }
-    if (A1 <= 0) {
-      throw std::invalid_argument("CacheConfig: A1 must be positive.");
     }
   }
 };

@@ -2,24 +2,48 @@
 #include "cache/replacement_iface.h"
 
 #include <algorithm>
+#include <cassert>
 #include <memory>
+#include <numeric>
+#include <unordered_map>
 
 namespace sf::cache {
+
+namespace {
+
+std::vector<int>& LruOrderFor(std::unordered_map<const SetState*, std::vector<int>>& table,
+                              SetState& set,
+                              int ways) {
+  auto& order = table[&set];
+  if (static_cast<int>(order.size()) != ways) {
+    order.resize(static_cast<std::size_t>(ways));
+    std::iota(order.begin(), order.end(), 0);
+  }
+  return order;
+}
+
+} // namespace
 
 class LruReplacement final : public IReplacement {
 public:
   void InitSet(SetState& set, int ways) override {
     set.lines.resize(static_cast<std::size_t>(ways));
-    set.probation_order.clear();
-    set.protected_order.clear();
+    auto& order = LruOrderFor(order_, set, ways);
+    std::iota(order.begin(), order.end(), 0);
+    assert(order.size() == static_cast<std::size_t>(ways));
   }
 
   void ResetSet(SetState& set) override {
     for (auto& line : set.lines) {
       line = {};
     }
-    set.probation_order.clear();
-    set.protected_order.clear();
+    auto it = order_.find(&set);
+    if (it != order_.end()) {
+      auto& order = it->second;
+      order.resize(set.lines.size());
+      std::iota(order.begin(), order.end(), 0);
+      assert(order.size() == set.lines.size());
+    }
   }
 
   int FindWay(const SetState& set, std::uint64_t tag) const override {
@@ -33,50 +57,59 @@ public:
   }
 
   VictimInfo PickVictim(SetState& set) override {
-    for (int way = 0; way < static_cast<int>(set.lines.size()); ++way) {
+    const int ways = static_cast<int>(set.lines.size());
+    auto& order = LruOrderFor(order_, set, ways);
+
+    for (int way = 0; way < ways; ++way) {
       LineMeta& line = set.lines[static_cast<std::size_t>(way)];
       if (!line.valid) {
-        TouchLru(set, way);
-        return VictimInfo{way, false, Residency::Invalid};
+        Touch(order, way);
+        return VictimInfo{way, false};
       }
     }
 
-    if (!set.probation_order.empty()) {
-      const int victim = set.probation_order.back();
-      set.probation_order.pop_back();
-      LineMeta& line = set.lines[static_cast<std::size_t>(victim)];
-      return VictimInfo{victim, line.valid, line.residency};
+    if (order.empty()) {
+      return VictimInfo{};
     }
 
-    return VictimInfo{0, set.lines[0].valid, set.lines[0].residency};
+    const int victim = order.back();
+    order.pop_back();
+    order.insert(order.begin(), victim);
+    assert(order.size() == static_cast<std::size_t>(ways));
+
+    LineMeta& line = set.lines[static_cast<std::size_t>(victim)];
+    return VictimInfo{victim, line.valid};
   }
 
   void Install(SetState& set, int way, std::uint64_t tag, int tile_id) override {
     LineMeta& line = set.lines[static_cast<std::size_t>(way)];
-    TouchLru(set, way);
     line.valid = true;
     line.tag = tag;
     line.tile_id = tile_id;
-    line.touches = 1;
-    line.residency = Residency::Probation;
+
+    auto& order = order_[&set];
+    Touch(order, way);
   }
 
   void OnHit(SetState& set, int way) override {
-    TouchLru(set, way);
+    auto& order = order_[&set];
+    Touch(order, way);
   }
 
   void OnPrefetchTouch(SetState& set, int way) override {
-    TouchLru(set, way);
+    auto& order = order_[&set];
+    Touch(order, way);
+    assert(order.size() == set.lines.size());
   }
 
 private:
-  void TouchLru(SetState& set, int way) {
-    set.probation_order.erase(std::remove(set.probation_order.begin(),
-                                          set.probation_order.end(),
-                                          way),
-                              set.probation_order.end());
-    set.probation_order.insert(set.probation_order.begin(), way);
+  void Touch(std::vector<int>& order, int way) {
+    order.erase(std::remove(order.begin(), order.end(), way), order.end());
+    order.insert(order.begin(), way);
+    assert(!order.empty());
   }
+
+  std::unordered_map<const SetState*, std::vector<int>> order_;
 };
 
 std::unique_ptr<IReplacement> MakeLruReplacement() {
@@ -84,4 +117,3 @@ std::unique_ptr<IReplacement> MakeLruReplacement() {
 }
 
 } // namespace sf::cache
-
