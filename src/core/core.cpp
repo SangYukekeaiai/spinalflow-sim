@@ -133,6 +133,7 @@ void Core::UpdateOutputSpineID_Eachhw()
   const int spine_id = h_out_cur_ * W_out_ + w_out_cur_;
   out_spine_.SetSpineID(spine_id);
   current_spine_id_ = spine_id;
+  fb_.SetOutputSpineId(spine_id);
 }
 
 void Core::ClearTOB_Eachhw()

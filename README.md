@@ -48,6 +48,7 @@ Then run:
 ./build/bin/test_cache_vgg16_l6 --reuse-dist      # also capture reuse-distance histograms
 ./build/bin/test_cache_vgg16_l6 --spike-stats     # dump spiking event stats per tile
 ./build/bin/test_cache_vgg16_l6 --reuse-in-tile   # emit per-tile reuse distributions
+./build/bin/test_cache_vgg16_l6 --evict-quality   # record eviction quality traces
 ```
 
 The binary reads the workload assets from `workloads/repo4/vgg16/` and produces:
@@ -57,6 +58,8 @@ The binary reads the workload assets from `workloads/repo4/vgg16/` and produces:
 - `stats/repo4/vgg16/reuse_distance_distribution/layer<ID>.csv` – (enabled via `--reuse-dist`) reuse-distance histograms for each layer, plus a boxplot under `stats/repo4/vgg16/reuse_distance_distribution/box/`.
 - `stats/repo4/vgg16/spiking_event_stats/layer_<ID>.csv` – (enabled via `--spike-stats`) per-output-spine, per-tile spike counts for each time step.
 - `stats/repo4/vgg16/reuse_in_tiles_statistics/layer<ID>.csv` – (enabled via `--reuse-in-tile`) per-output-spine histograms of intra-tile reuse counts.
+- `stats/repo4/vgg16/layer<ID>/cache_traces/lru/<cfg>/evict_quality_distribution.csv` – (enabled via `--evict-quality`) per-output-spine, per-tile, per-timestep eviction quality counts.
+- `stats/repo4/vgg16/layer<ID>/cache_traces/lru/<cfg>/evict_badness_summary.csv` – aggregate bad-eviction histograms per output spine/tile.
 
 To mirror the archived plots you can regenerate the box figure with the helper script:
 
@@ -71,6 +74,12 @@ python3 scripts/plot_spike_event_distribution.py \
 
 python3 scripts/plot_reuse_in_tile_distribution.py \
   --input-dir stats/repo4/vgg16/reuse_in_tiles_statistics
+
+python3 scripts/plot_evict_quality_distribution.py \
+  stats/repo4/vgg16/layer8/cache_traces/lru/288KB_32ways_prefetch64KB/evict_quality_distribution.csv
+
+python3 scripts/plot_evict_badness_summary.py \
+  stats/repo4/vgg16/layer8/cache_traces/lru/288KB_32ways_prefetch64KB/evict_badness_summary.csv
 ```
 
 Each helper accepts clipping arguments (`--xmin/--xmax/--qleft/--qright` for reuse distance; `--ymin/--ymax/--qleft/--qright` for spike and intra-tile reuse counts) and supports an optional `--output` flag. When omitted, PDFs are written alongside the source CSVs (to `<input-dir>/box/` when applicable).

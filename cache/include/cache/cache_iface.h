@@ -14,6 +14,8 @@ struct AccessRequest {
   int cin = -1;
   int kh = -1;
   int kw = -1;
+  int output_spine_id = -1;
+  int timestep = -1;
 };
 
 struct AccessResult {
@@ -26,6 +28,12 @@ struct AccessResult {
   int way = -1;
   int tile_id = -1;
   int L = -1;
+  std::uint64_t tag = 0;
+  bool evicted = false;
+  std::uint64_t evicted_tag = 0;
+  int evicted_tile_id = -1;
+  int evicted_output_spine_id = -1;
+  int evicted_last_timestep = -1;
 };
 
 struct CacheStats {
@@ -56,4 +64,3 @@ std::unique_ptr<ICache> BuildCache(const CacheConfig& cfg,
                                    CacheModules modules);
 
 } // namespace sf::cache
-

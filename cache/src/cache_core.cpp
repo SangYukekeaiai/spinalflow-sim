@@ -80,6 +80,12 @@ public:
     result.tile_id = request.tile_id;
     result.set_idx = map.set_idx;
     result.L = map.L;
+    result.tag = map.tag;
+    result.evicted = false;
+    result.evicted_tag = 0;
+    result.evicted_tile_id = -1;
+    result.evicted_output_spine_id = -1;
+    result.evicted_last_timestep = -1;
 
     const int way = replacement_->FindWay(set, map.tag);
     result.way = way;
@@ -90,6 +96,11 @@ public:
       stats_.demand_hits += 1;
       stats_.latency_cycles += cfg_.timing.hit_latency_cycles;
       replacement_->OnHit(set, way);
+      if (way >= 0 && way < static_cast<int>(set.lines.size())) {
+        LineMeta& line = set.lines[static_cast<std::size_t>(way)];
+        line.output_spine_id = request.output_spine_id;
+        line.last_timestep = request.timestep;
+      }
     } else {
       const bool window_ok = window_->Allows(request.tile_id);
       result.window_admitted = window_ok;
@@ -103,10 +114,19 @@ public:
         if (victim.way < 0 || victim.way >= cfg_.geometry.ways) {
           throw std::runtime_error("CacheCore::OnDemandAccess: invalid victim way.");
         }
+        LineMeta& victim_line = set.lines[static_cast<std::size_t>(victim.way)];
         if (victim.was_valid) {
           stats_.evictions_total += 1;
+          result.evicted = true;
+          result.evicted_tag = victim_line.tag;
+          result.evicted_tile_id = victim_line.tile_id;
+          result.evicted_output_spine_id = victim_line.output_spine_id;
+          result.evicted_last_timestep = victim_line.last_timestep;
         }
         replacement_->Install(set, victim.way, map.tag, request.tile_id);
+        LineMeta& new_line = set.lines[static_cast<std::size_t>(victim.way)];
+        new_line.output_spine_id = request.output_spine_id;
+        new_line.last_timestep = request.timestep;
         result.bytes_fetched = static_cast<std::uint64_t>(cfg_.geometry.line_size_bytes);
         stats_.demand_bytes_loaded += result.bytes_fetched;
         result.allocated = true;
@@ -146,6 +166,11 @@ public:
             if (prefetch_way >= 0) {
               stats_.prefetch_hits += 1;
               replacement_->OnPrefetchTouch(prefetch_set, prefetch_way);
+              if (prefetch_way >= 0 && prefetch_way < static_cast<int>(prefetch_set.lines.size())) {
+                LineMeta& line = prefetch_set.lines[static_cast<std::size_t>(prefetch_way)];
+                line.last_timestep = -1;
+                line.output_spine_id = -1;
+              }
             } else {
               VictimInfo victim = replacement_->PickVictim(prefetch_set);
               if (victim.way < 0 || victim.way >= cfg_.geometry.ways) {
@@ -155,6 +180,9 @@ public:
                 stats_.evictions_total += 1;
               }
               replacement_->Install(prefetch_set, victim.way, target_map.tag, plan.request.tile_id);
+              LineMeta& prefetch_line = prefetch_set.lines[static_cast<std::size_t>(victim.way)];
+              prefetch_line.output_spine_id = -1;
+              prefetch_line.last_timestep = -1;
               stats_.prefetch_inserts += 1;
               stats_.prefetch_bytes_loaded += static_cast<std::uint64_t>(cfg_.geometry.line_size_bytes);
             }
@@ -176,6 +204,9 @@ public:
       const int existing = replacement_->FindWay(set, entry.map.tag);
       if (existing >= 0) {
         replacement_->OnPrefetchTouch(set, existing);
+        LineMeta& line = set.lines[static_cast<std::size_t>(existing)];
+        line.last_timestep = -1;
+        line.output_spine_id = -1;
         continue;
       }
       VictimInfo victim = replacement_->PickVictim(set);
@@ -186,6 +217,9 @@ public:
         stats_.evictions_total += 1;
       }
       replacement_->Install(set, victim.way, entry.map.tag, tile_id);
+      LineMeta& new_line = set.lines[static_cast<std::size_t>(victim.way)];
+      new_line.output_spine_id = -1;
+      new_line.last_timestep = -1;
       stats_.prefetch_inserts += 1;
       stats_.prefetch_bytes_loaded += static_cast<std::uint64_t>(cfg_.geometry.line_size_bytes);
     }

@@ -128,7 +128,7 @@ std::optional<FilterBuffer::RowLookup> FilterBuffer::ResolveRow(std::uint32_t ne
   return info;
 }
 
-void FilterBuffer::NotifyWeightAccess(const RowLookup& lookup) {
+void FilterBuffer::NotifyWeightAccess(const RowLookup& lookup, std::uint8_t timestamp) {
   if (!weight_cache_) {
     return;
   }
@@ -141,6 +141,8 @@ void FilterBuffer::NotifyWeightAccess(const RowLookup& lookup) {
   request.cin = lookup.c_in;
   request.kh = lookup.kh;
   request.kw = lookup.kw;
+  request.output_spine_id = output_spine_id_;
+  request.timestep = static_cast<int>(timestamp);
   const auto access = weight_cache_->OnDemandAccess(request);
   cache_latency_cycles_ += access.latency_cycles;
   cache_bytes_loaded_ += access.bytes_fetched;

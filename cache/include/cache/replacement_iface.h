@@ -10,6 +10,8 @@ struct LineMeta {
   bool valid = false;
   std::uint64_t tag = 0;
   int tile_id = -1;
+  int output_spine_id = -1;
+  int last_timestep = -1;
 };
 
 struct SetState {

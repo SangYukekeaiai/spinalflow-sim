@@ -55,12 +55,13 @@ public:
 
   // Per-step update of the current output site (h_out, w_out).
   void Update(int h_out, int w_out);
+  void SetOutputSpineId(int spine_id) { output_spine_id_ = spine_id; }
 
   // Compute row id using ONLY member configuration/state.
   // Returns -1 if the tap maps outside the kernel window (padding/invalid).
   int ComputeRowId(std::uint32_t neuron_id) const;
   std::optional<RowLookup> ResolveRow(std::uint32_t neuron_id) const;
-  void NotifyWeightAccess(const RowLookup& lookup);
+  void NotifyWeightAccess(const RowLookup& lookup, std::uint8_t timestamp);
 
   // Return a row by id (by value).
   Row GetRow(int row_id) const;
@@ -112,6 +113,7 @@ private:
   std::unordered_map<std::uint32_t, std::uint32_t> tile_base_row_; // NEW
   // The currently active tile
   std::optional<std::uint32_t> active_tile_id_;                // NEW
+  int output_spine_id_ = -1;
 
   std::optional<cache::CacheConfig> weight_cache_cfg_;
   std::unique_ptr<cache::ICache> weight_cache_;

@@ -103,7 +103,7 @@ public:
   void GetWeightRow(FilterBuffer& fb) {
     last_row_lookup_ = fb.ResolveRow(gm_entry_.neuron_id);
     if (last_row_lookup_.has_value()) {
-      fb.NotifyWeightAccess(*last_row_lookup_);
+      fb.NotifyWeightAccess(*last_row_lookup_, gm_entry_.ts);
       weight_row_ = fb.GetRow(last_row_lookup_->row_id);
     } else {
       // If padded/invalid tap, zero the row to produce no spikes this step.

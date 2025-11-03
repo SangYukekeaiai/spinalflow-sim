@@ -19,6 +19,7 @@
 #include "stats/layer_stats_csv.h"
 #include "stats/reuse_distance_tracker.h"
 #include "stats/reuse_in_tile_tracker.h"
+#include "stats/eviction_quality_tracker.h"
 #include "stats/cache_trace_recorder.h"
 #include "stats/tile_input_hooks.h"
 #include "stats/tracking_cache.h"
@@ -62,6 +63,7 @@ int main(int argc, char** argv) {
   bool reuse_in_tile_enabled = false;
   bool belady_enabled = false;
   bool prefetch_buffer_enabled = true;
+  bool evict_quality_enabled = false;
   std::optional<int> prefetch_buffer_lines_cli;
   std::optional<int> prefetch_buffer_kb_cli;
   for (int i = 1; i < argc; ++i) {
@@ -90,6 +92,10 @@ int main(int argc, char** argv) {
       prefetch_buffer_enabled = true;
       continue;
     }
+    if (arg == "--evict-quality") {
+      evict_quality_enabled = true;
+      continue;
+    }
     const std::string lines_prefix = "--prefetch-buffer-lines=";
     const std::string kb_prefix = "--prefetch-buffer-kb=";
     if (arg.rfind(lines_prefix, 0) == 0) {
@@ -106,6 +112,35 @@ int main(int argc, char** argv) {
   }
 
   const auto sweep = BuildSweep();
+
+  auto PrefetchLabel = [](const sf::cache::CacheConfig& cfg) {
+    if (!cfg.prefetch_buffer_enabled) {
+      return std::string("noprefetch");
+    }
+    const std::uint64_t bytes =
+        static_cast<std::uint64_t>(cfg.prefetch_buffer_capacity_lines) *
+        static_cast<std::uint64_t>(cfg.geometry.line_size_bytes);
+    std::ostringstream oss;
+    oss << "prefetch";
+    if (bytes % 1024ULL == 0) {
+      oss << (bytes / 1024ULL) << "KB";
+    } else {
+      oss << bytes << "B";
+    }
+    return oss.str();
+  };
+
+  auto StrategySuffix = [&](const sf::cache::CacheConfig& cfg, bool belady_mode) {
+    if (belady_mode) {
+      return std::string("belady");
+    }
+    if (!cfg.prefetch_buffer_enabled) {
+      return std::string("lru_no_prefetch_buffer");
+    }
+    std::ostringstream oss;
+    oss << "lru_prefetch_buffer_" << PrefetchLabel(cfg);
+    return oss.str();
+  };
 
   std::cout << "layer,capacity_kb,ways,num_sets,latency_cycles,demand_hits,demand_miss_alloc,demand_miss_noalloc,prefetch_hits,hit_rate\n";
 
@@ -138,6 +173,7 @@ int main(int argc, char** argv) {
   if (reuse_in_tile_enabled) {
     test::stats::EnableTileReuseTracking(reuse_tile_tracker);
   }
+  test::stats::EvictionQualityTracker evict_tracker;
   const std::filesystem::path spike_stats_root =
       csv_root / "spiking_event_stats";
   const std::filesystem::path reuse_in_tile_root =
@@ -206,29 +242,12 @@ int main(int argc, char** argv) {
       }
       cache_cfg.Validate();
 
+      const std::string strategy_suffix = StrategySuffix(cache_cfg, belady_enabled);
       const std::filesystem::path cross_csv =
           cross_stats_root /
           (std::to_string(point.capacity_kb) + "KB_" +
            std::to_string(point.ways) + "ways_" +
-           ([&]() {
-             if (belady_enabled) {
-               return std::string("belady");
-             }
-             if (!cache_cfg.prefetch_buffer_enabled) {
-               return std::string("lru_no_prefetch_buffer");
-             }
-             const std::uint64_t buffer_bytes =
-                 static_cast<std::uint64_t>(cache_cfg.prefetch_buffer_capacity_lines) *
-                 static_cast<std::uint64_t>(cache_cfg.geometry.line_size_bytes);
-             std::ostringstream oss;
-             oss << "lru_prefetch_buffer_";
-             if (buffer_bytes % 1024ULL == 0) {
-               oss << (buffer_bytes / 1024ULL) << "KB";
-             } else {
-               oss << buffer_bytes << "B";
-             }
-             return oss.str();
-           })() +
+           strategy_suffix +
            ".csv");
       test::stats::EnsureCsvHasHeader(cross_csv);
 
@@ -280,8 +299,12 @@ int main(int argc, char** argv) {
 
       auto run_layer = [&](const sf::cache::CacheConfig& cfg,
                            bool trackers_active,
-                           std::vector<sf::cache::AccessRequest>* trace)
+                           std::vector<sf::cache::AccessRequest>* trace,
+                           test::stats::EvictionQualityTracker* evict_tracker_ptr,
+                           const std::filesystem::path* evict_csv_path,
+                           const std::filesystem::path* evict_agg_path)
           -> std::optional<sf::cache::CacheStats> {
+        (void)evict_agg_path;
         auto dram_local = sf::InitDram(bin_path.string(), json_path.string());
 
         auto execute = [&](auto& layer) -> std::optional<sf::cache::CacheStats> {
@@ -308,6 +331,9 @@ int main(int argc, char** argv) {
             if (reuse_in_tile_enabled) {
               reuse_tile_tracker.BeginLayer(spec.L, tiles_per_spine);
             }
+            if (evict_tracker_ptr && evict_csv_path) {
+              evict_tracker_ptr->Reset();
+            }
           }
 
           std::optional<test::stats::ScopedTraceRecorder> recorder;
@@ -315,9 +341,15 @@ int main(int argc, char** argv) {
             recorder.emplace(*trace);
           }
 
+          std::optional<test::stats::ScopedEvictionTracking> evict_scope;
+          if (evict_tracker_ptr && evict_csv_path) {
+            evict_scope.emplace(*evict_tracker_ptr);
+          }
+
           layer.OverrideWeightCache(cfg);
           layer.run_layer();
           recorder.reset();
+          evict_scope.reset();
 
           const auto* stats_ptr = layer.weight_cache_stats();
           if (!stats_ptr) {
@@ -341,7 +373,7 @@ int main(int argc, char** argv) {
         trace_cfg.replacement_kind = sf::cache::ReplacementKind::Lru;
         trace_cfg.prefetch_buffer_enabled = false;
         trace_cfg.prefetch_buffer_capacity_lines = 0;
-        auto trace_stats = run_layer(trace_cfg, false, &trace);
+        auto trace_stats = run_layer(trace_cfg, false, &trace, nullptr, nullptr, nullptr);
         if (!trace_stats.has_value()) {
           return 2;
         }
@@ -353,7 +385,7 @@ int main(int argc, char** argv) {
         belady_cfg.replacement_kind = sf::cache::ReplacementKind::Belady;
         belady_cfg.prefetch_buffer_enabled = false;
         belady_cfg.prefetch_buffer_capacity_lines = 0;
-        auto belady_stats = run_layer(belady_cfg, true, nullptr);
+        auto belady_stats = run_layer(belady_cfg, true, nullptr, nullptr, nullptr, nullptr);
         sf::cache::ClearBeladyPlan();
         if (!belady_stats.has_value()) {
           return 2;
@@ -361,11 +393,36 @@ int main(int argc, char** argv) {
         report_stats(*belady_stats, belady_cfg);
         reuse_written = true;
       } else {
-        auto stats_opt = run_layer(cache_cfg, true, nullptr);
+        std::optional<std::filesystem::path> evict_csv_path;
+        std::optional<std::filesystem::path> evict_agg_path;
+        test::stats::EvictionQualityTracker* evict_ptr = nullptr;
+        if (evict_quality_enabled) {
+          const std::filesystem::path layer_dir =
+              csv_root / ("layer" + std::to_string(spec.L));
+          const std::filesystem::path policy_dir = layer_dir / "cache_traces" / "lru";
+          const std::filesystem::path config_dir =
+              policy_dir /
+              (std::to_string(point.capacity_kb) + "KB_" +
+               std::to_string(point.ways) + "ways_" +
+               PrefetchLabel(cache_cfg));
+          evict_csv_path = config_dir / "evict_quality_distribution.csv";
+          evict_agg_path = config_dir / "evict_badness_summary.csv";
+          evict_ptr = &evict_tracker;
+        }
+
+        auto stats_opt = run_layer(cache_cfg, true, nullptr, evict_ptr,
+                                   evict_csv_path ? &*evict_csv_path : nullptr,
+                                   evict_agg_path ? &*evict_agg_path : nullptr);
         if (!stats_opt.has_value()) {
           return 2;
         }
         report_stats(*stats_opt, cache_cfg);
+        if (evict_csv_path && evict_ptr) {
+          evict_ptr->WriteCsv(*evict_csv_path);
+        }
+        if (evict_agg_path && evict_ptr) {
+          evict_ptr->WriteAggregateCsv(*evict_agg_path);
+        }
         reuse_written = true;
       }
 
