@@ -118,6 +118,7 @@ public:
   // Access the spike outputs produced in the latest run-step.
   // NEW: fixed array with one optional Entry per PE.
   const std::array<std::optional<Entry>, kNumPE>& out_spike_entries() const { return out_spike_entries_; }
+  const Entry& current_input_entry() const { return gm_entry_; }
 
   // Clear the spike outputs after a consumer copies them.
   void ClearOutputSpikes();

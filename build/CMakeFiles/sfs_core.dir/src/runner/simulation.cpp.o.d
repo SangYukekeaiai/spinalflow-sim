@@ -268,6 +268,8 @@ CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o: \
  /home/yy/snn/spinalflow-sim/include/arch/output_spine.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp \
  /home/yy/snn/spinalflow-sim/include/core/io_shadow.hpp \
+ /home/yy/snn/spinalflow-sim/include/hooks/spike_event_hooks.h \
+ /home/yy/snn/spinalflow-sim/include/hooks/tile_input_hooks.h \
  /home/yy/snn/spinalflow-sim/include/model/fc_layer.hpp \
  /usr/include/c++/11/fstream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \

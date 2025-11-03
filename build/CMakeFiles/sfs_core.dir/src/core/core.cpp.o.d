@@ -227,4 +227,6 @@ CMakeFiles/sfs_core.dir/src/core/core.cpp.o: \
  /home/yy/snn/spinalflow-sim/include/arch/tiled_output_buffer.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_spine.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/output_sorter.hpp \
- /home/yy/snn/spinalflow-sim/include/core/io_shadow.hpp
+ /home/yy/snn/spinalflow-sim/include/core/io_shadow.hpp \
+ /home/yy/snn/spinalflow-sim/include/hooks/spike_event_hooks.h \
+ /home/yy/snn/spinalflow-sim/include/hooks/tile_input_hooks.h

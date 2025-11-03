@@ -206,6 +206,30 @@ cache/src/cache_core.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/cache_core.cpp.s
 .PHONY : cache/src/cache_core.cpp.s
 
+cache/src/cache_hooks.o: cache/src/cache_hooks.cpp.o
+.PHONY : cache/src/cache_hooks.o
+
+# target to build an object file
+cache/src/cache_hooks.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/cache_hooks.cpp.o
+.PHONY : cache/src/cache_hooks.cpp.o
+
+cache/src/cache_hooks.i: cache/src/cache_hooks.cpp.i
+.PHONY : cache/src/cache_hooks.i
+
+# target to preprocess a source file
+cache/src/cache_hooks.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/cache_hooks.cpp.i
+.PHONY : cache/src/cache_hooks.cpp.i
+
+cache/src/cache_hooks.s: cache/src/cache_hooks.cpp.s
+.PHONY : cache/src/cache_hooks.s
+
+# target to generate assembly for a file
+cache/src/cache_hooks.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/cache_hooks.cpp.s
+.PHONY : cache/src/cache_hooks.cpp.s
+
 cache/src/config_loader.o: cache/src/config_loader.cpp.o
 .PHONY : cache/src/config_loader.o
 
@@ -277,6 +301,30 @@ cache/src/mappers/mapper_xorfold.s: cache/src/mappers/mapper_xorfold.cpp.s
 cache/src/mappers/mapper_xorfold.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_xorfold.cpp.s
 .PHONY : cache/src/mappers/mapper_xorfold.cpp.s
+
+cache/src/prefetch/pf_first_touch.o: cache/src/prefetch/pf_first_touch.cpp.o
+.PHONY : cache/src/prefetch/pf_first_touch.o
+
+# target to build an object file
+cache/src/prefetch/pf_first_touch.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp.o
+.PHONY : cache/src/prefetch/pf_first_touch.cpp.o
+
+cache/src/prefetch/pf_first_touch.i: cache/src/prefetch/pf_first_touch.cpp.i
+.PHONY : cache/src/prefetch/pf_first_touch.i
+
+# target to preprocess a source file
+cache/src/prefetch/pf_first_touch.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp.i
+.PHONY : cache/src/prefetch/pf_first_touch.cpp.i
+
+cache/src/prefetch/pf_first_touch.s: cache/src/prefetch/pf_first_touch.cpp.s
+.PHONY : cache/src/prefetch/pf_first_touch.s
+
+# target to generate assembly for a file
+cache/src/prefetch/pf_first_touch.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp.s
+.PHONY : cache/src/prefetch/pf_first_touch.cpp.s
 
 cache/src/prefetch/pf_none.o: cache/src/prefetch/pf_none.cpp.o
 .PHONY : cache/src/prefetch/pf_none.o
@@ -662,6 +710,54 @@ src/core/core.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/core/core.cpp.s
 .PHONY : src/core/core.cpp.s
 
+src/hooks/spike_event_hooks.o: src/hooks/spike_event_hooks.cpp.o
+.PHONY : src/hooks/spike_event_hooks.o
+
+# target to build an object file
+src/hooks/spike_event_hooks.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/hooks/spike_event_hooks.cpp.o
+.PHONY : src/hooks/spike_event_hooks.cpp.o
+
+src/hooks/spike_event_hooks.i: src/hooks/spike_event_hooks.cpp.i
+.PHONY : src/hooks/spike_event_hooks.i
+
+# target to preprocess a source file
+src/hooks/spike_event_hooks.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/hooks/spike_event_hooks.cpp.i
+.PHONY : src/hooks/spike_event_hooks.cpp.i
+
+src/hooks/spike_event_hooks.s: src/hooks/spike_event_hooks.cpp.s
+.PHONY : src/hooks/spike_event_hooks.s
+
+# target to generate assembly for a file
+src/hooks/spike_event_hooks.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/hooks/spike_event_hooks.cpp.s
+.PHONY : src/hooks/spike_event_hooks.cpp.s
+
+src/hooks/tile_input_hooks.o: src/hooks/tile_input_hooks.cpp.o
+.PHONY : src/hooks/tile_input_hooks.o
+
+# target to build an object file
+src/hooks/tile_input_hooks.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/hooks/tile_input_hooks.cpp.o
+.PHONY : src/hooks/tile_input_hooks.cpp.o
+
+src/hooks/tile_input_hooks.i: src/hooks/tile_input_hooks.cpp.i
+.PHONY : src/hooks/tile_input_hooks.i
+
+# target to preprocess a source file
+src/hooks/tile_input_hooks.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/hooks/tile_input_hooks.cpp.i
+.PHONY : src/hooks/tile_input_hooks.cpp.i
+
+src/hooks/tile_input_hooks.s: src/hooks/tile_input_hooks.cpp.s
+.PHONY : src/hooks/tile_input_hooks.s
+
+# target to generate assembly for a file
+src/hooks/tile_input_hooks.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/src/hooks/tile_input_hooks.cpp.s
+.PHONY : src/hooks/tile_input_hooks.cpp.s
+
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
 
@@ -870,6 +966,9 @@ help:
 	@echo "... cache/src/cache_core.o"
 	@echo "... cache/src/cache_core.i"
 	@echo "... cache/src/cache_core.s"
+	@echo "... cache/src/cache_hooks.o"
+	@echo "... cache/src/cache_hooks.i"
+	@echo "... cache/src/cache_hooks.s"
 	@echo "... cache/src/config_loader.o"
 	@echo "... cache/src/config_loader.i"
 	@echo "... cache/src/config_loader.s"
@@ -879,6 +978,9 @@ help:
 	@echo "... cache/src/mappers/mapper_xorfold.o"
 	@echo "... cache/src/mappers/mapper_xorfold.i"
 	@echo "... cache/src/mappers/mapper_xorfold.s"
+	@echo "... cache/src/prefetch/pf_first_touch.o"
+	@echo "... cache/src/prefetch/pf_first_touch.i"
+	@echo "... cache/src/prefetch/pf_first_touch.s"
 	@echo "... cache/src/prefetch/pf_none.o"
 	@echo "... cache/src/prefetch/pf_none.i"
 	@echo "... cache/src/prefetch/pf_none.s"
@@ -927,6 +1029,12 @@ help:
 	@echo "... src/core/core.o"
 	@echo "... src/core/core.i"
 	@echo "... src/core/core.s"
+	@echo "... src/hooks/spike_event_hooks.o"
+	@echo "... src/hooks/spike_event_hooks.i"
+	@echo "... src/hooks/spike_event_hooks.s"
+	@echo "... src/hooks/tile_input_hooks.o"
+	@echo "... src/hooks/tile_input_hooks.i"
+	@echo "... src/hooks/tile_input_hooks.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

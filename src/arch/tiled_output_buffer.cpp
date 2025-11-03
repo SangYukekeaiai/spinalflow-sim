@@ -2,6 +2,7 @@
 
 #include "arch/tiled_output_buffer.hpp"
 #include "arch/pe_array.hpp"  // requires: out_spike_entries() returning fixed array of optionals
+
 #include <limits>
 #include <optional>            // for std::optional
 
@@ -34,8 +35,6 @@ bool TiledOutputBuffer::run(int tile_id) {
     // One pass: for each PE i, if outs[i] holds a value, push into pe_fifos_[i].
     for (std::size_t i = 0; i < kNumPE; ++i) {
       if (outs[i].has_value()) {
-        // Since we checked "any_full" above and each PE contributes at most one
-        // entry per cycle, pushing one more cannot overflow beyond depth=4 here.
         pe_fifos_[i].push_back(*outs[i]);
         saw_any = true;
       }

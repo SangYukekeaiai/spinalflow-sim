@@ -44,6 +44,10 @@ public:
   const CoreSramStats& sram_stats() const { return last_sram_stats_; }
   int drained_entries_total() const { return drained_entries_total_; }
 
+  void OverrideWeightCache(const cache::CacheConfig& cfg);
+  const cache::CacheStats* weight_cache_stats() const;
+  std::uint64_t weight_cache_latency_cycles() const;
+
 private:
   static int DeriveOutDim(int in, int pad, int kernel, int stride) {
     const int numer = in + 2 * pad - kernel;

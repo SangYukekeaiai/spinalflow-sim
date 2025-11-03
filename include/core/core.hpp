@@ -23,6 +23,8 @@
 #include "arch/output_spine.hpp"
 #include "arch/output_sorter.hpp"
 #include "core/io_shadow.hpp"
+#include "hooks/spike_event_hooks.h"
+#include "hooks/tile_input_hooks.h"
 
 // DRAM fwd-decl
 namespace sf { namespace dram { class SimpleDRAM; } }
@@ -163,6 +165,7 @@ private:
   // ---- Per-(h,w) state ----
   int  h_out_cur_ = 0;
   int  w_out_cur_ = 0;
+  int  current_spine_id_ = -1;
 
   bool v_tob_in_         = false;
   bool v_pe_             = false;

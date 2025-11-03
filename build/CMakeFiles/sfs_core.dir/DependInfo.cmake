@@ -9,9 +9,11 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/yy/snn/spinalflow-sim/cache/src/cache_core.cpp" "CMakeFiles/sfs_core.dir/cache/src/cache_core.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/cache_core.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/cache_hooks.cpp" "CMakeFiles/sfs_core.dir/cache/src/cache_hooks.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/cache_hooks.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/config_loader.cpp" "CMakeFiles/sfs_core.dir/cache/src/config_loader.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/config_loader.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/mappers/mapper_direct_mod.cpp" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_direct_mod.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_direct_mod.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/mappers/mapper_xorfold.cpp" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_xorfold.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_xorfold.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/prefetch/pf_first_touch.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/prefetch/pf_none.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/registry.cpp" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_lru.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o.d"
@@ -28,6 +30,8 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/yy/snn/spinalflow-sim/src/arch/pe_array.cpp" "CMakeFiles/sfs_core.dir/src/arch/pe_array.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/arch/pe_array.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/arch/tiled_output_buffer.cpp" "CMakeFiles/sfs_core.dir/src/arch/tiled_output_buffer.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/arch/tiled_output_buffer.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/core/core.cpp" "CMakeFiles/sfs_core.dir/src/core/core.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/core/core.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/src/hooks/spike_event_hooks.cpp" "CMakeFiles/sfs_core.dir/src/hooks/spike_event_hooks.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/hooks/spike_event_hooks.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/src/hooks/tile_input_hooks.cpp" "CMakeFiles/sfs_core.dir/src/hooks/tile_input_hooks.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/hooks/tile_input_hooks.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/model/conv_layer.cpp" "CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/model/conv_layer.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/model/fc_layer.cpp" "CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/src/runner/simulation.cpp" "CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/src/runner/simulation.cpp.o.d"

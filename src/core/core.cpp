@@ -132,6 +132,7 @@ void Core::UpdateOutputSpineID_Eachhw()
 {
   const int spine_id = h_out_cur_ * W_out_ + w_out_cur_;
   out_spine_.SetSpineID(spine_id);
+  current_spine_id_ = spine_id;
 }
 
 void Core::ClearTOB_Eachhw()
@@ -360,6 +361,16 @@ bool Core::StepOnce(int tile_id) {
   v_tob_in_ = v_tob_in_next;
   v_pe_     = v_pe_next;
   v_mfb_    = v_mfb_next;
+
+  if (ran_pe_) {
+    const auto& entry = pe_array_.current_input_entry();
+    if (auto cb_tile = hooks::GetTileInputCallback()) {
+      cb_tile(current_spine_id_, tile_id, entry.neuron_id);
+    }
+    if (auto cb_spike = hooks::GetSpikeEventCallback()) {
+      cb_spike(current_spine_id_, tile_id, entry.ts);
+    }
+  }
 
   // Finish condition for compute of THIS batch for THIS tile.
   // TOB will keep draining since v_tob_in_next is always true.

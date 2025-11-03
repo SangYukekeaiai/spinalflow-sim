@@ -133,4 +133,19 @@ void FCLayer::run_layer() {
   last_sram_stats_ = core_->GetSramStats();
 }
 
+void FCLayer::OverrideWeightCache(const cache::CacheConfig& cfg) {
+  if (!core_) {
+    throw std::runtime_error("FCLayer::OverrideWeightCache: core not configured.");
+  }
+  core_->OverrideWeightCache(cfg);
+}
+
+const cache::CacheStats* FCLayer::weight_cache_stats() const {
+  return core_ ? core_->GetWeightCacheStats() : nullptr;
+}
+
+std::uint64_t FCLayer::weight_cache_latency_cycles() const {
+  return core_ ? core_->GetWeightCacheLatencyCycles() : 0;
+}
+
 } // namespace sf

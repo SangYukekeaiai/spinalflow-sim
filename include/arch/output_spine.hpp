@@ -23,6 +23,7 @@ public:
 
   
   void SetSpineID(int spine_id) { spine_id_ = spine_id; }
+  int SpineID() const { return spine_id_; }
   bool Push(const Entry& e) {
     if (buf_.size() >= capacity_limit_) {
       std::cout << "Warning: OutputSpine capacity exceeded (" << capacity_limit_ << " entries).\n";

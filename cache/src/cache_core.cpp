@@ -11,6 +11,7 @@
 #include "cache/prefetch_iface.h"
 #include "cache/replacement_iface.h"
 #include "cache/window_iface.h"
+#include "cache/cache_hooks.h"
 #include "cache/registry.h"
 
 namespace sf::cache {
@@ -166,7 +167,11 @@ private:
 
 std::unique_ptr<ICache> BuildCache(const CacheConfig& cfg,
                                    CacheModules modules) {
-  return std::make_unique<CacheCore>(cfg, std::move(modules));
+  std::unique_ptr<ICache> cache = std::make_unique<CacheCore>(cfg, std::move(modules));
+  if (auto decorator = GetCacheDecorator()) {
+    cache = decorator(std::move(cache));
+  }
+  return cache;
 }
 
 } // namespace sf::cache
