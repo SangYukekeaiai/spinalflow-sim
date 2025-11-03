@@ -5,6 +5,7 @@
 #include <iostream>
 #include <optional>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -60,6 +61,9 @@ int main(int argc, char** argv) {
   bool spike_stats_enabled = false;
   bool reuse_in_tile_enabled = false;
   bool belady_enabled = false;
+  bool prefetch_buffer_enabled = true;
+  std::optional<int> prefetch_buffer_lines_cli;
+  std::optional<int> prefetch_buffer_kb_cli;
   for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
     if (arg == "--reuse-dist") {
@@ -76,6 +80,26 @@ int main(int argc, char** argv) {
     }
     if (arg == "--belady") {
       belady_enabled = true;
+      continue;
+    }
+    if (arg == "--no-prefetch-buffer") {
+      prefetch_buffer_enabled = false;
+      continue;
+    }
+    if (arg == "--prefetch-buffer") {
+      prefetch_buffer_enabled = true;
+      continue;
+    }
+    const std::string lines_prefix = "--prefetch-buffer-lines=";
+    const std::string kb_prefix = "--prefetch-buffer-kb=";
+    if (arg.rfind(lines_prefix, 0) == 0) {
+      prefetch_buffer_enabled = true;
+      prefetch_buffer_lines_cli = std::stoi(arg.substr(lines_prefix.size()));
+      continue;
+    }
+    if (arg.rfind(kb_prefix, 0) == 0) {
+      prefetch_buffer_enabled = true;
+      prefetch_buffer_kb_cli = std::stoi(arg.substr(kb_prefix.size()));
       continue;
     }
     requested_layers.insert(std::atoi(argv[i]));
@@ -153,8 +177,32 @@ int main(int argc, char** argv) {
       cache_cfg.Cin = spec.Cin_in;
       cache_cfg.KH = spec.Kh;
       cache_cfg.KW = spec.Kw;
+      cache_cfg.prefetch_buffer_enabled = prefetch_buffer_enabled;
+      if (cache_cfg.prefetch_buffer_enabled) {
+        int buffer_lines = cache_cfg.prefetch_buffer_capacity_lines;
+        if (prefetch_buffer_lines_cli) {
+          buffer_lines = *prefetch_buffer_lines_cli;
+        } else if (prefetch_buffer_kb_cli) {
+          const std::uint64_t requested_bytes =
+              static_cast<std::uint64_t>(*prefetch_buffer_kb_cli) * 1024ULL;
+          if (requested_bytes % line_size != 0) {
+            std::cerr << "Prefetch buffer size " << *prefetch_buffer_kb_cli
+                      << "KB is not compatible with line size " << line_size << "B.\n";
+            continue;
+          }
+          buffer_lines = static_cast<int>(requested_bytes / line_size);
+        }
+        if (buffer_lines <= 0) {
+          std::cerr << "Prefetch buffer capacity must be positive.\n";
+          continue;
+        }
+        cache_cfg.prefetch_buffer_capacity_lines = buffer_lines;
+      } else {
+        cache_cfg.prefetch_buffer_capacity_lines = 0;
+      }
       if (belady_enabled) {
         cache_cfg.prefetch_buffer_enabled = false;
+        cache_cfg.prefetch_buffer_capacity_lines = 0;
       }
       cache_cfg.Validate();
 
@@ -162,7 +210,26 @@ int main(int argc, char** argv) {
           cross_stats_root /
           (std::to_string(point.capacity_kb) + "KB_" +
            std::to_string(point.ways) + "ways_" +
-           (belady_enabled ? "belady" : "lru") + ".csv");
+           ([&]() {
+             if (belady_enabled) {
+               return std::string("belady");
+             }
+             if (!cache_cfg.prefetch_buffer_enabled) {
+               return std::string("lru_no_prefetch_buffer");
+             }
+             const std::uint64_t buffer_bytes =
+                 static_cast<std::uint64_t>(cache_cfg.prefetch_buffer_capacity_lines) *
+                 static_cast<std::uint64_t>(cache_cfg.geometry.line_size_bytes);
+             std::ostringstream oss;
+             oss << "lru_prefetch_buffer_";
+             if (buffer_bytes % 1024ULL == 0) {
+               oss << (buffer_bytes / 1024ULL) << "KB";
+             } else {
+               oss << buffer_bytes << "B";
+             }
+             return oss.str();
+           })() +
+           ".csv");
       test::stats::EnsureCsvHasHeader(cross_csv);
 
       auto report_stats = [&](const sf::cache::CacheStats& stats,
@@ -273,6 +340,7 @@ int main(int argc, char** argv) {
         sf::cache::CacheConfig trace_cfg = cache_cfg;
         trace_cfg.replacement_kind = sf::cache::ReplacementKind::Lru;
         trace_cfg.prefetch_buffer_enabled = false;
+        trace_cfg.prefetch_buffer_capacity_lines = 0;
         auto trace_stats = run_layer(trace_cfg, false, &trace);
         if (!trace_stats.has_value()) {
           return 2;
@@ -284,6 +352,7 @@ int main(int argc, char** argv) {
         sf::cache::CacheConfig belady_cfg = cache_cfg;
         belady_cfg.replacement_kind = sf::cache::ReplacementKind::Belady;
         belady_cfg.prefetch_buffer_enabled = false;
+        belady_cfg.prefetch_buffer_capacity_lines = 0;
         auto belady_stats = run_layer(belady_cfg, true, nullptr);
         sf::cache::ClearBeladyPlan();
         if (!belady_stats.has_value()) {

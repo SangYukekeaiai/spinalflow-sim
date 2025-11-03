@@ -39,7 +39,7 @@ CacheModules MakeDefaultModules(const CacheConfig& cfg) {
   }
   modules.window = MakeTwoTileWindow();
   if (cfg.prefetch_buffer_enabled && cfg.replacement_kind != ReplacementKind::Belady) {
-    modules.prefetch_buffer = std::make_unique<PrefetchBuffer>(1024);
+    modules.prefetch_buffer = std::make_unique<PrefetchBuffer>(cfg.prefetch_buffer_capacity_lines);
   }
   return modules;
 }

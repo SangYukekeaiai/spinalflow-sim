@@ -31,6 +31,7 @@ struct CacheConfig {
   int KW = 0;
   ReplacementKind replacement_kind = ReplacementKind::Lru;
   bool prefetch_buffer_enabled = true;
+  int prefetch_buffer_capacity_lines = 512;
 
   void Validate() const {
     if (Cin <= 0 || KH <= 0 || KW <= 0) {
@@ -44,6 +45,12 @@ struct CacheConfig {
     }
     if (geometry.line_size_bytes <= 0) {
       throw std::invalid_argument("CacheConfig: line_size_bytes must be positive.");
+    }
+    if (prefetch_buffer_enabled && prefetch_buffer_capacity_lines <= 0) {
+      throw std::invalid_argument("CacheConfig: prefetch_buffer_capacity_lines must be positive when prefetch buffer is enabled.");
+    }
+    if (!prefetch_buffer_enabled && prefetch_buffer_capacity_lines < 0) {
+      throw std::invalid_argument("CacheConfig: prefetch_buffer_capacity_lines cannot be negative.");
     }
   }
 };
