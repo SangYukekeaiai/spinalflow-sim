@@ -419,10 +419,38 @@ CMakeFiles/sfs_core.dir/cache/src/registry.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sfs_core.dir/cache/src/registry.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/cache/src/registry.cpp -o CMakeFiles/sfs_core.dir/cache/src/registry.cpp.s
 
+CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o: CMakeFiles/sfs_core.dir/flags.make
+CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o: ../cache/src/replacement/belady_plan.cpp
+CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o: CMakeFiles/sfs_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o -MF CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o.d -o CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o -c /home/yy/snn/spinalflow-sim/cache/src/replacement/belady_plan.cpp
+
+CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/cache/src/replacement/belady_plan.cpp > CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.i
+
+CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/cache/src/replacement/belady_plan.cpp -o CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.s
+
+CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o: CMakeFiles/sfs_core.dir/flags.make
+CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o: ../cache/src/replacement/repl_belady.cpp
+CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o: CMakeFiles/sfs_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o -MF CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o.d -o CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o -c /home/yy/snn/spinalflow-sim/cache/src/replacement/repl_belady.cpp
+
+CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yy/snn/spinalflow-sim/cache/src/replacement/repl_belady.cpp > CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.i
+
+CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yy/snn/spinalflow-sim/cache/src/replacement/repl_belady.cpp -o CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.s
+
 CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o: CMakeFiles/sfs_core.dir/flags.make
 CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o: ../cache/src/replacement/repl_lru.cpp
 CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o: CMakeFiles/sfs_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o -MF CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o.d -o CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o -c /home/yy/snn/spinalflow-sim/cache/src/replacement/repl_lru.cpp
 
 CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.i: cmake_force
@@ -436,7 +464,7 @@ CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.s: cmake_force
 CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o: CMakeFiles/sfs_core.dir/flags.make
 CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o: ../cache/src/replacement/repl_random.cpp
 CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o: CMakeFiles/sfs_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o -MF CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o.d -o CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o -c /home/yy/snn/spinalflow-sim/cache/src/replacement/repl_random.cpp
 
 CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.i: cmake_force
@@ -450,7 +478,7 @@ CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.s: cmake_force
 CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o: CMakeFiles/sfs_core.dir/flags.make
 CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o: ../cache/src/window/win_three_tile.cpp
 CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o: CMakeFiles/sfs_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o -MF CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o.d -o CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o -c /home/yy/snn/spinalflow-sim/cache/src/window/win_three_tile.cpp
 
 CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.i: cmake_force
@@ -464,7 +492,7 @@ CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.s: cmake_force
 CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o: CMakeFiles/sfs_core.dir/flags.make
 CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o: ../cache/src/window/win_two_tile.cpp
 CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o: CMakeFiles/sfs_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_31) "Building CXX object CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o -MF CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o.d -o CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o -c /home/yy/snn/spinalflow-sim/cache/src/window/win_two_tile.cpp
 
 CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.i: cmake_force
@@ -502,6 +530,8 @@ sfs_core_OBJECTS = \
 "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o" \
 "CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o" \
 "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o" \
+"CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o" \
+"CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o" \
 "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o" \
 "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o" \
 "CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o" \
@@ -535,13 +565,15 @@ lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o
+lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o
+lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/cache/src/window/win_two_tile.cpp.o
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/build.make
 lib/libsfs_core.a: CMakeFiles/sfs_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Linking CXX static library lib/libsfs_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/yy/snn/spinalflow-sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_32) "Linking CXX static library lib/libsfs_core.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/sfs_core.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/sfs_core.dir/link.txt --verbose=$(VERBOSE)
 

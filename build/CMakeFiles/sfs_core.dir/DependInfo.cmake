@@ -17,6 +17,8 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/yy/snn/spinalflow-sim/cache/src/prefetch/pf_none.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/prefetch_buffer.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/registry.cpp" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/replacement/belady_plan.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_belady.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_lru.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_random.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/window/win_three_tile.cpp" "CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/window/win_three_tile.cpp.o.d"

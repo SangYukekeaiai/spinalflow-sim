@@ -398,6 +398,54 @@ cache/src/registry.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/registry.cpp.s
 .PHONY : cache/src/registry.cpp.s
 
+cache/src/replacement/belady_plan.o: cache/src/replacement/belady_plan.cpp.o
+.PHONY : cache/src/replacement/belady_plan.o
+
+# target to build an object file
+cache/src/replacement/belady_plan.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.o
+.PHONY : cache/src/replacement/belady_plan.cpp.o
+
+cache/src/replacement/belady_plan.i: cache/src/replacement/belady_plan.cpp.i
+.PHONY : cache/src/replacement/belady_plan.i
+
+# target to preprocess a source file
+cache/src/replacement/belady_plan.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.i
+.PHONY : cache/src/replacement/belady_plan.cpp.i
+
+cache/src/replacement/belady_plan.s: cache/src/replacement/belady_plan.cpp.s
+.PHONY : cache/src/replacement/belady_plan.s
+
+# target to generate assembly for a file
+cache/src/replacement/belady_plan.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/belady_plan.cpp.s
+.PHONY : cache/src/replacement/belady_plan.cpp.s
+
+cache/src/replacement/repl_belady.o: cache/src/replacement/repl_belady.cpp.o
+.PHONY : cache/src/replacement/repl_belady.o
+
+# target to build an object file
+cache/src/replacement/repl_belady.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.o
+.PHONY : cache/src/replacement/repl_belady.cpp.o
+
+cache/src/replacement/repl_belady.i: cache/src/replacement/repl_belady.cpp.i
+.PHONY : cache/src/replacement/repl_belady.i
+
+# target to preprocess a source file
+cache/src/replacement/repl_belady.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.i
+.PHONY : cache/src/replacement/repl_belady.cpp.i
+
+cache/src/replacement/repl_belady.s: cache/src/replacement/repl_belady.cpp.s
+.PHONY : cache/src/replacement/repl_belady.s
+
+# target to generate assembly for a file
+cache/src/replacement/repl_belady.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/replacement/repl_belady.cpp.s
+.PHONY : cache/src/replacement/repl_belady.cpp.s
+
 cache/src/replacement/repl_lru.o: cache/src/replacement/repl_lru.cpp.o
 .PHONY : cache/src/replacement/repl_lru.o
 
@@ -1014,6 +1062,12 @@ help:
 	@echo "... cache/src/registry.o"
 	@echo "... cache/src/registry.i"
 	@echo "... cache/src/registry.s"
+	@echo "... cache/src/replacement/belady_plan.o"
+	@echo "... cache/src/replacement/belady_plan.i"
+	@echo "... cache/src/replacement/belady_plan.s"
+	@echo "... cache/src/replacement/repl_belady.o"
+	@echo "... cache/src/replacement/repl_belady.i"
+	@echo "... cache/src/replacement/repl_belady.s"
 	@echo "... cache/src/replacement/repl_lru.o"
 	@echo "... cache/src/replacement/repl_lru.i"
 	@echo "... cache/src/replacement/repl_lru.s"

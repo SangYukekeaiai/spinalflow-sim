@@ -19,7 +19,8 @@ struct CacheTiming {
 
 enum class ReplacementKind {
   Lru = 0,
-  Random
+  Random,
+  Belady
 };
 
 struct CacheConfig {

@@ -3,12 +3,14 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "cache/cache_config.h"
 #include "cache/cache_iface.h"
+#include "cache/belady.h"
 #include "common/constants.hpp"
 #include "model/conv_layer.hpp"
 #include "model/fc_layer.hpp"
@@ -16,6 +18,7 @@
 #include "stats/layer_stats_csv.h"
 #include "stats/reuse_distance_tracker.h"
 #include "stats/reuse_in_tile_tracker.h"
+#include "stats/cache_trace_recorder.h"
 #include "stats/tile_input_hooks.h"
 #include "stats/tracking_cache.h"
 #include "stats/spike_event_hooks.h"
@@ -56,6 +59,7 @@ int main(int argc, char** argv) {
   bool reuse_hist_enabled = false;
   bool spike_stats_enabled = false;
   bool reuse_in_tile_enabled = false;
+  bool belady_enabled = false;
   for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
     if (arg == "--reuse-dist") {
@@ -68,6 +72,10 @@ int main(int argc, char** argv) {
     }
     if (arg == "--reuse-in-tile") {
       reuse_in_tile_enabled = true;
+      continue;
+    }
+    if (arg == "--belady") {
+      belady_enabled = true;
       continue;
     }
     requested_layers.insert(std::atoi(argv[i]));
@@ -92,9 +100,7 @@ int main(int argc, char** argv) {
 
   const std::filesystem::path cross_stats_root =
       csv_root / "cross_layer_comparsion_stats";
-  const std::filesystem::path cross_csv =
-      cross_stats_root / "288KB_32ways_lru.csv";
-  test::stats::EnsureCsvHasHeader(cross_csv);
+  std::filesystem::create_directories(cross_stats_root);
 
   test::stats::ReuseDistanceTracker reuse_tracker;
   if (reuse_hist_enabled) {
@@ -137,8 +143,6 @@ int main(int argc, char** argv) {
         continue;
       }
 
-      auto dram = sf::InitDram(bin_path.string(), json_path.string());
-
       sf::cache::CacheConfig cache_cfg;
       cache_cfg.geometry.num_sets = num_sets;
       cache_cfg.geometry.ways = point.ways;
@@ -149,9 +153,20 @@ int main(int argc, char** argv) {
       cache_cfg.Cin = spec.Cin_in;
       cache_cfg.KH = spec.Kh;
       cache_cfg.KW = spec.Kw;
+      if (belady_enabled) {
+        cache_cfg.prefetch_buffer_enabled = false;
+      }
       cache_cfg.Validate();
 
-      auto report_stats = [&](const sf::cache::CacheStats& stats) {
+      const std::filesystem::path cross_csv =
+          cross_stats_root /
+          (std::to_string(point.capacity_kb) + "KB_" +
+           std::to_string(point.ways) + "ways_" +
+           (belady_enabled ? "belady" : "lru") + ".csv");
+      test::stats::EnsureCsvHasHeader(cross_csv);
+
+      auto report_stats = [&](const sf::cache::CacheStats& stats,
+                              const sf::cache::CacheConfig& effective_cfg) {
         const std::uint64_t total_demand =
             stats.demand_hits +
             stats.demand_misses_allocated +
@@ -185,7 +200,7 @@ int main(int argc, char** argv) {
                 << hit_rate << '\n';
 
         const auto summary =
-            test::stats::LayerStatsSummary::FromCacheStats(spec.L, stats, cache_cfg);
+            test::stats::LayerStatsSummary::FromCacheStats(spec.L, stats, effective_cfg);
         test::stats::AppendRow(cross_csv, summary);
       };
 
@@ -196,77 +211,92 @@ int main(int argc, char** argv) {
                    (spec.Cout + static_cast<int>(sf::kNumPE) - 1) /
                        static_cast<int>(sf::kNumPE)));
 
-      if (reuse_in_tile_enabled) {
-        reuse_tile_tracker.BeginLayer(spec.L, tiles_per_spine);
-      }
+      auto run_layer = [&](const sf::cache::CacheConfig& cfg,
+                           bool trackers_active,
+                           std::vector<sf::cache::AccessRequest>* trace)
+          -> std::optional<sf::cache::CacheStats> {
+        auto dram_local = sf::InitDram(bin_path.string(), json_path.string());
 
-      if (spec.kind == sf::LayerKind::kConv) {
-        sf::ConvLayer layer;
-        layer.ConfigureLayer(spec.L,
-                             spec.Cin_in, spec.Cout,
-                             spec.H_in,   spec.W_in,
-                             spec.Kh,     spec.Kw,
-                             spec.Sh,     spec.Sw,
-                             spec.Ph,     spec.Pw,
-                             spec.threshold_,
-                             spec.w_bits,
-                             spec.w_signed,
-                             spec.w_frac_bits,
-                             spec.w_scale,
-                             &dram);
+        auto execute = [&](auto& layer) -> std::optional<sf::cache::CacheStats> {
+          layer.ConfigureLayer(spec.L,
+                               spec.Cin_in, spec.Cout,
+                               spec.H_in,   spec.W_in,
+                               spec.Kh,     spec.Kw,
+                               spec.Sh,     spec.Sw,
+                               spec.Ph,     spec.Pw,
+                               spec.threshold_,
+                               spec.w_bits,
+                               spec.w_signed,
+                               spec.w_frac_bits,
+                               spec.w_scale,
+                               &dram_local);
 
-        layer.OverrideWeightCache(cache_cfg);
+          if (trackers_active) {
+            if (reuse_hist_enabled) {
+              reuse_tracker.BeginLayer(spec.L);
+            }
+            if (spike_stats_enabled) {
+              spike_tracker.BeginLayer(spec.L, tiles_per_spine);
+            }
+            if (reuse_in_tile_enabled) {
+              reuse_tile_tracker.BeginLayer(spec.L, tiles_per_spine);
+            }
+          }
 
-        if (reuse_hist_enabled) {
-          reuse_tracker.BeginLayer(spec.L);
+          std::optional<test::stats::ScopedTraceRecorder> recorder;
+          if (trace) {
+            recorder.emplace(*trace);
+          }
+
+          layer.OverrideWeightCache(cfg);
+          layer.run_layer();
+          recorder.reset();
+
+          const auto* stats_ptr = layer.weight_cache_stats();
+          if (!stats_ptr) {
+            std::cerr << "Weight cache stats unavailable." << std::endl;
+            return std::nullopt;
+          }
+          return *stats_ptr;
+        };
+
+        if (spec.kind == sf::LayerKind::kConv) {
+          sf::ConvLayer layer;
+          return execute(layer);
         }
-        if (spike_stats_enabled) {
-          spike_tracker.BeginLayer(spec.L, tiles_per_spine);
-        }
+        sf::FCLayer layer;
+        return execute(layer);
+      };
 
-        layer.run_layer();
-
-        const auto* stats = layer.weight_cache_stats();
-        if (!stats) {
-          std::cerr << "Weight cache stats unavailable." << std::endl;
+      if (belady_enabled) {
+        std::vector<sf::cache::AccessRequest> trace;
+        sf::cache::CacheConfig trace_cfg = cache_cfg;
+        trace_cfg.replacement_kind = sf::cache::ReplacementKind::Lru;
+        trace_cfg.prefetch_buffer_enabled = false;
+        auto trace_stats = run_layer(trace_cfg, false, &trace);
+        if (!trace_stats.has_value()) {
           return 2;
         }
 
-        report_stats(*stats);
+        auto plan = sf::cache::BuildBeladyPlan(cache_cfg, trace);
+        sf::cache::RegisterBeladyPlan(plan);
+
+        sf::cache::CacheConfig belady_cfg = cache_cfg;
+        belady_cfg.replacement_kind = sf::cache::ReplacementKind::Belady;
+        belady_cfg.prefetch_buffer_enabled = false;
+        auto belady_stats = run_layer(belady_cfg, true, nullptr);
+        sf::cache::ClearBeladyPlan();
+        if (!belady_stats.has_value()) {
+          return 2;
+        }
+        report_stats(*belady_stats, belady_cfg);
         reuse_written = true;
       } else {
-        sf::FCLayer layer;
-        layer.ConfigureLayer(spec.L,
-                             spec.Cin_in, spec.Cout,
-                             spec.H_in,   spec.W_in,
-                             spec.Kh,     spec.Kw,
-                             spec.Sh,     spec.Sw,
-                             spec.Ph,     spec.Pw,
-                             spec.threshold_,
-                             spec.w_bits,
-                             spec.w_signed,
-                             spec.w_frac_bits,
-                             spec.w_scale,
-                             &dram);
-
-        layer.OverrideWeightCache(cache_cfg);
-
-        if (reuse_hist_enabled) {
-          reuse_tracker.BeginLayer(spec.L);
-        }
-        if (spike_stats_enabled) {
-          spike_tracker.BeginLayer(spec.L, tiles_per_spine);
-        }
-
-        layer.run_layer();
-
-        const auto* stats = layer.weight_cache_stats();
-        if (!stats) {
-          std::cerr << "Weight cache stats unavailable." << std::endl;
+        auto stats_opt = run_layer(cache_cfg, true, nullptr);
+        if (!stats_opt.has_value()) {
           return 2;
         }
-
-        report_stats(*stats);
+        report_stats(*stats_opt, cache_cfg);
         reuse_written = true;
       }
 
