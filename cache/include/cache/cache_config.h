@@ -29,6 +29,7 @@ struct CacheConfig {
   int KH = 0;
   int KW = 0;
   ReplacementKind replacement_kind = ReplacementKind::Lru;
+  bool prefetch_buffer_enabled = true;
 
   void Validate() const {
     if (Cin <= 0 || KH <= 0 || KW <= 0) {

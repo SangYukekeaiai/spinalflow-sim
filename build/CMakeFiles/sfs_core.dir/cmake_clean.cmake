@@ -13,6 +13,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp.o.d"
   "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o"
   "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o.d"
+  "CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o"
+  "CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o.d"
   "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o"
   "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o.d"
   "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o"

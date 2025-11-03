@@ -15,6 +15,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/yy/snn/spinalflow-sim/cache/src/mappers/mapper_xorfold.cpp" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_xorfold.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/mappers/mapper_xorfold.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/prefetch/pf_first_touch.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_first_touch.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/prefetch/pf_none.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.o.d"
+  "/home/yy/snn/spinalflow-sim/cache/src/prefetch_buffer.cpp" "CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/registry.cpp" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/registry.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_lru.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_lru.cpp.o.d"
   "/home/yy/snn/spinalflow-sim/cache/src/replacement/repl_random.cpp" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o" "gcc" "CMakeFiles/sfs_core.dir/cache/src/replacement/repl_random.cpp.o.d"

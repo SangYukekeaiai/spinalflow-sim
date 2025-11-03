@@ -27,6 +27,9 @@ CacheModules MakeDefaultModules(const CacheConfig& cfg) {
   }
   modules.prefetch = MakeFirstTouchPrefetch(cfg);
   modules.window = MakeTwoTileWindow();
+  if (cfg.prefetch_buffer_enabled) {
+    modules.prefetch_buffer = std::make_unique<PrefetchBuffer>(1024);
+  }
   return modules;
 }
 

@@ -255,6 +255,7 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: \
  /home/yy/snn/spinalflow-sim/cache/include/cache/replacement_iface.h \
  /home/yy/snn/spinalflow-sim/cache/include/cache/prefetch_iface.h \
  /home/yy/snn/spinalflow-sim/cache/include/cache/window_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/prefetch_buffer.h \
  /home/yy/snn/spinalflow-sim/include/arch/input_spine_buffer.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/intermediate_fifo.hpp \
  /home/yy/snn/spinalflow-sim/include/arch/min_finder_batch.hpp \

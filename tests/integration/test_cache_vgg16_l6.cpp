@@ -104,6 +104,10 @@ int main(int argc, char** argv) {
   if (spike_stats_enabled) {
     test::stats::EnableSpikeEventTracking(spike_tracker);
   }
+  test::stats::ReuseInTileTracker reuse_tile_tracker;
+  if (reuse_in_tile_enabled) {
+    test::stats::EnableTileReuseTracking(reuse_tile_tracker);
+  }
   const std::filesystem::path spike_stats_root =
       csv_root / "spiking_event_stats";
   const std::filesystem::path reuse_in_tile_root =

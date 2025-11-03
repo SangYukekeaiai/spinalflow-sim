@@ -201,6 +201,7 @@ CMakeFiles/sfs_core.dir/src/model/fc_layer.cpp.o: \
  /home/yy/snn/spinalflow-sim/cache/include/cache/replacement_iface.h \
  /home/yy/snn/spinalflow-sim/cache/include/cache/prefetch_iface.h \
  /home/yy/snn/spinalflow-sim/cache/include/cache/window_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/prefetch_buffer.h \
  /home/yy/snn/spinalflow-sim/include/arch/input_spine_buffer.hpp \
  /usr/include/c++/11/limits \
  /home/yy/snn/spinalflow-sim/include/arch/intermediate_fifo.hpp \

@@ -13,6 +13,7 @@
 #include "cache/window_iface.h"
 #include "cache/cache_hooks.h"
 #include "cache/registry.h"
+#include "cache/prefetch_buffer.h"
 
 namespace sf::cache {
 
@@ -23,7 +24,8 @@ public:
         mapper_(std::move(modules.mapper)),
         replacement_(std::move(modules.replacement)),
         prefetch_(std::move(modules.prefetch)),
-        window_(std::move(modules.window)) {
+        window_(std::move(modules.window)),
+        prefetch_buffer_(std::move(modules.prefetch_buffer)) {
     cfg_.Validate();
     if (!mapper_ || !replacement_ || !window_) {
       throw std::invalid_argument("CacheCore: mapper, replacement, and window modules are required.");
@@ -50,10 +52,16 @@ public:
     window_->Set(-1, -1);
     last_access_.reset();
     last_tile_ = -1;
+    if (prefetch_buffer_) {
+      prefetch_buffer_->Clear();
+    }
   }
 
   void SetWindow(int cur_tile, int next_tile) override {
     window_->Set(cur_tile, next_tile);
+    if (prefetch_buffer_ && cur_tile >= 0) {
+      LoadPrefetchBufferForTile(cur_tile);
+    }
     last_tile_ = cur_tile;
   }
 
@@ -122,30 +130,66 @@ public:
         target_input.kh = plan.request.kh;
         target_input.kw = plan.request.kw;
         MapOutput target_map = mapper_->Map(target_input);
-        if (target_map.set_idx < 0 || target_map.set_idx >= cfg_.geometry.num_sets) {
-          throw std::runtime_error("CacheCore::OnDemandAccess: prefetch set index out of range.");
-        }
-        SetState& prefetch_set = sets_[static_cast<std::size_t>(target_map.set_idx)];
-        const int prefetch_way = replacement_->FindWay(prefetch_set, target_map.tag);
-        if (prefetch_way >= 0) {
-          stats_.prefetch_hits += 1;
-          replacement_->OnPrefetchTouch(prefetch_set, prefetch_way);
-        } else {
-          VictimInfo victim = replacement_->PickVictim(prefetch_set);
-          if (victim.way < 0 || victim.way >= cfg_.geometry.ways) {
-            throw std::runtime_error("CacheCore::OnDemandAccess: invalid prefetch victim.");
+        if (target_map.set_idx >= 0 && target_map.set_idx < cfg_.geometry.num_sets) {
+          bool stored_in_buffer = false;
+          bool skip_prefetch = false;
+          if (prefetch_buffer_) {
+            if (!prefetch_buffer_->Store(plan.request.tile_id, target_map)) {
+              skip_prefetch = true;
+            } else {
+              stored_in_buffer = true;
+            }
           }
-          if (victim.was_valid) {
-            stats_.evictions_total += 1;
+          if (!skip_prefetch && !stored_in_buffer) {
+            SetState& prefetch_set = sets_[static_cast<std::size_t>(target_map.set_idx)];
+            const int prefetch_way = replacement_->FindWay(prefetch_set, target_map.tag);
+            if (prefetch_way >= 0) {
+              stats_.prefetch_hits += 1;
+              replacement_->OnPrefetchTouch(prefetch_set, prefetch_way);
+            } else {
+              VictimInfo victim = replacement_->PickVictim(prefetch_set);
+              if (victim.way < 0 || victim.way >= cfg_.geometry.ways) {
+                throw std::runtime_error("CacheCore::OnDemandAccess: invalid prefetch victim.");
+              }
+              if (victim.was_valid) {
+                stats_.evictions_total += 1;
+              }
+              replacement_->Install(prefetch_set, victim.way, target_map.tag, plan.request.tile_id);
+              stats_.prefetch_inserts += 1;
+              stats_.prefetch_bytes_loaded += static_cast<std::uint64_t>(cfg_.geometry.line_size_bytes);
+            }
           }
-          replacement_->Install(prefetch_set, victim.way, target_map.tag, plan.request.tile_id);
-          stats_.prefetch_inserts += 1;
-          stats_.prefetch_bytes_loaded += static_cast<std::uint64_t>(cfg_.geometry.line_size_bytes);
         }
       }
     }
 
     return result;
+  }
+
+  void LoadPrefetchBufferForTile(int tile_id) {
+    auto entries = prefetch_buffer_->TakeForTile(tile_id);
+    for (const auto& entry : entries) {
+      if (entry.map.set_idx < 0 || entry.map.set_idx >= cfg_.geometry.num_sets) {
+        continue;
+      }
+      SetState& set = sets_[static_cast<std::size_t>(entry.map.set_idx)];
+      const int existing = replacement_->FindWay(set, entry.map.tag);
+      if (existing >= 0) {
+        replacement_->OnPrefetchTouch(set, existing);
+        continue;
+      }
+      VictimInfo victim = replacement_->PickVictim(set);
+      if (victim.way < 0 || victim.way >= cfg_.geometry.ways) {
+        continue;
+      }
+      if (victim.was_valid) {
+        stats_.evictions_total += 1;
+      }
+      replacement_->Install(set, victim.way, entry.map.tag, tile_id);
+      stats_.prefetch_inserts += 1;
+      stats_.prefetch_bytes_loaded += static_cast<std::uint64_t>(cfg_.geometry.line_size_bytes);
+    }
+    prefetch_buffer_->Clear();
   }
 
   const CacheStats& Stats() const override {
@@ -158,6 +202,7 @@ private:
   std::unique_ptr<IReplacement> replacement_;
   std::unique_ptr<IPrefetch> prefetch_;
   std::unique_ptr<IWindow> window_;
+  std::unique_ptr<PrefetchBuffer> prefetch_buffer_;
 
   std::vector<SetState> sets_;
   CacheStats stats_{};

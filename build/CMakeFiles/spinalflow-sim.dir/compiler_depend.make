@@ -320,6 +320,7 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: ../src/main.cpp \
   ../cache/include/cache/replacement_iface.h \
   ../cache/include/cache/prefetch_iface.h \
   ../cache/include/cache/window_iface.h \
+  ../cache/include/cache/prefetch_buffer.h \
   ../include/arch/input_spine_buffer.hpp \
   ../include/arch/intermediate_fifo.hpp \
   ../include/arch/min_finder_batch.hpp \
@@ -347,6 +348,8 @@ CMakeFiles/spinalflow-sim.dir/src/main.cpp.o: ../src/main.cpp \
 ../include/arch/intermediate_fifo.hpp:
 
 ../include/arch/input_spine_buffer.hpp:
+
+../cache/include/cache/prefetch_buffer.h:
 
 ../cache/include/cache/prefetch_iface.h:
 

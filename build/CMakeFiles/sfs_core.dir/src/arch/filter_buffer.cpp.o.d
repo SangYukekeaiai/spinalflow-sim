@@ -192,4 +192,5 @@ CMakeFiles/sfs_core.dir/src/arch/filter_buffer.cpp.o: \
  /home/yy/snn/spinalflow-sim/cache/include/cache/mapper_iface.h \
  /home/yy/snn/spinalflow-sim/cache/include/cache/replacement_iface.h \
  /home/yy/snn/spinalflow-sim/cache/include/cache/prefetch_iface.h \
- /home/yy/snn/spinalflow-sim/cache/include/cache/window_iface.h
+ /home/yy/snn/spinalflow-sim/cache/include/cache/window_iface.h \
+ /home/yy/snn/spinalflow-sim/cache/include/cache/prefetch_buffer.h

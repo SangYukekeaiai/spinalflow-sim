@@ -350,6 +350,30 @@ cache/src/prefetch/pf_none.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch/pf_none.cpp.s
 .PHONY : cache/src/prefetch/pf_none.cpp.s
 
+cache/src/prefetch_buffer.o: cache/src/prefetch_buffer.cpp.o
+.PHONY : cache/src/prefetch_buffer.o
+
+# target to build an object file
+cache/src/prefetch_buffer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.o
+.PHONY : cache/src/prefetch_buffer.cpp.o
+
+cache/src/prefetch_buffer.i: cache/src/prefetch_buffer.cpp.i
+.PHONY : cache/src/prefetch_buffer.i
+
+# target to preprocess a source file
+cache/src/prefetch_buffer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.i
+.PHONY : cache/src/prefetch_buffer.cpp.i
+
+cache/src/prefetch_buffer.s: cache/src/prefetch_buffer.cpp.s
+.PHONY : cache/src/prefetch_buffer.s
+
+# target to generate assembly for a file
+cache/src/prefetch_buffer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sfs_core.dir/build.make CMakeFiles/sfs_core.dir/cache/src/prefetch_buffer.cpp.s
+.PHONY : cache/src/prefetch_buffer.cpp.s
+
 cache/src/registry.o: cache/src/registry.cpp.o
 .PHONY : cache/src/registry.o
 
@@ -984,6 +1008,9 @@ help:
 	@echo "... cache/src/prefetch/pf_none.o"
 	@echo "... cache/src/prefetch/pf_none.i"
 	@echo "... cache/src/prefetch/pf_none.s"
+	@echo "... cache/src/prefetch_buffer.o"
+	@echo "... cache/src/prefetch_buffer.i"
+	@echo "... cache/src/prefetch_buffer.s"
 	@echo "... cache/src/registry.o"
 	@echo "... cache/src/registry.i"
 	@echo "... cache/src/registry.s"
